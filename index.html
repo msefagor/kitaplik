@@ -64,8 +64,9 @@
             position: sticky; top: 0; z-index: 50;
             background: linear-gradient(to bottom, var(--bg-primary) 80%, transparent);
         }
-        .logo h1 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; background: linear-gradient(to right, #fff, #a0a0b0); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
-        .logo span { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); }
+        .logo h1 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; background: linear-gradient(to right, #fff, #a0a0b0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2px; }
+        .logo span { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); display: block; }
+        .logo .signature { font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 4px; font-style: italic; text-transform: none; }
 
         .icon-btn {
             width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card);
@@ -113,6 +114,9 @@
         .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card.gold .stat-val { color: var(--accent-gold); }
         .stat-card.emerald .stat-val { color: var(--accent-emerald); }
+        
+        /* Full width stat card for analytics */
+        .stat-card-full { grid-column: span 2; background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card)); }
 
         /* Book List */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
@@ -199,6 +203,9 @@
             border-radius: 12px; color: white; font-size: 16px; font-family: inherit;
         }
         
+        /* Dark Date Picker fix */
+        input[type="date"] { color-scheme: dark; }
+
         .cover-upload {
             height: 120px; border: 2px dashed var(--border-subtle); border-radius: 12px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -227,6 +234,7 @@
             <div class="logo">
                 <h1>Kitaplık</h1>
                 <span>Okuma Takipçisi</span>
+                <span class="signature">Created by M. SEFA GÖR</span>
             </div>
             <button class="icon-btn" onclick="openSettings()">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -262,6 +270,13 @@
                 <h2>Hedefler & Analiz</h2>
             </div>
             
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                 <div class="stat-card stat-card-full">
+                    <span class="stat-val" id="statAllTimePages">0</span>
+                    <span class="stat-lbl" style="color:var(--accent-blue)">Toplam Okunan Sayfa (Ömür Boyu) 📚</span>
+                 </div>
+            </div>
+
             <div class="goal-grid">
                 <div class="goal-card">
                     <div class="ring-container">
@@ -342,8 +357,14 @@
                     <div class="form-group"><label>Toplam Sayfa</label><input type="number" id="mPages" class="form-input" required></div>
                     <div class="form-group"><label>Şu Anki Sayfa</label><input type="number" id="mCurrent" class="form-input" value="0"></div>
                 </div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group"><label>Başlangıç Tarihi</label><input type="date" id="mStart" class="form-input"></div>
+                    <div class="form-group"><label>Bitiş Tarihi</label><input type="date" id="mEnd" class="form-input"></div>
+                </div>
+
                 <div class="form-group"><label>Durum</label>
-                    <select id="mStatus" class="form-input">
+                    <select id="mStatus" class="form-input" onchange="handleStatusChange()">
                         <option value="reading">Okuyorum</option>
                         <option value="wishlist">Okuyacağım</option>
                         <option value="completed">Tamamlandı</option>
@@ -415,10 +436,10 @@
         let currentCoverImg = null;
 
         // --- MIGRATION UTILS ---
-        // Ensure old data structures have new fields
         books.forEach(b => {
             if(!b.history) b.history = [];
             if(!b.notes) b.notes = [];
+            if(!b.startDate) b.startDate = null; // New Field
             if(!b.endDate) b.endDate = null;
         });
 
@@ -439,9 +460,8 @@
 
         function renderHero() {
             const hero = document.getElementById('heroSection');
-            // Find most recently updated reading book
             const reading = books.filter(b => b.status === 'reading')
-                                 .sort((a,b) => b.lastUpdated - a.lastUpdated); // Newest first
+                                 .sort((a,b) => b.lastUpdated - a.lastUpdated); 
 
             if (reading.length === 0) {
                 hero.innerHTML = `
@@ -483,7 +503,6 @@
             let items = books;
             if(currentFilter !== 'all') items = books.filter(b => b.status === currentFilter);
             
-            // Sort: Reading first, then newest
             items.sort((a,b) => {
                 if(a.status === 'reading' && b.status !== 'reading') return -1;
                 if(b.status === 'reading' && a.status !== 'reading') return 1;
@@ -510,37 +529,27 @@
         }
 
         function updateStats() {
-            // Calculate Streak
-            // Logic: Check reading history for consecutive days back from today
             let streak = 0;
             const today = new Date().toISOString().split('T')[0];
-            
-            // Gather all reading dates
             const readDates = new Set();
             books.forEach(b => b.history.forEach(h => readDates.add(h.date)));
             
             if(readDates.has(today)) streak = 1;
-            
-            // Check yesterday, day before...
             let d = new Date();
-            d.setDate(d.getDate() - 1); // Start from yesterday
+            d.setDate(d.getDate() - 1);
             while(true) {
                 const dateStr = d.toISOString().split('T')[0];
                 if(readDates.has(dateStr)) {
-                    streak++;
-                    d.setDate(d.getDate() - 1);
+                    streak++; d.setDate(d.getDate() - 1);
                 } else {
-                    // Allow break if read today (streak already 1), otherwise check if streak continued until yesterday
                     if(streak === 0 && readDates.has(today)) { /* continue */ }
                     else if (streak > 0 && !readDates.has(today) && !readDates.has(dateStr)) { break; } 
                     else if (!readDates.has(dateStr)) break;
                 }
-                if(streak > 365) break; // Safety
+                if(streak > 365) break;
             }
-            
             document.getElementById('statStreak').innerText = streak;
 
-            // Year Total
             const thisYear = new Date().getFullYear().toString();
             const yearCount = books.filter(b => b.status === 'completed' && b.endDate && b.endDate.startsWith(thisYear)).length;
             document.getElementById('statYearTotal').innerText = yearCount;
@@ -550,74 +559,63 @@
         function renderAnalytics() {
             const today = new Date().toISOString().split('T')[0];
             const now = new Date();
-            
-            // Week Start (Monday)
-            const dayOfWeek = now.getDay() || 7; 
-            const monday = new Date(now); monday.setDate(now.getDate() - dayOfWeek + 1);
-            const mondayStr = monday.toISOString().split('T')[0];
-            
-            // Month Start
             const monthStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            // Year Start
             const yearStr = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
 
             let dRead = 0, mRead = 0, yCount = 0;
+            let allTimePages = 0;
 
             books.forEach(b => {
-                if(b.status === 'completed' && b.endDate >= yearStr) yCount++;
+                if(b.status === 'completed') {
+                    if(b.endDate >= yearStr) yCount++;
+                    allTimePages += (b.totalPages || 0);
+                }
                 b.history.forEach(h => {
                     if(h.date === today) dRead += h.pagesRead;
                     if(h.date >= monthStr) mRead += h.pagesRead;
                 });
             });
 
-            // Update UI
             updateRing('dailyRing', dRead, settings.dailyGoal, 'dailyPct', 'dailyRead', 'dailyTarget');
             updateRing('monthlyRing', mRead, settings.dailyGoal * 30, 'monthlyPct', 'monthlyRead', 'monthlyTarget');
             updateRing('yearlyRing', yCount, settings.yearlyGoal, 'yearlyPct', 'yearlyRead', 'yearlyTarget');
+            
+            // New Stat: Total Pages
+            document.getElementById('statAllTimePages').innerText = allTimePages.toLocaleString('tr-TR');
         }
 
         function updateRing(id, val, max, txtId, valId, maxId) {
             const circle = document.getElementById(id);
             const pct = Math.min(100, Math.round((val/max)*100));
-            const offset = 150 - (pct/100)*150; // 150 is approx dasharray for r=24
-            
+            const offset = 150 - (pct/100)*150;
             circle.style.strokeDashoffset = offset;
             document.getElementById(txtId).innerText = `%${pct} Tamamlandı`;
             document.getElementById(valId).innerText = val;
             document.getElementById(maxId).innerText = max;
         }
 
-        // --- IMAGE HANDLING (COMPRESSOR) ---
+        // --- IMAGE HANDLING ---
         function handleImageUpload(input) {
             const file = input.files[0];
             if(!file) return;
-
-            // Compress Image using Canvas
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
-                    // Resize logic (Max width 300px for thumbnails/storage efficiency)
                     const MAX_WIDTH = 300;
                     let width = img.width;
                     let height = img.height;
-                    
                     if(width > MAX_WIDTH) {
                         height *= MAX_WIDTH / width;
                         width = MAX_WIDTH;
                     }
-                    
                     canvas.width = width;
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
+                    currentCoverImg = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    currentCoverImg = canvas.toDataURL('image/jpeg', 0.7); // Compress
-                    
-                    // Update UI
                     const drop = document.getElementById('coverDropZone');
                     drop.style.backgroundImage = `url(${currentCoverImg})`;
                     drop.classList.add('has-img');
@@ -629,6 +627,14 @@
 
         // --- INTERACTION LOGIC ---
 
+        function handleStatusChange() {
+            const status = document.getElementById('mStatus').value;
+            const endInput = document.getElementById('mEnd');
+            if(status === 'completed' && !endInput.value) {
+                endInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+
         function openAddModal() {
             document.getElementById('bookForm').reset();
             document.getElementById('bookId').value = '';
@@ -636,6 +642,9 @@
             document.getElementById('editActions').classList.add('hidden');
             document.getElementById('notesList').innerHTML = '';
             
+            // Default Start Date Today
+            document.getElementById('mStart').value = new Date().toISOString().split('T')[0];
+
             currentCoverImg = null;
             const drop = document.getElementById('coverDropZone');
             drop.style.backgroundImage = '';
@@ -654,11 +663,12 @@
             document.getElementById('mPages').value = book.totalPages;
             document.getElementById('mCurrent').value = book.currentPage;
             document.getElementById('mStatus').value = book.status;
+            document.getElementById('mStart').value = book.startDate || '';
+            document.getElementById('mEnd').value = book.endDate || '';
             
             document.getElementById('modalTitle').innerText = 'Kitabı Düzenle';
             document.getElementById('editActions').classList.remove('hidden');
 
-            // Cover
             currentCoverImg = book.cover;
             const drop = document.getElementById('coverDropZone');
             if(book.cover) {
@@ -669,7 +679,6 @@
                 drop.classList.remove('has-img');
             }
 
-            // Notes
             const notesDiv = document.getElementById('notesList');
             if(book.notes && book.notes.length > 0) {
                 notesDiv.innerHTML = '<h3 style="font-size:14px; color:var(--text-secondary); margin-bottom:10px;">Notlar</h3>' + 
@@ -694,22 +703,29 @@
             const total = parseInt(document.getElementById('mPages').value);
             const current = parseInt(document.getElementById('mCurrent').value);
             const status = document.getElementById('mStatus').value;
+            const sDate = document.getElementById('mStart').value;
+            const eDate = document.getElementById('mEnd').value;
             
             if(id) {
                 // Edit
                 const b = books.find(b => b.id == id);
                 b.title = title; b.author = author; b.totalPages = total;
                 b.cover = currentCoverImg;
+                b.startDate = sDate;
+                b.endDate = eDate;
                 
-                // Logic check: if pages changed manually without progress modal
+                // Manual progress logging
                 if(current > b.currentPage) {
-                     // Optionally log history here, but let's keep simple manual edit just edit
+                     const diff = current - b.currentPage;
+                     const today = new Date().toISOString().split('T')[0];
+                     const h = b.history.find(x => x.date === today);
+                     if(h) h.pagesRead += diff;
+                     else b.history.push({date: today, pagesRead: diff});
                 }
                 b.currentPage = current;
                 
-                // Status change logic
                 if(status === 'completed' && b.status !== 'completed') {
-                    b.endDate = new Date().toISOString().split('T')[0];
+                    if(!b.endDate) b.endDate = new Date().toISOString().split('T')[0];
                     b.currentPage = total;
                 }
                 b.status = status;
@@ -720,13 +736,14 @@
                 const newBook = {
                     id: Date.now(),
                     title, author, totalPages: total, currentPage: current, status,
+                    startDate: sDate, endDate: eDate,
                     cover: currentCoverImg,
                     history: [], notes: [],
                     lastUpdated: Date.now()
                 };
-                if(status === 'completed') newBook.endDate = new Date().toISOString().split('T')[0];
+                if(status === 'completed' && !newBook.endDate) newBook.endDate = new Date().toISOString().split('T')[0];
                 books.push(newBook);
-                currentFilter = 'all'; // Reset filter to see new book
+                currentFilter = 'all'; 
             }
             saveData();
             closeModal('bookModal');
@@ -734,10 +751,9 @@
 
         // Notes Logic
         function openNoteModal() {
-            closeModal('bookModal'); // Temp close main
+            closeModal('bookModal'); 
             setTimeout(() => {
                 document.getElementById('noteForm').reset();
-                // Pre-fill page with current page of book being edited
                 const id = document.getElementById('bookId').value;
                 const book = books.find(b => b.id == id);
                 if(book) document.getElementById('nPage').value = book.currentPage;
@@ -759,11 +775,10 @@
                 book.notes.push(note);
                 saveData();
                 closeModal('noteModal');
-                setTimeout(() => openEditModal(id), 300); // Re-open book modal
+                setTimeout(() => openEditModal(id), 300);
             }
         });
 
-        // Delete Logic
         function deleteBook() {
             if(confirm('Kitabı ve tüm notları silmek istediğine emin misin?')) {
                 const id = document.getElementById('bookId').value;
@@ -792,7 +807,6 @@
                 const diff = newPage - book.currentPage;
                 const today = new Date().toISOString().split('T')[0];
                 
-                // Log history
                 const h = book.history.find(x => x.date === today);
                 if(h) h.pagesRead += diff;
                 else book.history.push({date: today, pagesRead: diff});
@@ -802,7 +816,7 @@
                 
                 if(book.currentPage >= book.totalPages) {
                     book.status = 'completed';
-                    book.endDate = today;
+                    if(!book.endDate) book.endDate = today;
                     alert('Tebrikler! Kitabı bitirdin. 🎉');
                 }
                 saveData();
@@ -822,7 +836,6 @@
         document.getElementById('setDaily').addEventListener('change', (e) => { settings.dailyGoal = parseInt(e.target.value); saveData(); });
         document.getElementById('setYearly').addEventListener('change', (e) => { settings.yearlyGoal = parseInt(e.target.value); saveData(); });
 
-        // Filters
         document.getElementById('filterBtn').addEventListener('click', () => {
             const arr = ['all','reading','completed','wishlist'];
             const idx = arr.indexOf(currentFilter);
@@ -830,11 +843,9 @@
             renderList();
         });
 
-        // Modals
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // Tabs
         window.switchTab = function(tab, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -849,7 +860,6 @@
             }
         }
 
-        // Export/Import
         window.exportData = function() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({books, settings}));
             const node = document.createElement('a');
@@ -876,7 +886,6 @@
             r.readAsText(file);
         }
 
-        // Init
         renderAll();
     </script>
 </body>
