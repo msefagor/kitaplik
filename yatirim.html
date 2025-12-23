@@ -2,174 +2,313 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yatırım Takip Paneli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yatırım Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
-            --primary: #4f46e5;
-            --secondary: #ec4899;
-            --bg: #f3f4f6;
+            --primary: #4f46e5;      /* İndigo */
+            --primary-dark: #3730a3;
+            --secondary: #10b981;    /* Zümrüt Yeşili */
+            --danger: #ef4444;       /* Kırmızı */
+            --bg-color: #f8fafc;     /* Çok açık gri */
             --card-bg: #ffffff;
-            --text: #1f2937;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --radius: 20px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 600px;
+
+        .app-container {
+            max-width: 1100px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
         }
-        /* Kart Tasarımları */
+
+        /* Desktop Düzeni: Yan yana iki sütun */
+        @media (min-width: 900px) {
+            .app-container {
+                grid-template-columns: 2fr 1.2fr; /* Sol taraf geniş, sağ taraf dar */
+                align-items: start;
+            }
+            .full-width-mobile { grid-column: span 2; }
+        }
+
+        /* --- KART TASARIMLARI --- */
         .card {
             background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: var(--text-sub);
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        /* Ana Bakiye Kartı (Gradient) */
+
+        /* Bakiye Kartı (Özel Gradient) */
         .balance-card {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(120deg, #4f46e5, #9333ea);
             color: white;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            padding: 40px 20px;
         }
-        .balance-amount {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 10px 0;
+        
+        /* Arka plan süslemesi */
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
         }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .balance-title { font-size: 0.9rem; opacity: 0.8; z-index: 1; letter-spacing: 1px; text-transform: uppercase;}
+        .balance-amount { font-size: 3.5rem; font-weight: 700; margin: 10px 0; z-index: 1; letter-spacing: -1px;}
         .usd-badge {
             background: rgba(255, 255, 255, 0.2);
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        /* Hedef Barı */
-        .progress-container {
-            background-color: #e5e7eb;
-            border-radius: 10px;
-            height: 20px;
-            width: 100%;
-            margin: 10px 0;
+
+        /* --- HEDEF BAR --- */
+        .goal-wrapper { margin-top: 10px; }
+        .goal-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; }
+        .progress-track {
+            background: #e2e8f0;
+            border-radius: 100px;
+            height: 12px;
             overflow: hidden;
         }
-        .progress-bar {
-            background-color: #10b981;
+        .progress-fill {
             height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
             width: 0%;
-            transition: width 0.5s ease-in-out;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 100px;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
         }
-        /* Form Elemanları */
+        .goal-subtext { text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 6px; }
+
+        /* --- FORM ELEMANLARI --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-wrapper { display: flex; gap: 12px; }
+        
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            font-size: 16px;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text-main);
+            transition: all 0.2s;
+            background: #f8fafc;
         }
+        input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        input::placeholder { color: #94a3b8; }
+
+        .label-text { font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px; display: block; }
+
         button {
-            width: 100%;
-            padding: 12px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s, opacity 0.2s;
+            padding: 0 20px;
+            font-family: inherit;
         }
-        button:active { opacity: 0.8; }
-        .btn-green { background-color: #10b981; color: white; }
-        .btn-blue { background-color: #3b82f6; color: white; }
-        .btn-orange { background-color: #f59e0b; color: white; }
+        button:active { transform: scale(0.96); }
         
-        /* Liste */
-        .history-list {
-            list-style: none;
-            padding: 0;
-        }
+        .btn-action { background: var(--primary); color: white; min-width: 100px; }
+        .btn-fund { background: var(--text-main); color: white; min-width: 100px; }
+        .btn-fix { background: #f59e0b; color: white; width: 100%; padding: 14px; margin-top: 5px;}
+
+        /* --- GEÇMİŞ LİSTESİ --- */
+        .history-list { list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto; }
         .history-item {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .history-date { font-size: 0.8em; color: #6b7280; }
-        .amount-plus { color: #10b981; font-weight: bold; }
-        .amount-minus { color: #ef4444; font-weight: bold; }
+        .history-item:last-child { border-bottom: none; }
+        
+        .history-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        .icon-profit { background: #dcfce7; color: #16a34a; }
+        .icon-deposit { background: #dbeafe; color: #2563eb; }
+        .icon-fix { background: #ffedd5; color: #ea580c; }
 
-        label { font-weight: bold; display: block; margin-bottom: 5px; margin-top: 10px;}
+        .history-info { flex-grow: 1; }
+        .history-title { font-weight: 600; font-size: 0.95rem; color: var(--text-main); }
+        .history-date { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; }
+        
+        .history-amount { font-weight: 700; font-size: 1rem; text-align: right; }
+        .history-total { font-size: 0.75rem; color: var(--text-sub); text-align: right; margin-top: 2px; }
+        
+        .text-green { color: var(--secondary); }
+        .text-red { color: var(--danger); }
+
+        /* Grafik Konteyner */
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        /* Başlık */
+        .app-header {
+            grid-column: span 1;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        @media (min-width: 900px) { .app-header { grid-column: span 2; } }
+        
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .logo span { color: var(--primary); }
+
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="app-container">
     
-    <div class="card balance-card">
-        <div>Mevcut Portföy</div>
-        <div class="balance-amount" id="displayBalance">0.00 ₺</div>
-        <div class="usd-badge" id="displayUsd">$0.00</div>
+    <div class="app-header">
+        <div class="logo"><i class="fa-solid fa-chart-line"></i> Yatırım<span>Pro</span></div>
     </div>
 
-    <div class="card">
-        <canvas id="growthChart"></canvas>
-    </div>
-
-    <div class="card">
-        <div style="display:flex; justify-content:space-between;">
-            <strong>Hedef (500.000 ₺)</strong>
-            <span id="progressText">%0</span>
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div style="font-size: 0.9em; color: gray; text-align: right;" id="remainingText">Kalan: 500.000 ₺</div>
-    </div>
-
-    <div class="card">
-        <h3>İşlem Yap</h3>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
         
-        <label>Kar Ekle (%)</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="profitInput" placeholder="Örn: 5">
-            <button class="btn-green" onclick="addProfit()" style="width: 40%;">Uygula</button>
+        <div class="card balance-card">
+            <span class="balance-title">TOPLAM PORTFÖY</span>
+            <div class="balance-amount" id="displayBalance">0.00 ₺</div>
+            <div class="usd-badge">
+                <i class="fa-solid fa-dollar-sign"></i> <span id="displayUsd">0.00</span>
+            </div>
         </div>
-        <small style="color:gray;">Ana paranın üzerine yüzde ekler.</small>
 
-        <label>Para Ekle (TL)</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="fundInput" placeholder="Tutar">
-            <button class="btn-blue" onclick="addFunds()" style="width: 40%;">Ekle</button>
+        <div class="card">
+            <h3><i class="fa-solid fa-arrow-trend-up"></i> Büyüme Grafiği</h3>
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
         </div>
+
+        <div class="card">
+            <div class="goal-wrapper">
+                <div class="goal-header">
+                    <span style="color: var(--text-sub);"><i class="fa-solid fa-flag-checkered"></i> Hedef (500k ₺)</span>
+                    <span id="progressText" style="color: var(--primary);">%0</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="goal-subtext" id="remainingText">Kalan: 500.000 ₺</div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="card">
-        <h3>Ayarlar & Düzeltme</h3>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
         
-        <label>Dolar Kuru</label>
-        <input type="number" id="usdInput" value="34.50" onchange="updateSettings()">
+        <div class="card">
+            <h3><i class="fa-solid fa-bolt"></i> Hızlı İşlemler</h3>
+            
+            <div class="input-group">
+                <span class="label-text">Yüzdesel Kar Ekle</span>
+                <div class="input-wrapper">
+                    <input type="number" id="profitInput" placeholder="% Örn: 5">
+                    <button class="btn-action" onclick="addProfit()">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
 
-        <label>Manuel Bakiye Düzeltme</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="manualInput" placeholder="Yeni Bakiye">
-            <button class="btn-orange" onclick="manualFix()" style="width: 40%;">Kaydet</button>
+            <div class="input-group">
+                <span class="label-text">Nakit Para Ekle</span>
+                <div class="input-wrapper">
+                    <input type="number" id="fundInput" placeholder="Tutar (TL)">
+                    <button class="btn-fund" onclick="addFunds()">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <small style="color:gray;">Zarar veya hata durumunda kullanılır.</small>
-    </div>
 
-    <div class="card">
-        <h3>Son İşlemler</h3>
-        <ul class="history-list" id="historyList">
-            </ul>
-    </div>
+        <div class="card">
+            <h3><i class="fa-solid fa-sliders"></i> Ayarlar</h3>
+            
+            <div class="input-group">
+                <span class="label-text">Güncel Dolar Kuru</span>
+                <input type="number" id="usdInput" value="34.50" onchange="updateSettings()">
+            </div>
 
+            <div class="input-group" style="margin-bottom:0;">
+                <span class="label-text">Bakiye Düzeltme (Hata Durumu)</span>
+                <input type="number" id="manualInput" placeholder="Yeni net bakiye...">
+                <button class="btn-fix" onclick="manualFix()">
+                    <i class="fa-solid fa-wrench"></i> Güncelle
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="flex-grow: 1;">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Son İşlemler</h3>
+            <ul class="history-list" id="historyList">
+                </ul>
+        </div>
+
+    </div>
 </div>
 
 <script>
@@ -178,10 +317,9 @@
         balance: 0.0,
         target: 500000.0,
         usdRate: 34.50,
-        history: [] // {date, type, amount, total}
+        history: [] 
     };
 
-    // Sayfa Yüklendiğinde
     window.onload = function() {
         loadData();
         initChart();
@@ -189,29 +327,26 @@
     };
 
     function loadData() {
-        const saved = localStorage.getItem('yatirimData');
+        const saved = localStorage.getItem('yatirimDataPro'); // Key ismini değiştirdim, çakışma olmasın
         if (saved) {
             data = JSON.parse(saved);
         }
-        // Eğer dolar kuru inputu boş kalmasın diye
         document.getElementById('usdInput').value = data.usdRate;
     }
 
     function saveData() {
-        localStorage.setItem('yatirimData', JSON.stringify(data));
+        localStorage.setItem('yatirimDataPro', JSON.stringify(data));
         updateUI();
     }
 
-    // --- İŞLEM FONKSİYONLARI ---
-
+    // --- İŞLEMLER ---
     function addProfit() {
         const input = document.getElementById('profitInput');
         const percentage = parseFloat(input.value);
-        
-        if (!isNaN(percentage)) {
+        if (!isNaN(percentage) && percentage !== 0) {
             const profitAmount = data.balance * (percentage / 100);
             data.balance += profitAmount;
-            addHistory("Kar Ekleme (%)", profitAmount);
+            addHistory("profit", "Kar Girişi (%)", profitAmount);
             input.value = '';
             saveData();
         }
@@ -220,10 +355,9 @@
     function addFunds() {
         const input = document.getElementById('fundInput');
         const amount = parseFloat(input.value);
-
-        if (!isNaN(amount)) {
+        if (!isNaN(amount) && amount !== 0) {
             data.balance += amount;
-            addHistory("Para Yatırma", amount);
+            addHistory("deposit", "Para Yatırma", amount);
             input.value = '';
             saveData();
         }
@@ -232,11 +366,10 @@
     function manualFix() {
         const input = document.getElementById('manualInput');
         const newBalance = parseFloat(input.value);
-
         if (!isNaN(newBalance)) {
             const diff = newBalance - data.balance;
             data.balance = newBalance;
-            addHistory("Manuel Düzeltme", diff);
+            addHistory("fix", "Manuel Düzeltme", diff);
             input.value = '';
             saveData();
         }
@@ -250,27 +383,25 @@
         }
     }
 
-    function addHistory(type, change) {
-        const item = {
+    function addHistory(typeCode, typeTitle, change) {
+        data.history.push({
             date: new Date().toISOString(),
-            type: type,
+            code: typeCode, // profit, deposit, fix
+            title: typeTitle,
             change: change,
             total: data.balance
-        };
-        data.history.push(item);
+        });
     }
 
-    // --- ARAYÜZ GÜNCELLEME ---
-
+    // --- UI GÜNCELLEME ---
     function updateUI() {
-        // 1. Ana Bakiye
+        // Bakiye Animasyonu (Sayacı yavaşça artırır gibi gösterir)
         document.getElementById('displayBalance').innerText = formatCurrency(data.balance) + " ₺";
         
-        // 2. Dolar
         const usdVal = data.balance / (data.usdRate > 0 ? data.usdRate : 1);
-        document.getElementById('displayUsd').innerText = "$" + formatNumber(usdVal);
+        document.getElementById('displayUsd').innerText = formatNumber(usdVal);
 
-        // 3. Hedef
+        // Progress Bar
         const progress = Math.min((data.balance / data.target) * 100, 100);
         document.getElementById('progressBar').style.width = progress + "%";
         document.getElementById('progressText').innerText = "%" + progress.toFixed(1);
@@ -278,10 +409,7 @@
         const remaining = Math.max(data.target - data.balance, 0);
         document.getElementById('remainingText').innerText = "Kalan: " + formatCurrency(remaining) + " ₺";
 
-        // 4. Liste
         renderHistory();
-
-        // 5. Grafik
         updateChart();
     }
 
@@ -289,60 +417,93 @@
         const list = document.getElementById('historyList');
         list.innerHTML = "";
         
-        // Tersten sırala (en yeni en üstte) ve son 10 taneyi al
-        const visibleHistory = [...data.history].reverse().slice(0, 10);
+        const visibleHistory = [...data.history].reverse().slice(0, 15);
 
         visibleHistory.forEach(item => {
             const dateObj = new Date(item.date);
-            const dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+            const dateStr = dateObj.toLocaleDateString('tr-TR', {day:'numeric', month:'short'}) + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+            
+            let iconClass = "icon-fix";
+            let iconSymbol = '<i class="fa-solid fa-wrench"></i>';
+            
+            if (item.code === 'profit') { iconClass = 'icon-profit'; iconSymbol = '<i class="fa-solid fa-arrow-trend-up"></i>'; }
+            if (item.code === 'deposit') { iconClass = 'icon-deposit'; iconSymbol = '<i class="fa-solid fa-wallet"></i>'; }
+
+            const changeClass = item.change >= 0 ? 'text-green' : 'text-red';
+            const changeSign = item.change > 0 ? '+' : '';
             
             const li = document.createElement('li');
             li.className = 'history-item';
-            
-            const changeClass = item.change >= 0 ? 'amount-plus' : 'amount-minus';
-            const changeSign = item.change > 0 ? '+' : '';
-            
             li.innerHTML = `
-                <div>
-                    <div style="font-weight:bold;">${item.type}</div>
-                    <div class="history-date">${dateStr}</div>
+                <div style="display:flex; align-items:center;">
+                    <div class="history-icon ${iconClass}">${iconSymbol}</div>
+                    <div class="history-info">
+                        <div class="history-title">${item.title}</div>
+                        <div class="history-date">${dateStr}</div>
+                    </div>
                 </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:bold;">${formatCurrency(item.total)} ₺</div>
-                    <div class="${changeClass}" style="font-size:0.8em;">${changeSign}${formatNumber(item.change)}</div>
+                <div>
+                    <div class="history-amount ${changeClass}">${changeSign}${formatNumber(item.change)} ₺</div>
+                    <div class="history-total">Toplam: ${formatCurrency(item.total)}</div>
                 </div>
             `;
             list.appendChild(li);
         });
     }
 
-    // --- GRAFİK (CHART.JS) ---
+    // --- GRAFİK AYARLARI ---
     let myChart;
 
     function initChart() {
         const ctx = document.getElementById('growthChart').getContext('2d');
+        
+        // Gradient Oluşturma
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.5)'); // Üst renk
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)'); // Alt renk (transparan)
+
         myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Bakiye Gelişimi',
+                    label: 'Portföy Değeri',
                     data: [],
                     borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                    borderWidth: 2,
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     fill: true,
-                    tension: 0.4 // Çizgiyi yumuşatır
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 10,
+                        titleFont: { family: 'Inter', size: 13 },
+                        bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) { return context.parsed.y.toLocaleString('tr-TR') + ' ₺'; }
+                        }
+                    }
                 },
                 scales: {
-                    x: { display: false }, // Tarihleri altta çok sıkışmasın diye gizledim
-                    y: { beginAtZero: false }
+                    x: { display: false },
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#f1f5f9', borderDash: [5, 5] },
+                        ticks: { font: { family: 'Inter', size: 11 }, color: '#94a3b8' }
+                    }
                 }
             }
         });
@@ -351,32 +512,30 @@
     function updateChart() {
         if (!myChart) return;
         
-        // Verileri grafiğe yükle
-        const labels = data.history.map(h => new Date(h.date).toLocaleDateString('tr-TR'));
-        const values = data.history.map(h => h.total);
+        // Veri Hazırlığı
+        let labels = data.history.map(h => new Date(h.date).toLocaleDateString('tr-TR'));
+        let values = data.history.map(h => h.total);
 
-        // Eğer hiç veri yoksa, başlangıç noktası olarak 0 ekle
+        // Grafik boş kalmasın diye başlangıç noktası
         if (values.length === 0 && data.balance > 0) {
-             // Manuel düzeltme yapılmış ama history yoksa (eski veri uyumu)
-             myChart.data.labels = ['Başlangıç'];
-             myChart.data.datasets[0].data = [data.balance];
-        } else {
-            myChart.data.labels = labels;
-            myChart.data.datasets[0].data = values;
+             labels = ['Başlangıç'];
+             values = [data.balance];
+        } else if (values.length === 0) {
+            labels = ['Başlangıç'];
+            values = [0];
         }
-        
+
+        myChart.data.labels = labels;
+        myChart.data.datasets[0].data = values;
         myChart.update();
     }
 
-    // --- YARDIMCILAR ---
-    function formatNumber(num) {
-        return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // Helper
+    function formatNumber(num) { return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function formatCurrency(num) { 
+        if(num >= 1000000) return (num/1000000).toFixed(2) + " M";
+        return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
     }
-    
-    function formatCurrency(num) {
-         return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
 </script>
 
 </body>
