@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatırım Takip Paneli</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        /* Kart Tasarımları */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* Ana Bakiye Kartı (Gradient) */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+        }
+        .balance-amount {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .usd-badge {
+            background: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        /* Hedef Barı */
+        .progress-container {
+            background-color: #e5e7eb;
+            border-radius: 10px;
+            height: 20px;
+            width: 100%;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #10b981;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Form Elemanları */
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.8; }
+        .btn-green { background-color: #10b981; color: white; }
+        .btn-blue { background-color: #3b82f6; color: white; }
+        .btn-orange { background-color: #f59e0b; color: white; }
+        
+        /* Liste */
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .history-date { font-size: 0.8em; color: #6b7280; }
+        .amount-plus { color: #10b981; font-weight: bold; }
+        .amount-minus { color: #ef4444; font-weight: bold; }
+
+        label { font-weight: bold; display: block; margin-bottom: 5px; margin-top: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="card balance-card">
+        <div>Mevcut Portföy</div>
+        <div class="balance-amount" id="displayBalance">0.00 ₺</div>
+        <div class="usd-badge" id="displayUsd">$0.00</div>
+    </div>
+
+    <div class="card">
+        <canvas id="growthChart"></canvas>
+    </div>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between;">
+            <strong>Hedef (500.000 ₺)</strong>
+            <span id="progressText">%0</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div style="font-size: 0.9em; color: gray; text-align: right;" id="remainingText">Kalan: 500.000 ₺</div>
+    </div>
+
+    <div class="card">
+        <h3>İşlem Yap</h3>
+        
+        <label>Kar Ekle (%)</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="profitInput" placeholder="Örn: 5">
+            <button class="btn-green" onclick="addProfit()" style="width: 40%;">Uygula</button>
+        </div>
+        <small style="color:gray;">Ana paranın üzerine yüzde ekler.</small>
+
+        <label>Para Ekle (TL)</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="fundInput" placeholder="Tutar">
+            <button class="btn-blue" onclick="addFunds()" style="width: 40%;">Ekle</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Ayarlar & Düzeltme</h3>
+        
+        <label>Dolar Kuru</label>
+        <input type="number" id="usdInput" value="34.50" onchange="updateSettings()">
+
+        <label>Manuel Bakiye Düzeltme</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="manualInput" placeholder="Yeni Bakiye">
+            <button class="btn-orange" onclick="manualFix()" style="width: 40%;">Kaydet</button>
+        </div>
+        <small style="color:gray;">Zarar veya hata durumunda kullanılır.</small>
+    </div>
+
+    <div class="card">
+        <h3>Son İşlemler</h3>
+        <ul class="history-list" id="historyList">
+            </ul>
+    </div>
+
+</div>
+
+<script>
+    // --- VERİ YÖNETİMİ ---
+    let data = {
+        balance: 0.0,
+        target: 500000.0,
+        usdRate: 34.50,
+        history: [] // {date, type, amount, total}
+    };
+
+    // Sayfa Yüklendiğinde
+    window.onload = function() {
+        loadData();
+        initChart();
+        updateUI();
+    };
+
+    function loadData() {
+        const saved = localStorage.getItem('yatirimData');
+        if (saved) {
+            data = JSON.parse(saved);
+        }
+        // Eğer dolar kuru inputu boş kalmasın diye
+        document.getElementById('usdInput').value = data.usdRate;
+    }
+
+    function saveData() {
+        localStorage.setItem('yatirimData', JSON.stringify(data));
+        updateUI();
+    }
+
+    // --- İŞLEM FONKSİYONLARI ---
+
+    function addProfit() {
+        const input = document.getElementById('profitInput');
+        const percentage = parseFloat(input.value);
+        
+        if (!isNaN(percentage)) {
+            const profitAmount = data.balance * (percentage / 100);
+            data.balance += profitAmount;
+            addHistory("Kar Ekleme (%)", profitAmount);
+            input.value = '';
+            saveData();
+        }
+    }
+
+    function addFunds() {
+        const input = document.getElementById('fundInput');
+        const amount = parseFloat(input.value);
+
+        if (!isNaN(amount)) {
+            data.balance += amount;
+            addHistory("Para Yatırma", amount);
+            input.value = '';
+            saveData();
+        }
+    }
+
+    function manualFix() {
+        const input = document.getElementById('manualInput');
+        const newBalance = parseFloat(input.value);
+
+        if (!isNaN(newBalance)) {
+            const diff = newBalance - data.balance;
+            data.balance = newBalance;
+            addHistory("Manuel Düzeltme", diff);
+            input.value = '';
+            saveData();
+        }
+    }
+
+    function updateSettings() {
+        const usdVal = parseFloat(document.getElementById('usdInput').value);
+        if(!isNaN(usdVal)) {
+            data.usdRate = usdVal;
+            saveData();
+        }
+    }
+
+    function addHistory(type, change) {
+        const item = {
+            date: new Date().toISOString(),
+            type: type,
+            change: change,
+            total: data.balance
+        };
+        data.history.push(item);
+    }
+
+    // --- ARAYÜZ GÜNCELLEME ---
+
+    function updateUI() {
+        // 1. Ana Bakiye
+        document.getElementById('displayBalance').innerText = formatCurrency(data.balance) + " ₺";
+        
+        // 2. Dolar
+        const usdVal = data.balance / (data.usdRate > 0 ? data.usdRate : 1);
+        document.getElementById('displayUsd').innerText = "$" + formatNumber(usdVal);
+
+        // 3. Hedef
+        const progress = Math.min((data.balance / data.target) * 100, 100);
+        document.getElementById('progressBar').style.width = progress + "%";
+        document.getElementById('progressText').innerText = "%" + progress.toFixed(1);
+        
+        const remaining = Math.max(data.target - data.balance, 0);
+        document.getElementById('remainingText').innerText = "Kalan: " + formatCurrency(remaining) + " ₺";
+
+        // 4. Liste
+        renderHistory();
+
+        // 5. Grafik
+        updateChart();
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('historyList');
+        list.innerHTML = "";
+        
+        // Tersten sırala (en yeni en üstte) ve son 10 taneyi al
+        const visibleHistory = [...data.history].reverse().slice(0, 10);
+
+        visibleHistory.forEach(item => {
+            const dateObj = new Date(item.date);
+            const dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+            
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            
+            const changeClass = item.change >= 0 ? 'amount-plus' : 'amount-minus';
+            const changeSign = item.change > 0 ? '+' : '';
+            
+            li.innerHTML = `
+                <div>
+                    <div style="font-weight:bold;">${item.type}</div>
+                    <div class="history-date">${dateStr}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold;">${formatCurrency(item.total)} ₺</div>
+                    <div class="${changeClass}" style="font-size:0.8em;">${changeSign}${formatNumber(item.change)}</div>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    // --- GRAFİK (CHART.JS) ---
+    let myChart;
+
+    function initChart() {
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Bakiye Gelişimi',
+                    data: [],
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4 // Çizgiyi yumuşatır
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { display: false }, // Tarihleri altta çok sıkışmasın diye gizledim
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    }
+
+    function updateChart() {
+        if (!myChart) return;
+        
+        // Verileri grafiğe yükle
+        const labels = data.history.map(h => new Date(h.date).toLocaleDateString('tr-TR'));
+        const values = data.history.map(h => h.total);
+
+        // Eğer hiç veri yoksa, başlangıç noktası olarak 0 ekle
+        if (values.length === 0 && data.balance > 0) {
+             // Manuel düzeltme yapılmış ama history yoksa (eski veri uyumu)
+             myChart.data.labels = ['Başlangıç'];
+             myChart.data.datasets[0].data = [data.balance];
+        } else {
+            myChart.data.labels = labels;
+            myChart.data.datasets[0].data = values;
+        }
+        
+        myChart.update();
+    }
+
+    // --- YARDIMCILAR ---
+    function formatNumber(num) {
+        return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    
+    function formatCurrency(num) {
+         return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+</script>
+
+</body>
+</html>
