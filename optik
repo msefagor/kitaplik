@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Optik Okuyucu (Tek HTML)</title>
+  <style>
+    body { font-family: -apple-system, system-ui, Arial; margin: 16px; background:#f6f7fb; }
+    header { margin-bottom: 12px; }
+    h1 { margin:0 0 4px; font-size: 22px; }
+    p { margin: 0; color:#445; }
+    .card { background:#fff; padding:12px; border-radius:12px; margin:12px 0; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+    .row { display:flex; gap:8px; align-items:center; margin:8px 0; }
+    textarea, select, input { width:100%; padding:10px; border-radius:10px; border:1px solid #d7dbe7; }
+    button { padding:10px 12px; border:0; border-radius:10px; background:#1f6feb; color:#fff; font-weight:700; }
+    button[disabled]{ opacity:.5; }
+    .summary { background:#f2f4ff; border:1px solid #dfe4ff; padding:10px; border-radius:10px; white-space: pre-wrap; }
+    canvas { width:100%; border:1px solid #eee; border-radius:12px; margin-top:10px; background:#fff; }
+    .muted { color:#667; font-size:12px; }
+    .mini { font-size:12px; color:#556; }
+    label { font-size: 13px; color:#334; min-width: 72px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Optik Okuyucu</h1>
+    <p>Doğru=yeşil • Yanlış=kırmızı • Puan = doğru×5</p>
+  </header>
+
+  <section class="card">
+    <div class="row">
+      <label>Kitapçık</label>
+      <select id="booklet">
+        <option value="A">A</option>
+        <option value="B">B</option>
+      </select>
+    </div>
+
+    <div class="mini">Anahtar formatı: <b>20 harf</b> (örn: ABCDEABCDEABCDEABCDEA) veya <b>1:A,2:C,...</b></div>
+    <textarea id="key" rows="3" placeholder="Örn: ABCDEABCDEABCDEABCDEA"></textarea>
+
+    <div class="row">
+      <button id="saveKey">Anahtarı Kaydet</button>
+      <button id="loadKey">Anahtarı Yükle</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <label>Fotoğraf</label>
+      <input id="file" type="file" accept="image/*" capture="environment" />
+    </div>
+    <div class="row">
+      <button id="grade" disabled>Oku / Puanla</button>
+      <span id="cvStatus" class="muted">OpenCV yükleniyor…</span>
+    </div>
+    <div class="mini">İpucu: Formu düz zeminde, gölge olmadan, mümkünse dik açıya yakın çek.</div>
+  </section>
+
+  <section class="card">
+    <div class="summary" id="summary">Henüz yok.</div>
+    <canvas id="canvas"></canvas>
+  </section>
+
+  <!-- OpenCV.js (tarayıcı içinde). İnternet gerekir. -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+
+  <script>
+    // ========== UI ==========
+    const booklet = document.getElementById("booklet");
+    const keyBox  = document.getElementById("key");
+    const saveKeyBtn = document.getElementById("saveKey");
+    const loadKeyBtn = document.getElementById("loadKey");
+    const fileInput = document.getElementById("file");
+    const gradeBtn = document.getElementById("grade");
+    const summary = document.getElementById("summary");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const cvStatus = document.getElementById("cvStatus");
+
+    const CHOICES = ["A","B","C","D","E"];
+    const NUM_Q = 20;
+
+    function storageKey(b){ return `omr_key_${b}`; }
+
+    saveKeyBtn.onclick = () => {
+      localStorage.setItem(storageKey(booklet.value), keyBox.value.trim());
+      alert(`${booklet.value} anahtarı kaydedildi.`);
+    };
+    loadKeyBtn.onclick = () => {
+      keyBox.value = localStorage.getItem(storageKey(booklet.value)) || "";
+    };
+    booklet.onchange = () => loadKeyBtn.onclick();
+
+    // OpenCV hazır olana kadar bekle
+    let cvReady = false;
+    (function waitForCV(){
+      if (typeof cv !== "undefined" && cv.Mat) {
+        cvReady = true;
+        cvStatus.textContent = "OpenCV hazır.";
+        gradeBtn.disabled = false;
+      } else {
+        setTimeout(waitForCV, 200);
+      }
+    })();
+
+    // ========== Helper: anahtar parse ==========
+    function parseKey(keyStr, numQ=NUM_Q){
+      const s = (keyStr||"").trim().toUpperCase();
+      let key = new Array(numQ).fill("");
+
+      // "ABCDE..." formatı
+      if (s.length === numQ && [...s].every(c => CHOICES.includes(c))) return [...s];
+
+      // "1:A,2:C" formatı
+      const parts = s.replaceAll(";",",").split(",").map(x=>x.trim()).filter(Boolean);
+      for (const p of parts){
+        let q,a;
+        if (p.includes(":")) [q,a] = p.split(":");
+        else if (p.includes("=")) [q,a] = p.split("=");
+        else continue;
+        q = (q||"").trim(); a=(a||"").trim().toUpperCase();
+        if (!/^\d+$/.test(q)) continue;
+        const qi = parseInt(q,10);
+        if (qi>=1 && qi<=numQ && CHOICES.includes(a)) key[qi-1]=a;
+      }
+      return key;
+    }
+
+    // ========== Helper: canvas çiz ==========
+    function drawImageToCanvas(img){
+      const maxW = 1400; // iPhone için güvenli ölçek
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    // ========== OpenCV: point order + warp ==========
+    function orderPoints(pts){
+      // pts: Array of {x,y} length 4
+      const sum = pts.map(p => p.x + p.y);
+      const diff = pts.map(p => p.x - p.y);
+      const tl = pts[sum.indexOf(Math.min(...sum))];
+      const br = pts[sum.indexOf(Math.max(...sum))];
+      const tr = pts[diff.indexOf(Math.max(...diff))];
+      const bl = pts[diff.indexOf(Math.min(...diff))];
+      return [tl,tr,br,bl];
+    }
+
+    function fourPointTransform(src, pts){
+      // src: cv.Mat BGR
+      const [tl,tr,br,bl] = orderPoints(pts);
+
+      const wA = Math.hypot(br.x - bl.x, br.y - bl.y);
+      const wB = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+      const maxW = Math.max(wA, wB) | 0;
+
+      const hA = Math.hypot(tr.x - br.x, tr.y - br.y);
+      const hB = Math.hypot(tl.x - bl.x, tl.y - bl.y);
+      const maxH = Math.max(hA, hB) | 0;
+
+      const srcTri = cv.matFromArray(4,1,cv.CV_32FC2, [
+        tl.x, tl.y,
+        tr.x, tr.y,
+        br.x, br.y,
+        bl.x, bl.y
+      ]);
+      const dstTri = cv.matFromArray(4,1,cv.CV_32FC2, [
+        0, 0,
+        maxW-1, 0,
+        maxW-1, maxH-1,
+        0, maxH-1
+      ]);
+
+      const M = cv.getPerspectiveTransform(srcTri, dstTri);
+      const dsize = new cv.Size(maxW, maxH);
+      const warped = new cv.Mat();
+      cv.warpPerspective(src, warped, M, dsize, cv.INTER_LINEAR, cv.BORDER_REPLICATE);
+
+      srcTri.delete(); dstTri.delete(); M.delete();
+      return warped;
+    }
+
+    function findPaperWarp(bgr){
+      // bgr: cv.Mat
+      let img = bgr.clone();
+
+      // küçült (hız + stabil)
+      const h = img.rows, w = img.cols;
+      const maxSide = Math.max(h,w);
+      const target = 1200;
+      const scale = maxSide > target ? (target / maxSide) : 1.0;
+      if (scale < 1.0){
+        const dsize = new cv.Size((w*scale)|0, (h*scale)|0);
+        cv.resize(img, img, dsize, 0,0, cv.INTER_AREA);
+      }
+
+      const gray = new cv.Mat();
+      cv.cvtColor(img, gray, cv.COLOR_BGR2GRAY);
+
+      const blur = new cv.Mat();
+      cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0);
+
+      const edges = new cv.Mat();
+      cv.Canny(blur, edges, 50, 150);
+
+      const kernel = cv.Mat.ones(3,3,cv.CV_8U);
+      cv.dilate(edges, edges, kernel);
+      cv.erode(edges, edges, kernel);
+
+      const contours = new cv.MatVector();
+      const hierarchy = new cv.Mat();
+      cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      // en büyük 4 köşeli konturu bul
+      let best = null;
+      let bestArea = 0;
+
+      for (let i=0; i<contours.size(); i++){
+        const c = contours.get(i);
+        const area = cv.contourArea(c);
+        if (area < 5000) { c.delete(); continue; }
+
+        const peri = cv.arcLength(c, true);
+        const approx = new cv.Mat();
+        cv.approxPolyDP(c, approx, 0.02 * peri, true);
+
+        if (approx.rows === 4 && area > bestArea){
+          bestArea = area;
+          if (best) best.delete();
+          best = approx.clone();
+        }
+        approx.delete();
+        c.delete();
+      }
+
+      gray.delete(); blur.delete(); edges.delete(); contours.delete(); hierarchy.delete(); kernel.delete();
+
+      if (!best){
+        img.delete();
+        return null;
+      }
+
+      // 4 nokta
+      const pts = [];
+      for (let i=0; i<4; i++){
+        const x = best.intPtr(i,0)[0];
+        const y = best.intPtr(i,0)[1];
+        pts.push({x,y});
+      }
+      best.delete();
+
+      const warped = fourPointTransform(img, pts);
+      img.delete();
+      return warped;
+    }
+
+    // ========== Bubble read (oran tabanlı) ==========
+    // Bu GRID oranları senin fotoğraftaki şablon içindir.
+    // Kayma olursa sadece burayı küçükçe düzeltirsin.
+    const GRID = {
+      left:  { x0:0.08, x1:0.46, y0:0.33, y1:0.88 }, // 1-10
+      right: { x0:0.57, x1:0.94, y0:0.33, y1:0.88 }  // 11-20
+    };
+
+    function adaptiveThresholdMat(warpedBgr){
+      const gray = new cv.Mat();
+      cv.cvtColor(warpedBgr, gray, cv.COLOR_BGR2GRAY);
+      const blur = new cv.Mat();
+      cv.GaussianBlur(gray, blur, new cv.Size(3,3), 0);
+
+      const th = new cv.Mat();
+      cv.adaptiveThreshold(
+        blur, th, 255,
+        cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv.THRESH_BINARY_INV,
+        31, 7
+      );
+      gray.delete(); blur.delete();
+      return th;
+    }
+
+    function countNonZeroInRect(th, x0,y0,x1,y1){
+      const roi = th.roi(new cv.Rect(x0,y0, Math.max(1,x1-x0), Math.max(1,y1-y0)));
+      const nz = cv.countNonZero(roi);
+      const total = roi.rows * roi.cols;
+      roi.delete();
+      return nz / Math.max(1,total);
+    }
+
+    function detectAnswers(th, warpedBgr){
+      const h = th.rows, w = th.cols;
+      const selected = new Array(NUM_Q).fill("");
+      const debug = []; // her soru: bubbles + fills + sel
+
+      function processBlock(blockName, qStart, qEnd){
+        const g = GRID[blockName];
+        const X0 = Math.round(g.x0*w), X1 = Math.round(g.x1*w);
+        const Y0 = Math.round(g.y0*h), Y1 = Math.round(g.y1*h);
+
+        const rows = (qEnd - qStart + 1);
+        const roiH = (Y1 - Y0);
+        const roiW = (X1 - X0);
+        const rowH = roiH / rows;
+        const colW = roiW / 5;
+
+        for (let i=0; i<rows; i++){
+          const qn = qStart + i;
+
+          const yTop = Math.round(Y0 + i*rowH);
+          const yBot = Math.round(Y0 + (i+1)*rowH);
+
+          const fills = [];
+          const bubbles = [];
+
+          for (let j=0; j<5; j++){
+            const xLeft  = Math.round(X0 + j*colW);
+            const xRight = Math.round(X0 + (j+1)*colW);
+
+            // daha dar pencere: çizgilerden etkilenmesin
+            const padX = Math.round(0.18*(xRight-xLeft));
+            const padY = Math.round(0.18*(yBot-yTop));
+
+            const xx0 = xLeft + padX;
+            const xx1 = xRight - padX;
+            const yy0 = yTop + padY;
+            const yy1 = yBot - padY;
+
+            const ratio = countNonZeroInRect(th, xx0,yy0,xx1,yy1);
+            fills.push(ratio);
+            bubbles.push([xx0,yy0,xx1,yy1]);
+          }
+
+          // seçim
+          let bestIdx = 0;
+          for (let k=1;k<fills.length;k++) if (fills[k] > fills[bestIdx]) bestIdx = k;
+          const bestVal = fills[bestIdx];
+
+          const markThreshold = 0.10; // işaret var/yok
+          let sel = "";
+          if (bestVal < markThreshold) {
+            sel = "";
+          } else {
+            // çift işaret kontrolü
+            const sorted = [...fills].sort((a,b)=>b-a);
+            if (sorted.length>=2 && (sorted[1] / Math.max(sorted[0],1e-6)) > 0.85) sel = "MULTI";
+            else sel = CHOICES[bestIdx];
+          }
+
+          selected[qn-1] = (sel==="MULTI") ? "" : sel;
+
+          debug.push({ q: qn, fills, bubbles, sel });
+        }
+      }
+
+      processBlock("left", 1, 10);
+      processBlock("right", 11, 20);
+
+      return {selected, debug};
+    }
+
+    // ========== çizim ==========
+    function drawCircleRect(bgrMat, rect, colorBGR, thickness=3){
+      const [x0,y0,x1,y1] = rect;
+      const cx = ((x0+x1)/2)|0;
+      const cy = ((y0+y1)/2)|0;
+      const r = (Math.min(x1-x0, y1-y0)*0.45)|0;
+      cv.circle(bgrMat, new cv.Point(cx,cy), r, new cv.Scalar(colorBGR[0],colorBGR[1],colorBGR[2],255), thickness);
+    }
+
+    function matToCanvas(mat){
+      // OpenCV Mat -> Canvas
+      const rgb = new cv.Mat();
+      cv.cvtColor(mat, rgb, cv.COLOR_BGR2RGBA);
+      const imgData = new ImageData(new Uint8ClampedArray(rgb.data), rgb.cols, rgb.rows);
+      canvas.width = rgb.cols;
+      canvas.height = rgb.rows;
+      ctx.putImageData(imgData, 0, 0);
+      rgb.delete();
+    }
+
+    // ========== Main ==========
+    gradeBtn.onclick = async () => {
+      if (!cvReady) { alert("OpenCV henüz hazır değil."); return; }
+
+      const f = fileInput.files?.[0];
+      if (!f) { alert("Fotoğraf seç/çek."); return; }
+
+      const key = parseKey(keyBox.value, NUM_Q);
+      if (!key.some(k => k)) { alert("Cevap anahtarı gir (A/B)."); return; }
+
+      summary.textContent = "İşleniyor...";
+
+      // Dosyayı Image olarak yükle
+      const img = new Image();
+      img.onload = () => {
+        // 1) Canvas'a çiz
+        drawImageToCanvas(img);
+
+        // 2) Canvas -> OpenCV Mat
+        const src = cv.imread(canvas); // RGBA
+        const bgr = new cv.Mat();
+        cv.cvtColor(src, bgr, cv.COLOR_RGBA2BGR);
+
+        // 3) Kağıdı bul ve warp et
+        const warped = findPaperWarp(bgr);
+        if (!warped){
+          summary.textContent = "Hata: Form/kâğıt konturu bulunamadı. Daha düz/aydınlık çek.";
+          src.delete(); bgr.delete();
+          return;
+        }
+
+        // 4) Threshold
+        const th = adaptiveThresholdMat(warped);
+
+        // 5) Bubble detect
+        const {selected, debug} = detectAnswers(th, warped);
+
+        // 6) Değerlendir + işaretle
+        let correct=0, wrong=0, blank=0;
+
+        for (const d of debug){
+          const q = d.q;
+          const trueAns = key[q-1] || "";
+          if (!trueAns) continue;
+
+          const sel = d.sel; // "", MULTI, A-E
+          if (sel === "" || sel === "MULTI"){
+            blank++;
+            // doğru şıkkı sarımsı/cyan göster
+            const ti = CHOICES.indexOf(trueAns);
+            drawCircleRect(warped, d.bubbles[ti], [0,200,200], 3);
+            continue;
+          }
+
+          if (sel === trueAns){
+            correct++;
+            const si = CHOICES.indexOf(sel);
+            drawCircleRect(warped, d.bubbles[si], [0,255,0], 3); // green
+          } else {
+            wrong++;
+            const si = CHOICES.indexOf(sel);
+            const ti = CHOICES.indexOf(trueAns);
+            drawCircleRect(warped, d.bubbles[si], [0,0,255], 3);   // red
+            drawCircleRect(warped, d.bubbles[ti], [0,255,0], 2);   // green (doğru)
+          }
+        }
+
+        const score = correct * 5;
+        summary.textContent =
+          `Kitapçık: ${booklet.value}\n` +
+          `Doğru: ${correct}\nYanlış: ${wrong}\nBoş/Çift: ${blank}\n` +
+          `Puan: ${score}`;
+
+        // 7) Sonucu canvas'a bas
+        matToCanvas(warped);
+
+        // cleanup
+        src.delete(); bgr.delete(); warped.delete(); th.delete();
+      };
+
+      img.onerror = () => summary.textContent = "Hata: Görsel yüklenemedi.";
+      img.src = URL.createObjectURL(f);
+    };
+  </script>
+</body>
+</html>
