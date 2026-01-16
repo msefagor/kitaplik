@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <title>Liquid Glass Bütçe Planlayıcı</title>
+  <meta name="description" content="Bütçeni yüzde kazançla bileşik büyüt, kurla TL’ye çevir, hedefe kaç işlem kaldığını gör." />
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Bütçe" />
+  <link id="appleTouchIcon" rel="apple-touch-icon" href="" />
+
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --glass: rgba(255,255,255,0.10);
+      --glass2: rgba(255,255,255,0.14);
+      --stroke: rgba(255,255,255,0.20);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.66);
+      --muted2: rgba(255,255,255,0.46);
+      --shadow: 0 18px 60px rgba(0,0,0,0.38);
+      --r: 22px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 10% 10%, #121a2e, var(--bg0));
+      overflow-x:hidden;
+    }
+
+    /* Background blobs + noise */
+    .bg{ position:fixed; inset:0; z-index:-2; }
+    .bg__blob{
+      position:absolute; filter: blur(35px); opacity:0.65;
+      border-radius: 999px;
+      transform: translate3d(0,0,0);
+      animation: float 14s ease-in-out infinite;
+    }
+    .bg__blob--1{ width:520px; height:520px; left:-140px; top:-120px; background: radial-gradient(circle at 30% 30%, #7c3aed, transparent 65%); }
+    .bg__blob--2{ width:560px; height:560px; right:-180px; top:120px; background: radial-gradient(circle at 50% 50%, #06b6d4, transparent 65%); animation-delay: -5s;}
+    .bg__blob--3{ width:640px; height:640px; left:30%; bottom:-260px; background: radial-gradient(circle at 40% 60%, #22c55e, transparent 70%); animation-delay: -9s;}
+    @keyframes float{
+      0%,100%{ transform: translate(0,0) scale(1); }
+      50%{ transform: translate(18px, -18px) scale(1.03); }
+    }
+    .bg__noise{
+      position:absolute; inset:0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 3px 3px;
+      opacity:0.08;
+      mix-blend-mode: overlay;
+    }
+
+    /* Layout */
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      padding: max(env(safe-area-inset-top), 10px) 14px 10px 14px;
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      background: linear-gradient(to bottom, rgba(10,16,28,0.78), rgba(10,16,28,0.30));
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .topbar__brand{ display:flex; gap:12px; align-items:center; }
+    .brand__icon{
+      width:38px; height:38px; border-radius: 14px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      display:grid; place-items:center;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.30);
+      user-select:none;
+    }
+    .brand__title{ font-weight:800; letter-spacing:0.2px; }
+    .brand__subtitle{ color:var(--muted2); font-size:12px; margin-top:2px; }
+
+    .container{
+      width:min(1100px, calc(100% - 24px));
+      margin: 16px auto 26px auto;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:14px;
+    }
+    @media (max-width: 920px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Glass card */
+    .card{
+      border-radius: var(--r);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.07));
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+    }
+    .card__title{
+      font-weight:800;
+      margin-bottom: 12px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    /* Form */
+    .form{ display:flex; flex-direction:column; gap:10px; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .row{ grid-template-columns: 1fr; } }
+
+    .field__label{ font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .field__hint{ font-size:12px; color:var(--muted2); margin-top:6px; }
+
+    .input{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      outline:none;
+    }
+    .input:focus{
+      border-color: rgba(255,255,255,0.32);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.10);
+    }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
+    .btn{
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.14);
+      color: var(--text);
+      cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .btn:hover{ background: rgba(255,255,255,0.18); }
+    .btn--ghost{ background: rgba(255,255,255,0.08); }
+    .btn--ghost:hover{ background: rgba(255,255,255,0.12); }
+
+    /* Summary */
+    .summary{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+    .metric{
+      border-radius: 18px;
+      padding: 12px;
+      background: rgba(0,0,0,0.16);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .metric__label{ font-size:12px; color: var(--muted); }
+    .metric__value{ font-size:20px; font-weight:900; margin-top:6px; }
+    .metric__sub{ font-size:12px; color: var(--muted2); margin-top:4px; }
+    .metric--highlight{
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.18));
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .progress{ margin-top: 12px; }
+    .progress__label{
+      display:flex; justify-content:space-between;
+      color: var(--muted2);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .progress__bar{
+      height: 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
+      overflow:hidden;
+    }
+    .progress__fill{
+      height:100%;
+      width:0%;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.36);
+    }
+
+    .mini{
+      margin-top: 12px;
+      border-radius: 18px;
+      padding: 10px;
+      background: rgba(0,0,0,0.14);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    canvas{ width:100%; height:auto; display:block; }
+
+    /* Table */
+    .tablehead{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .pill{
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .tablewrap{
+      overflow:auto;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+    thead th{
+      position: sticky; top:0;
+      background: rgba(10,16,28,0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      text-align:left;
+      font-size:12px;
+      color: var(--muted);
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    tbody td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: rgba(255,255,255,0.86);
+    }
+    tbody tr:hover td{ background: rgba(255,255,255,0.06); }
+
+    .alert{
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,80,80,0.30);
+      background: rgba(255,80,80,0.12);
+      color: rgba(255,220,220,0.92);
+      font-size: 12px;
+    }
+
+    .footer{
+      margin-top: 14px;
+      padding: 6px 2px;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+
+    .kbd{
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.75);
+      user-select:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg__blob bg__blob--1"></div>
+    <div class="bg__blob bg__blob--2"></div>
+    <div class="bg__blob bg__blob--3"></div>
+    <div class="bg__noise"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <div class="brand__icon" aria-hidden="true">◎</div>
+      <div class="brand__text">
+        <div class="brand__title">Liquid Glass Planlayıcı</div>
+        <div class="brand__subtitle">Bileşik büyüme • Kur • Hedef</div>
+      </div>
+    </div>
+
+    <button id="btnHelp" class="btn btn--ghost" type="button" title="Kısayol">
+      Yardım <span class="kbd">iOS: Paylaş → Ana Ekrana Ekle</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="grid">
+      <!-- Sol: Kontroller -->
+      <div class="card glass">
+        <div class="card__title">Parametreler</div>
+
+        <div class="form">
+          <label class="field">
+            <div class="field__label">Güncel Bütçe (USD)</div>
+            <input id="budgetUSD" class="input" type="number" inputmode="decimal" step="0.01" min="0" />
+            <div class="field__hint">Başlangıç veya mevcut bütçen (örn: 484)</div>
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <div class="field__label">Kazanç Oranı (%)</div>
+              <input id="gainPct" class="input" type="number" inputmode="decimal" step="0.01" />
+              <div class="field__hint">Her işlemde artış (örn: 10)</div>
+            </label>
+
+            <label class="field">
+              <div class="field__label">Döviz Kuru (TL / 1 USD)</div>
+              <input id="fxRate" class="input" type="number" inputmode="decimal" step="0.0001" min="0" />
+              <div class="field__hint">Örn: 43.16</div>
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <div class="field__label">Hedef (TL)</div>
+              <input id="targetTL" class="input" type="number" inputmode="decimal" step="1" min="0" />
+              <div class="field__hint">Varsayılan: 500.000</div>
+            </label>
+
+            <label class="field">
+              <div class="field__label">Yuvarlama</div>
+              <select id="rounding" class="input">
+                <option value="none">Yok (tam hassas)</option>
+                <option value="usd0" selected>USD → Tam sayı</option>
+                <option value="usd2">USD → 2 ondalık</option>
+              </select>
+              <div class="field__hint">Tablodaki gibi istersen tam dolar</div>
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <div class="field__label">Maks. Listeleme (işlem)</div>
+              <input id="maxSteps" class="input" type="number" step="1" min="1" max="2000" />
+              <div class="field__hint">Performans için sınır</div>
+            </label>
+
+            <div class="field">
+              <div class="field__label">Hızlı</div>
+              <div class="btnrow">
+                <button id="btnReset" class="btn btn--ghost" type="button">Varsayılan</button>
+                <button id="btnCopy" class="btn" type="button">Tabloyu Kopyala (CSV)</button>
+              </div>
+              <div class="field__hint">Pano: Excel/Sheets’e yapıştırabilirsin</div>
+            </div>
+          </div>
+
+          <div id="errorBox" class="alert" hidden></div>
+        </div>
+      </div>
+
+      <!-- Sağ: Özet -->
+      <div class="card glass">
+        <div class="card__title">Özet</div>
+
+        <div class="summary">
+          <div class="metric">
+            <div class="metric__label">Güncel Bütçe</div>
+            <div class="metric__value" id="mBudget"></div>
+            <div class="metric__sub" id="mBudgetTL"></div>
+          </div>
+
+          <div class="metric">
+            <div class="metric__label">Bir Sonraki İşlem Sonu</div>
+            <div class="metric__value" id="mNext"></div>
+            <div class="metric__sub" id="mNextTL"></div>
+          </div>
+
+          <div class="metric metric--highlight">
+            <div class="metric__label">Hedefe Kalan İşlem</div>
+            <div class="metric__value" id="mRemaining"></div>
+            <div class="metric__sub" id="mFinal"></div>
+          </div>
+        </div>
+
+        <div class="progress">
+          <div class="progress__label">
+            <span>İlerleme</span>
+            <span id="mProgressText"></span>
+          </div>
+          <div class="progress__bar">
+            <div class="progress__fill" id="mProgressFill"></div>
+          </div>
+        </div>
+
+        <div class="mini">
+          <canvas id="spark" width="640" height="140" aria-label="Büyüme grafiği"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tablo -->
+    <section class="card glass">
+      <div class="tablehead">
+        <div class="card__title">İşlem Planı</div>
+        <div class="pill" id="pillInfo"></div>
+      </div>
+
+      <div class="tablewrap">
+        <table class="table" id="planTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Başlangıç (USD)</th>
+              <th>Bitiş (USD)</th>
+              <th>Kâr (USD)</th>
+              <th>Başlangıç (TL)</th>
+              <th>Bitiş (TL)</th>
+              <th>Kâr (TL)</th>
+            </tr>
+          </thead>
+          <tbody id="planBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer__hint">
+        Not: Bu araç hesaplama amaçlıdır. Kur ve yüzde değerleri değiştikçe sonuçlar değişir.
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    const el = {
+      budgetUSD: $("budgetUSD"),
+      gainPct: $("gainPct"),
+      fxRate: $("fxRate"),
+      targetTL: $("targetTL"),
+      rounding: $("rounding"),
+      maxSteps: $("maxSteps"),
+      btnReset: $("btnReset"),
+      btnCopy: $("btnCopy"),
+      errorBox: $("errorBox"),
+      btnHelp: $("btnHelp"),
+
+      mBudget: $("mBudget"),
+      mBudgetTL: $("mBudgetTL"),
+      mNext: $("mNext"),
+      mNextTL: $("mNextTL"),
+      mRemaining: $("mRemaining"),
+      mFinal: $("mFinal"),
+      mProgressText: $("mProgressText"),
+      mProgressFill: $("mProgressFill"),
+
+      pillInfo: $("pillInfo"),
+      planBody: $("planBody"),
+
+      spark: $("spark"),
+      appleTouchIcon: $("appleTouchIcon"),
+    };
+
+    const defaults = {
+      budgetUSD: 484,
+      gainPct: 10,
+      fxRate: 43.16,
+      targetTL: 500000,
+      rounding: "usd0",
+      maxSteps: 200
+    };
+
+    function nfUSD(v){
+      return new Intl.NumberFormat("en-US", { style:"currency", currency:"USD", maximumFractionDigits: 2 }).format(v);
+    }
+    function nfTL(v){
+      return new Intl.NumberFormat("tr-TR", { style:"currency", currency:"TRY", maximumFractionDigits: 2 }).format(v);
+    }
+    function nfInt(v){
+      return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(v);
+    }
+
+    function applyRounding(value, mode){
+      if (!Number.isFinite(value)) return value;
+      if (mode === "none") return value;
+      if (mode === "usd0") return Math.round(value);
+      if (mode === "usd2") return Math.round(value * 100) / 100;
+      return value;
+    }
+    function clampNumber(x, min, max){
+      if (!Number.isFinite(x)) return min;
+      return Math.min(max, Math.max(min, x));
+    }
+
+    function readState(){
+      return {
+        budgetUSD: Number(el.budgetUSD.value),
+        gainPct: Number(el.gainPct.value),
+        fxRate: Number(el.fxRate.value),
+        targetTL: Number(el.targetTL.value),
+        rounding: el.rounding.value,
+        maxSteps: Number(el.maxSteps.value)
+      };
+    }
+
+    function validateState(s){
+      const errs = [];
+      if (!(s.budgetUSD > 0)) errs.push("Güncel bütçe (USD) 0'dan büyük olmalı.");
+      if (!Number.isFinite(s.gainPct)) errs.push("Kazanç oranı (%) geçerli olmalı.");
+      if (s.gainPct <= -99.9999) errs.push("Kazanç oranı -100%'e yakın veya küçük olamaz.");
+      if (!(s.fxRate > 0)) errs.push("Döviz kuru 0'dan büyük olmalı.");
+      if (!(s.targetTL > 0)) errs.push("Hedef (TL) 0'dan büyük olmalı.");
+      if (!(s.maxSteps >= 1)) errs.push("Maks. listeleme en az 1 olmalı.");
+      return errs;
+    }
+
+    function computePlan(s){
+      const r = s.gainPct / 100;
+      const rows = [];
+
+      let cur = applyRounding(s.budgetUSD, s.rounding);
+      const startUSD = cur;
+
+      const already = (cur * s.fxRate) >= s.targetTL;
+      if (already){
+        return { rows, startUSD, endUSD: cur, stepsToTarget: 0, reached: true };
+      }
+
+      const maxSteps = clampNumber(Math.floor(s.maxSteps), 1, 2000);
+      let reached = false;
+      let stepsToTarget = null;
+
+      for (let i=1; i<=maxSteps; i++){
+        const nextRaw = cur * (1 + r);
+        const next = applyRounding(nextRaw, s.rounding);
+        const profit = next - cur;
+
+        rows.push({
+          i,
+          startUSD: cur,
+          endUSD: next,
+          profitUSD: profit,
+          startTL: cur * s.fxRate,
+          endTL: next * s.fxRate,
+          profitTL: profit * s.fxRate
+        });
+
+        cur = next;
+        if ((cur * s.fxRate) >= s.targetTL){
+          reached = true;
+          stepsToTarget = i;
+          break;
+        }
+      }
+
+      return { rows, startUSD, endUSD: cur, stepsToTarget, reached };
+    }
+
+    function renderError(errs){
+      if (!errs.length){
+        el.errorBox.hidden = true;
+        el.errorBox.textContent = "";
+        return;
+      }
+      el.errorBox.hidden = false;
+      el.errorBox.textContent = errs.join(" ");
+    }
+
+    function renderSummary(s, plan){
+      const r = s.gainPct / 100;
+      const curUSD = applyRounding(s.budgetUSD, s.rounding);
+      const nextUSD = applyRounding(curUSD * (1 + r), s.rounding);
+
+      el.mBudget.textContent = nfUSD(curUSD);
+      el.mBudgetTL.textContent = nfTL(curUSD * s.fxRate);
+
+      el.mNext.textContent = nfUSD(nextUSD);
+      el.mNextTL.textContent = nfTL(nextUSD * s.fxRate);
+
+      const curTL = curUSD * s.fxRate;
+
+      if (curTL >= s.targetTL){
+        el.mRemaining.textContent = "0";
+        el.mFinal.textContent = `Hedef aşıldı • ${nfTL(curTL)}`;
+      } else if (plan.reached){
+        el.mRemaining.textContent = nfInt(plan.stepsToTarget);
+        el.mFinal.textContent = `Tahmini son: ${nfUSD(plan.endUSD)} • ${nfTL(plan.endUSD * s.fxRate)}`;
+      } else {
+        el.mRemaining.textContent = `>${nfInt(s.maxSteps)}`;
+        el.mFinal.textContent = `Maks. adımda hedefe ulaşmadı (limit artır).`;
+      }
+
+      const pct = clampNumber((curTL / s.targetTL) * 100, 0, 9999);
+      el.mProgressText.textContent = `${pct.toFixed(1)}%`;
+      el.mProgressFill.style.width = `${Math.min(100, pct)}%`;
+
+      el.pillInfo.textContent = `Kur: ${s.fxRate} • Kazanç: ${s.gainPct}% • Hedef: ${nfTL(s.targetTL)}`;
+    }
+
+    function renderTable(plan){
+      el.planBody.innerHTML = "";
+
+      if (!plan.rows.length){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td colspan="7" style="color:rgba(255,255,255,0.62); padding:14px;">
+            Hedefe zaten ulaşılmış görünüyor (kalan işlem: 0). Parametreleri değiştirerek plan oluşturabilirsin.
+          </td>
+        `;
+        el.planBody.appendChild(tr);
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      for (const row of plan.rows){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.i}</td>
+          <td>${nfUSD(row.startUSD)}</td>
+          <td>${nfUSD(row.endUSD)}</td>
+          <td>${nfUSD(row.profitUSD)}</td>
+          <td>${nfTL(row.startTL)}</td>
+          <td>${nfTL(row.endTL)}</td>
+          <td>${nfTL(row.profitTL)}</td>
+        `;
+        frag.appendChild(tr);
+      }
+      el.planBody.appendChild(frag);
+    }
+
+    function drawSpark(s, plan){
+      const canvas = el.spark;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      // grid
+      ctx.globalAlpha = 0.25;
+      ctx.lineWidth = 1;
+      for (let y=20; y<H; y+=30){
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        ctx.lineTo(W,y);
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      const curTL = applyRounding(s.budgetUSD, s.rounding) * s.fxRate;
+      const vals = [curTL, ...plan.rows.map(r => r.endTL)];
+      if (vals.length < 2) return;
+
+      const minV = Math.min(...vals);
+      const maxV = Math.max(...vals, s.targetTL);
+
+      const padX = 12, padY = 14;
+      const x0 = padX, y0 = H - padY, x1 = W - padX, y1 = padY;
+
+      const mapX = (i) => x0 + (i/(vals.length-1))*(x1-x0);
+      const mapY = (v) => y0 - ((v - minV) / (maxV - minV || 1))*(y0-y1);
+
+      // target dashed line
+      ctx.beginPath();
+      ctx.setLineDash([6,6]);
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 2;
+      ctx.moveTo(x0, mapY(s.targetTL));
+      ctx.lineTo(x1, mapY(s.targetTL));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // series line
+      ctx.beginPath();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(255,255,255,0.70)";
+      vals.forEach((v,i)=>{
+        const x = mapX(i);
+        const y = mapY(v);
+        if (i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // dots
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      for (let i=0; i<vals.length; i++){
+        const x = mapX(i), y = mapY(vals[i]);
+        ctx.beginPath();
+        ctx.arc(x,y,3.2,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    function planToCSV(s, plan){
+      const header = ["Step","Start_USD","End_USD","Profit_USD","Start_TL","End_TL","Profit_TL","FX","GainPct","TargetTL","Rounding"];
+      const lines = [header.join(",")];
+
+      const fx = s.fxRate, gp = s.gainPct, tgt = s.targetTL, rnd = s.rounding;
+
+      if (!plan.rows.length){
+        lines.push([0, s.budgetUSD, s.budgetUSD, 0, s.budgetUSD*fx, s.budgetUSD*fx, 0, fx, gp, tgt, rnd].join(","));
+        return lines.join("\n");
+      }
+
+      for (const r of plan.rows){
+        lines.push([r.i, r.startUSD, r.endUSD, r.profitUSD, r.startTL, r.endTL, r.profitTL, fx, gp, tgt, rnd].join(","));
+      }
+      return lines.join("\n");
+    }
+
+    function saveToLocal(s){
+      localStorage.setItem("lg_budget_state", JSON.stringify(s));
+    }
+    function loadFromLocal(){
+      try{
+        const raw = localStorage.getItem("lg_budget_state");
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        return obj && typeof obj === "object" ? obj : null;
+      }catch{ return null; }
+    }
+
+    function setInputs(s){
+      el.budgetUSD.value = String(s.budgetUSD ?? defaults.budgetUSD);
+      el.gainPct.value = String(s.gainPct ?? defaults.gainPct);
+      el.fxRate.value = String(s.fxRate ?? defaults.fxRate);
+      el.targetTL.value = String(s.targetTL ?? defaults.targetTL);
+      el.rounding.value = String(s.rounding ?? defaults.rounding);
+      el.maxSteps.value = String(s.maxSteps ?? defaults.maxSteps);
+    }
+
+    function update(){
+      const s = readState();
+      const errs = validateState(s);
+      renderError(errs);
+
+      if (errs.length){
+        el.pillInfo.textContent = "Geçersiz parametreler";
+        el.planBody.innerHTML = "";
+        el.mProgressText.textContent = "";
+        el.mProgressFill.style.width = "0%";
+        return;
+      }
+
+      saveToLocal(s);
+
+      const plan = computePlan(s);
+      renderSummary(s, plan);
+      renderTable(plan);
+      drawSpark(s, plan);
+    }
+
+    function wire(){
+      const onChange = () => update();
+      ["input","change"].forEach(evt=>{
+        el.budgetUSD.addEventListener(evt, onChange);
+        el.gainPct.addEventListener(evt, onChange);
+        el.fxRate.addEventListener(evt, onChange);
+        el.targetTL.addEventListener(evt, onChange);
+        el.rounding.addEventListener(evt, onChange);
+        el.maxSteps.addEventListener(evt, onChange);
+      });
+
+      el.btnReset.addEventListener("click", ()=>{
+        setInputs(defaults);
+        update();
+      });
+
+      el.btnCopy.addEventListener("click", async ()=>{
+        const s = readState();
+        const errs = validateState(s);
+        if (errs.length){ renderError(errs); return; }
+        const plan = computePlan(s);
+        const csv = planToCSV(s, plan);
+
+        try{
+          await navigator.clipboard.writeText(csv);
+          el.btnCopy.textContent = "Kopyalandı ✓";
+          setTimeout(()=> el.btnCopy.textContent = "Tabloyu Kopyala (CSV)", 1200);
+        }catch{
+          el.btnCopy.textContent = "Kopyalama başarısız";
+          setTimeout(()=> el.btnCopy.textContent = "Tabloyu Kopyala (CSV)", 1200);
+        }
+      });
+
+      el.btnHelp.addEventListener("click", ()=>{
+        alert("iPhone (Safari): Paylaş → Ana Ekrana Ekle\nGitHub Pages: Settings → Pages → Deploy from branch (main / root)\nNot: Kur ve % değerini değiştirince tablo anında güncellenir.");
+      });
+    }
+
+    // ---------- Single-file PWA: manifest + icons + service worker (generated) ----------
+    function makeIconDataURL(size){
+      const c = document.createElement("canvas");
+      c.width = c.height = size;
+      const ctx = c.getContext("2d");
+
+      // background
+      ctx.fillStyle = "#0b1220";
+      ctx.fillRect(0,0,size,size);
+
+      // subtle gradient
+      const g = ctx.createRadialGradient(size*0.35, size*0.25, size*0.1, size*0.5, size*0.5, size*0.9);
+      g.addColorStop(0, "rgba(255,255,255,0.18)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,size,size);
+
+      // ring
+      const margin = Math.round(size * 0.18);
+      ctx.strokeStyle = "rgba(255,255,255,0.82)";
+      ctx.lineWidth = Math.max(6, Math.round(size * 0.06));
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, (size/2)-margin, 0, Math.PI*2);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.lineWidth = Math.max(3, Math.round(size * 0.03));
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, (size/2)-margin - Math.round(size*0.10), 0, Math.PI*2);
+      ctx.stroke();
+
+      // highlight
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = Math.max(2, Math.round(size*0.02));
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, (size/2)-margin - Math.round(size*0.18), Math.PI*1.1, Math.PI*1.8);
+      ctx.stroke();
+
+      return c.toDataURL("image/png");
+    }
+
+    function setupManifestAndSW(){
+      // create blobs for icons
+      const icon192 = makeIconDataURL(192);
+      const icon512 = makeIconDataURL(512);
+
+      // set apple touch icon
+      el.appleTouchIcon.href = icon192;
+
+      // manifest as blob
+      const manifest = {
+        name: "Liquid Glass Bütçe Planlayıcı",
+        short_name: "Bütçe",
+        start_url: "./",
+        scope: "./",
+        display: "standalone",
+        background_color: "#0b1220",
+        theme_color: "#0b1220",
+        description: "Bütçeni yüzde kazançla bileşik büyüt, kurla TL’ye çevir, hedefe kaç işlem kaldığını gör.",
+        icons: [
+          { src: icon192, sizes: "192x192", type: "image/png" },
+          { src: icon512, sizes: "512x512", type: "image/png" }
+        ]
+      };
+      const manifestURL = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"}));
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = manifestURL;
+      document.head.appendChild(link);
+
+      // Service worker (cache single index.html only)
+      if (!("serviceWorker" in navigator)) return;
+
+      const swCode = `
+        const CACHE_NAME = "lg-budget-single-v1";
+        self.addEventListener("install", (event) => {
+          event.waitUntil((async () => {
+            const cache = await caches.open(CACHE_NAME);
+            // Cache the root document (the same index.html)
+            await cache.addAll(["./"]);
+            self.skipWaiting();
+          })());
+        });
+
+        self.addEventListener("activate", (event) => {
+          event.waitUntil((async () => {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => (k !== CACHE_NAME) ? caches.delete(k) : null));
+            self.clients.claim();
+          })());
+        });
+
+        self.addEventListener("fetch", (event) => {
+          event.respondWith((async () => {
+            const cached = await caches.match(event.request);
+            if (cached) return cached;
+            try{
+              const fresh = await fetch(event.request);
+              // Cache same-origin GET requests
+              if (event.request.method === "GET") {
+                const url = new URL(event.request.url);
+                if (url.origin === self.location.origin){
+                  const cache = await caches.open(CACHE_NAME);
+                  cache.put(event.request, fresh.clone()).catch(()=>{});
+                }
+              }
+              return fresh;
+            }catch{
+              return caches.match("./");
+            }
+          })());
+        });
+      `;
+      const swURL = URL.createObjectURL(new Blob([swCode], {type:"text/javascript"}));
+      navigator.serviceWorker.register(swURL).catch(()=>{});
+    }
+
+    // ---------- init ----------
+    (function init(){
+      setupManifestAndSW();
+
+      const saved = loadFromLocal();
+      setInputs(saved ?? defaults);
+      wire();
+      update();
+    })();
+  </script>
+</body>
+</html>
