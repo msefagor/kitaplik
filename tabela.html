@@ -1,758 +1,491 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0b1220" />
-  <title>101 Skor Tabelası</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>101 Skor Tablosu</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-color: #ffffff;
+            --accent-color: #ffd700;
+            --danger-color: #ff6b6b;
+            --siler-color: #50e3c2;
+        }
 
-  <style>
-    :root{
-      --bg1:#08101f;
-      --bg2:#0e1a34;
-      --glass: rgba(255,255,255,.10);
-      --glass2: rgba(255,255,255,.16);
-      --stroke: rgba(255,255,255,.18);
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.66);
-      --danger: rgba(255,90,90,.9);
-      --ok: rgba(102,255,204,.9);
-      --shadow: 0 14px 34px rgba(0,0,0,.35);
-      --r: 18px;
-      --pad: 14px;
-      --fs: 12.5px;   /* iPhone 16 Plus için kompakt */
-      --fs2: 11px;
-      --cellH: 44px;
-    }
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color: var(--text);
-      background:
-        radial-gradient(1200px 900px at 10% 10%, rgba(92,120,255,.25), transparent 60%),
-        radial-gradient(900px 700px at 90% 30%, rgba(120,255,220,.18), transparent 55%),
-        radial-gradient(800px 700px at 40% 95%, rgba(255,120,210,.14), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      overflow:hidden;
-    }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    .safe{
-      padding: calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 10px)
-               calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 10px);
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .card{
-      background: linear-gradient(180deg, var(--glass2), var(--glass));
-      border: 1px solid var(--stroke);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      overflow:hidden;
-    }
+        /* Glassmorphism Containers */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
 
-    .top{
-      padding: 12px var(--pad);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .title{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width: 160px;
-    }
-    .title b{ font-size: 15px; letter-spacing:.2px; }
-    .title span{ font-size: var(--fs2); color: var(--muted); }
+        /* Header & Settings */
+        header {
+            padding: 15px;
+            padding-top: 50px; /* Safe area for iPhone notch */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .btns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-    button{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.08);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 9px 11px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor:pointer;
-    }
-    button:active{ transform: translateY(1px); }
-    .danger{ border-color: rgba(255,110,110,.35); background: rgba(255,110,110,.12); }
-    .ghost{ background: rgba(255,255,255,.06); }
+        h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .settings-btn {
+            background: none;
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
 
-    .names{
-      padding: 0 var(--pad) 12px var(--pad);
-      display:grid;
-      gap:10px;
-      grid-template-columns: 1.2fr .8fr;
-      align-items:end;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    label{ font-size: var(--fs2); color: var(--muted); }
-    input[type="text"], input[type="number"]{
-      width:100%;
-      height: 38px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      outline:none;
-      font-size: 13px;
-    }
-    input[type="number"]{ appearance:textfield; }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:0; }
+        /* Players Input Area */
+        #players-setup {
+            padding: 10px 15px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .player-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-    .dealerRow{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:8px;
-    }
+        input[type="text"] {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
 
-    .gridWrap{
-      flex: 1 1 auto;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-    }
+        /* Main Table Grid */
+        .game-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
 
-    .tableHeader{
-      padding: 10px var(--pad);
-      border-top: 1px solid rgba(255,255,255,.10);
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      display:grid;
-      grid-template-columns: 1fr 1fr 1.25fr 1.25fr 1.35fr 1.35fr;
-      gap:8px;
-      font-size: var(--fs2);
-      color: var(--muted);
-      letter-spacing:.2px;
-    }
+        .grid-header {
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1.5fr 1.5fr;
+            padding: 10px 5px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+        }
 
-    .rows{
-      padding: 10px var(--pad);
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      overflow:hidden; /* tüm satırlar sığacak şekilde tasarlandı */
-    }
+        .game-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1.5fr 1.5fr;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            min-height: 50px;
+        }
 
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1.25fr 1.25fr 1.35fr 1.35fr;
-      gap:8px;
-      align-items:stretch;
-    }
+        .game-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
 
-    .cell{
-      position:relative;
-      height: var(--cellH);
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.16);
-      overflow:hidden;
-      display:flex;
-      align-items:center;
-      padding: 6px 8px;
-      gap:8px;
-    }
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            position: relative;
+        }
 
-    .cell .mini{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      line-height:1;
-      min-width: 40px;
-    }
-    .mini .big{ font-size: 14px; font-weight: 800; }
-    .mini .sub{ font-size: 10.5px; color: var(--muted); }
+        /* Inputs in grid */
+        .score-input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 0;
+        }
 
-    .cell input{
-      width:100%;
-      height: 100%;
-      border:0;
-      background: transparent;
-      padding:0;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      outline:none;
-      text-align:center;
-    }
+        .score-input:focus { outline: none; background: rgba(255,255,255,0.1); }
+        .score-input::placeholder { color: rgba(255,255,255,0.2); font-size: 10px; }
 
-    .silerBtn{
-      position:absolute;
-      right:6px;
-      top:50%;
-      transform: translateY(-50%);
-      border-radius: 12px;
-      padding: 6px 8px;
-      font-size: 11px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-    }
-    .silerOn{
-      border-color: rgba(255,255,255,.28);
-      background: rgba(255,255,255,.14);
-    }
-    .infty{
-      position:absolute;
-      left:10px;
-      top:50%;
-      transform: translateY(-50%);
-      font-size: 18px;
-      font-weight: 900;
-      opacity:.92;
-    }
-    .cell.hasInfty input{ padding-left: 26px; }
+        .siler-active {
+            font-size: 24px;
+            color: var(--siler-color);
+            pointer-events: none; /* Click handling via parent */
+        }
 
-    .penaltyBox{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-    }
-    .penNums{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      min-width: 86px;
-      justify-content:flex-start;
-    }
-    .step{
-      width: 26px;
-      height: 26px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      font-weight: 900;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      user-select:none;
-    }
-    .penVal{
-      font-size: 14px;
-      font-weight: 900;
-      min-width: 34px;
-      text-align:center;
-    }
-    .penMeta{
-      font-size: 10px;
-      color: var(--muted);
-      line-height:1.1;
-      white-space:nowrap;
-      text-align:right;
-    }
-    .penMeta b{ color: var(--text); }
+        .dealer-name { font-size: 11px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .diff-cell { 
+            font-size: 10px; 
+            flex-direction: column; 
+            line-height: 1.2; 
+            font-weight: bold;
+        }
+        
+        .diff-biz { color: #81ecec; } /* Biz daha azsa */
+        .diff-siz { color: #fab1a0; } /* Siz daha azsa */
 
-    .dealerCell input{ text-align:left; font-weight:700; font-size: 13px; }
-    .diffCell{
-      font-size: 12px;
-      font-weight: 800;
-      text-align:center;
-      width:100%;
-    }
-    .diffCell .muted{ color: var(--muted); font-weight:700; }
-    .diffGood{ color: var(--ok); }
-    .diffBad{ color: var(--danger); }
+        /* Total Footer */
+        .footer-totals {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid var(--glass-border);
+            padding-bottom: 15px; /* Home bar spacing */
+            z-index: 20;
+        }
 
-    .footer{
-      padding: 10px var(--pad) 12px var(--pad);
-      border-top: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      font-size: var(--fs2);
-      color: var(--muted);
-    }
-    .totals{
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .pill{
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.14);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 800;
-    }
-    .pill small{ color: var(--muted); font-weight:700; margin-right:6px; }
+        .total-box {
+            text-align: center;
+        }
+        .total-label { font-size: 10px; opacity: 0.7; }
+        .total-score { font-size: 22px; font-weight: 800; }
 
-    /* iPhone 16 Plus: satırların tamamı gözüksün diye biraz daha sıkılaştır */
-    @media (max-height: 950px){
-      :root{ --cellH: 42px; --pad: 12px; --fs: 12px; }
-      .tableHeader{ padding: 9px var(--pad); }
-      .rows{ padding: 9px var(--pad); gap:7px; }
-      .row{ gap:7px; }
-    }
-  </style>
+        /* Modal for Siler/Edit */
+        #edit-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: #2d3436;
+            padding: 20px;
+            border-radius: 16px;
+            width: 80%;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+        .modal-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-siler { background: var(--siler-color); color: #000; }
+        .btn-normal { background: #dfe6e9; color: #000; }
+        .btn-cancel { background: var(--danger-color); color: white; }
+
+        /* Helper for penalty inputs */
+        .penalty-helper {
+            font-size: 10px; color: #aaa; margin-bottom: 10px;
+        }
+    </style>
 </head>
-
 <body>
-  <div class="safe">
-    <div class="card">
-      <div class="top">
-        <div class="title">
-          <b>101 Skor Tabelası</b>
-          <span>11 oyun • iOS ana ekran uyumlu • Otomatik fark hesabı</span>
-        </div>
-        <div class="btns">
-          <button class="ghost" id="fillDealersBtn">Dağıtıcıları Doldur</button>
-          <button class="ghost" id="clearBtn">Temizle</button>
-          <button class="danger" id="factoryBtn">Sıfırla</button>
-        </div>
-      </div>
 
-      <div class="names">
-        <div class="field">
-          <label>Takım isimleri</label>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-            <input id="teamBiz" type="text" value="Biz" autocomplete="off" />
-            <input id="teamSiz" type="text" value="Siz" autocomplete="off" />
-          </div>
-        </div>
+    <header class="glass-panel">
+        <h1>101 SKOR</h1>
+        <button class="settings-btn" onclick="toggleSettings()">Oyuncular / Sıfırla</button>
+    </header>
 
-        <div class="field">
-          <label>Oyun dağıtıcı listesi (4 kişi)</label>
-          <div class="dealerRow">
-            <input class="dealerName" type="text" placeholder="1" autocomplete="off" />
-            <input class="dealerName" type="text" placeholder="2" autocomplete="off" />
-            <input class="dealerName" type="text" placeholder="3" autocomplete="off" />
-            <input class="dealerName" type="text" placeholder="4" autocomplete="off" />
-          </div>
+    <div id="players-setup" class="glass-panel">
+        <div class="player-inputs">
+            <input type="text" id="p1" value="Sefa" placeholder="1. Oyuncu">
+            <input type="text" id="p2" value="Fatih" placeholder="2. Oyuncu">
+            <input type="text" id="p3" value="Halil" placeholder="3. Oyuncu">
+            <input type="text" id="p4" value="İlker" placeholder="4. Oyuncu">
         </div>
-      </div>
+        <button class="settings-btn" style="width:100%; background: var(--glass-bg);" onclick="savePlayers()">Oyuncuları Kaydet & Yenile</button>
+        <button class="settings-btn" style="width:100%; background: var(--danger-color); border:none; margin-top:5px;" onclick="resetGame()">Tüm Oyunu Sıfırla</button>
     </div>
 
-    <div class="card gridWrap">
-      <div class="tableHeader">
-        <div id="hBizOyun">Biz Oyun</div>
-        <div id="hSizOyun">Siz Oyun</div>
-        <div id="hBizCeza">Biz Ceza</div>
-        <div id="hSizCeza">Siz Ceza</div>
+    <div class="grid-header glass-panel">
+        <div>Biz<br>Oyun</div>
+        <div>Siz<br>Oyun</div>
+        <div>Biz<br>Ceza</div>
+        <div>Siz<br>Ceza</div>
         <div>Dağıtıcı</div>
         <div>Fark</div>
-      </div>
-
-      <div class="rows" id="rows"></div>
-
-      <div class="footer">
-        <div class="totals">
-          <div class="pill"><small>Toplam</small><span id="totBiz">Biz: 0</span></div>
-          <div class="pill"><small>Toplam</small><span id="totSiz">Siz: 0</span></div>
-        </div>
-        <div class="muted" style="text-align:right;">
-          Ceza: İşaret×10 + Çift×20 • Siler: ∞ işareti + (-100)
-        </div>
-      </div>
     </div>
-  </div>
-
-<script>
-(() => {
-  const LS_KEY = "skor101_v1";
-
-  const elRows = document.getElementById("rows");
-  const teamBiz = document.getElementById("teamBiz");
-  const teamSiz = document.getElementById("teamSiz");
-  const dealerInputs = [...document.querySelectorAll(".dealerName")];
-
-  const hBizOyun = document.getElementById("hBizOyun");
-  const hSizOyun = document.getElementById("hSizOyun");
-  const hBizCeza = document.getElementById("hBizCeza");
-  const hSizCeza = document.getElementById("hSizCeza");
-
-  const totBiz = document.getElementById("totBiz");
-  const totSiz = document.getElementById("totSiz");
-
-  const fillDealersBtn = document.getElementById("fillDealersBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const factoryBtn = document.getElementById("factoryBtn");
-
-  const clampInt = (v, min=0, max=9999) => {
-    const n = parseInt(String(v ?? "").replace(/[^\d-]/g,""), 10);
-    if (Number.isNaN(n)) return 0;
-    return Math.max(min, Math.min(max, n));
-  };
-
-  const makeDefaultState = () => ({
-    teamBiz: "Biz",
-    teamSiz: "Siz",
-    dealers: ["", "", "", ""],
-    rows: Array.from({length: 11}, (_,i) => ({
-      idx: i+1,
-      bizScore: 0,
-      sizScore: 0,
-      bizMarks: 0,
-      bizPairs: 0,
-      sizMarks: 0,
-      sizPairs: 0,
-      bizSiler: false,
-      sizSiler: false,
-      dealer: "" // otomatik doldurulabilir
-    }))
-  });
-
-  const loadState = () => {
-    try{
-      const raw = localStorage.getItem(LS_KEY);
-      if(!raw) return makeDefaultState();
-      const parsed = JSON.parse(raw);
-      // basit doğrulama
-      if(!parsed || !Array.isArray(parsed.rows) || parsed.rows.length !== 11) return makeDefaultState();
-      return parsed;
-    }catch{
-      return makeDefaultState();
-    }
-  };
-
-  const saveState = () => {
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
-  };
-
-  let state = loadState();
-
-  const updateHeaders = () => {
-    hBizOyun.textContent = `${state.teamBiz} Oyun`;
-    hSizOyun.textContent = `${state.teamSiz} Oyun`;
-    hBizCeza.textContent = `${state.teamBiz} Ceza`;
-    hSizCeza.textContent = `${state.teamSiz} Ceza`;
-  };
-
-  const calcPenalty = (marks, pairs) => (clampInt(marks,0,99) * 10) + (clampInt(pairs,0,99) * 20);
-
-  const dealerAt = (rowIndex1Based) => {
-    const list = state.dealers.map(s => (s ?? "").trim()).filter(Boolean);
-    if(list.length === 0) return "";
-    const idx = (rowIndex1Based - 1) % list.length;
-    return list[idx] || "";
-  };
-
-  const computeRowTotals = (r) => {
-    const bizP = calcPenalty(r.bizMarks, r.bizPairs);
-    const sizP = calcPenalty(r.sizMarks, r.sizPairs);
-
-    const bizTotal = clampInt(r.bizScore, -9999, 9999) + bizP + (r.bizSiler ? -100 : 0);
-    const sizTotal = clampInt(r.sizScore, -9999, 9999) + sizP + (r.sizSiler ? -100 : 0);
-
-    return { bizP, sizP, bizTotal, sizTotal };
-  };
-
-  const render = () => {
-    // üst alan
-    teamBiz.value = state.teamBiz;
-    teamSiz.value = state.teamSiz;
-    dealerInputs.forEach((inp, i) => inp.value = state.dealers[i] ?? "");
-    updateHeaders();
-
-    elRows.innerHTML = "";
-
-    let sumBiz = 0, sumSiz = 0;
-
-    state.rows.forEach((r, i) => {
-      const { bizP, sizP, bizTotal, sizTotal } = computeRowTotals(r);
-      sumBiz += bizTotal;
-      sumSiz += sizTotal;
-
-      const row = document.createElement("div");
-      row.className = "row";
-
-      // Biz Oyun
-      row.appendChild(scoreCell({
-        value: r.bizScore,
-        siler: r.bizSiler,
-        onInput: (v) => { r.bizScore = clampInt(v, -9999, 9999); saveState(); recalcOnly(i); },
-        onToggleSiler: () => { r.bizSiler = !r.bizSiler; saveState(); recalcOnly(i); },
-      }));
-
-      // Siz Oyun
-      row.appendChild(scoreCell({
-        value: r.sizScore,
-        siler: r.sizSiler,
-        onInput: (v) => { r.sizScore = clampInt(v, -9999, 9999); saveState(); recalcOnly(i); },
-        onToggleSiler: () => { r.sizSiler = !r.sizSiler; saveState(); recalcOnly(i); },
-      }));
-
-      // Biz Ceza (işaret/çift)
-      row.appendChild(penaltyCell({
-        marks: r.bizMarks, pairs: r.bizPairs, points: bizP,
-        onChange: (m,p) => { r.bizMarks=m; r.bizPairs=p; saveState(); recalcOnly(i); }
-      }));
-
-      // Siz Ceza
-      row.appendChild(penaltyCell({
-        marks: r.sizMarks, pairs: r.sizPairs, points: sizP,
-        onChange: (m,p) => { r.sizMarks=m; r.sizPairs=p; saveState(); recalcOnly(i); }
-      }));
-
-      // Dealer
-      const dealer = document.createElement("div");
-      dealer.className = "cell dealerCell";
-      const din = document.createElement("input");
-      din.type = "text";
-      din.placeholder = `Oyun ${i+1}`;
-      din.value = r.dealer ?? "";
-      din.autocomplete = "off";
-      din.addEventListener("input", () => {
-        r.dealer = din.value;
-        saveState();
-      });
-      dealer.appendChild(din);
-      row.appendChild(dealer);
-
-      // Diff
-      const diff = document.createElement("div");
-      diff.className = "cell";
-      const diffText = document.createElement("div");
-      diffText.className = "diffCell";
-      diffText.dataset.diffFor = String(i);
-      diff.appendChild(diffText);
-      row.appendChild(diff);
-
-      // not: satır numarasını ufak bir overlay gibi göstermek istersek:
-      // ama yer kazanmak için koymadık.
-
-      elRows.appendChild(row);
-    });
-
-    totBiz.textContent = `${state.teamBiz}: ${sumBiz}`;
-    totSiz.textContent = `${state.teamSiz}: ${sumSiz}`;
-
-    // diffleri güncelle
-    state.rows.forEach((r, i) => updateDiff(i));
-
-    // dealer otomatik boşsa istersen doldur:
-    // render sonrası değil, butonla yaptırıyoruz.
-  };
-
-  const updateDiff = (rowIndex) => {
-    const r = state.rows[rowIndex];
-    const { bizTotal, sizTotal } = computeRowTotals(r);
-    const el = document.querySelector(`[data-diff-for="${rowIndex}"]`);
-    if(!el) return;
-
-    if (bizTotal === sizTotal){
-      el.innerHTML = `<span class="muted">Eşit</span>`;
-      el.classList.remove("diffBad","diffGood");
-      return;
-    }
-    const diff = Math.abs(bizTotal - sizTotal);
-    const lowerIsBiz = bizTotal < sizTotal;
-    const teamLow = lowerIsBiz ? state.teamBiz : state.teamSiz;
-
-    // "Az olan hangi takım ve kaç farkla az"
-    el.textContent = `${teamLow} ${diff} az`;
-
-    // görsel ipucu: az olan iyi/ kötü değil; ama okunurluk için iki renk kullanalım
-    el.classList.toggle("diffGood", lowerIsBiz);
-    el.classList.toggle("diffBad", !lowerIsBiz);
-  };
-
-  const recalcOnly = (rowIndex) => {
-    // hızlı güncelleme: sadece diff + toplamlar
-    updateDiff(rowIndex);
-
-    let sumBiz = 0, sumSiz = 0;
-    state.rows.forEach((r) => {
-      const { bizTotal, sizTotal } = computeRowTotals(r);
-      sumBiz += bizTotal;
-      sumSiz += sizTotal;
-    });
-    totBiz.textContent = `${state.teamBiz}: ${sumBiz}`;
-    totSiz.textContent = `${state.teamSiz}: ${sumSiz}`;
-  };
-
-  const scoreCell = ({value, siler, onInput, onToggleSiler}) => {
-    const cell = document.createElement("div");
-    cell.className = "cell" + (siler ? " hasInfty" : "");
-
-    if (siler){
-      const inf = document.createElement("div");
-      inf.className = "infty";
-      inf.textContent = "∞";
-      cell.appendChild(inf);
-    }
-
-    const inp = document.createElement("input");
-    inp.type = "number";
-    inp.inputMode = "numeric";
-    inp.placeholder = "0";
-    inp.value = String(value ?? 0);
-    inp.addEventListener("input", () => onInput(inp.value));
-    cell.appendChild(inp);
-
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "silerBtn" + (siler ? " silerOn" : "");
-    b.textContent = "Siler";
-    b.addEventListener("click", (e) => {
-      e.preventDefault();
-      onToggleSiler();
-      // UI anında yenilensin:
-      render();
-    });
-    cell.appendChild(b);
-
-    return cell;
-  };
-
-  const penaltyCell = ({marks, pairs, points, onChange}) => {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-
-    const box = document.createElement("div");
-    box.className = "penaltyBox";
-
-    const left = document.createElement("div");
-    left.className = "penNums";
-
-    const minusM = document.createElement("div");
-    minusM.className = "step";
-    minusM.textContent = "−";
-    const plusM = document.createElement("div");
-    plusM.className = "step";
-    plusM.textContent = "+";
-
-    const valM = document.createElement("div");
-    valM.className = "penVal";
-    valM.textContent = String(clampInt(marks,0,99));
-
-    const minusP = document.createElement("div");
-    minusP.className = "step";
-    minusP.textContent = "−";
-    const plusP = document.createElement("div");
-    plusP.className = "step";
-    plusP.textContent = "+";
-
-    const valP = document.createElement("div");
-    valP.className = "penVal";
-    valP.textContent = String(clampInt(pairs,0,99));
-
-    const right = document.createElement("div");
-    right.className = "penMeta";
-    right.innerHTML = `<div>İş: <b>${valM.textContent}</b>  Çift: <b>${valP.textContent}</b></div><div>Puan: <b>${points}</b></div>`;
-
-    // Sol düzen: (işaret) - val +  | (çift) - val +
-    left.style.gap = "6px";
-    left.append(minusM, valM, plusM);
-    // ayraç
-    const sep = document.createElement("div");
-    sep.style.width = "1px";
-    sep.style.height = "24px";
-    sep.style.background = "rgba(255,255,255,.14)";
-    sep.style.margin = "0 2px";
-    left.appendChild(sep);
-    left.append(minusP, valP, plusP);
-
-    const setVals = (m, p) => {
-      m = clampInt(m,0,99);
-      p = clampInt(p,0,99);
-      valM.textContent = String(m);
-      valP.textContent = String(p);
-      const pts = calcPenalty(m,p);
-      right.innerHTML = `<div>İş: <b>${m}</b>  Çift: <b>${p}</b></div><div>Puan: <b>${pts}</b></div>`;
-      onChange(m,p);
-    };
-
-    minusM.addEventListener("click", () => setVals(clampInt(valM.textContent,0,99)-1, valP.textContent));
-    plusM.addEventListener("click",  () => setVals(clampInt(valM.textContent,0,99)+1, valP.textContent));
-    minusP.addEventListener("click", () => setVals(valM.textContent, clampInt(valP.textContent,0,99)-1));
-    plusP.addEventListener("click",  () => setVals(valM.textContent, clampInt(valP.textContent,0,99)+1));
-
-    // Hızlı düzenleme (puanı manuel girmek istersen): sağ tarafa uzun bas / tıkla prompt
-    right.addEventListener("click", () => {
-      const m = prompt("İşaret sayısı (×10) ve Çift sayısı (×20) için 'iş,çift' gir.\nÖrn: 5,0 veya 0,6", `${valM.textContent},${valP.textContent}`);
-      if(!m) return;
-      const parts = m.split(",").map(s => s.trim());
-      const mm = clampInt(parts[0] ?? 0,0,99);
-      const pp = clampInt(parts[1] ?? 0,0,99);
-      setVals(mm, pp);
-    });
-
-    box.append(left, right);
-    cell.appendChild(box);
-    return cell;
-  };
-
-  const applyDealers = () => {
-    state.dealers = dealerInputs.map(i => (i.value ?? "").trim());
-    // dağıtıcı sütunlarını otomatik doldur (boşsa)
-    state.rows.forEach((r, idx) => {
-      const auto = dealerAt(idx+1);
-      r.dealer = auto;
-    });
-    saveState();
-    render();
-  };
-
-  const clearScoresKeepNames = () => {
-    state.rows.forEach(r => {
-      r.bizScore = 0; r.sizScore = 0;
-      r.bizMarks = 0; r.bizPairs = 0;
-      r.sizMarks = 0; r.sizPairs = 0;
-      r.bizSiler = false; r.sizSiler = false;
-      // dağıtıcı kalsın
-    });
-    saveState();
-    render();
-  };
-
-  const factoryReset = () => {
-    state = makeDefaultState();
-    saveState();
-    render();
-  };
-
-  // Events
-  teamBiz.addEventListener("input", () => {
-    state.teamBiz = (teamBiz.value || "Biz").trim() || "Biz";
-    saveState(); updateHeaders(); render();
-  });
-  teamSiz.addEventListener("input", () => {
-    state.teamSiz = (teamSiz.value || "Siz").trim() || "Siz";
-    saveState(); updateHeaders(); render();
-  });
-
-  dealerInputs.forEach((inp, i) => {
-    inp.addEventListener("input", () => {
-      state.dealers[i] = (inp.value ?? "").trim();
-      saveState();
-    });
-  });
-
-  fillDealersBtn.addEventListener("click", applyDealers);
-  clearBtn.addEventListener("click", clearScoresKeepNames);
-  factoryBtn.addEventListener("click", () => {
-    const ok = confirm("Her şeyi sıfırlamak istiyor musun? (Takım isimleri, dağıtıcılar, tüm skorlar)");
-    if(ok) factoryReset();
-  });
-
-  // İlk render
-  render();
-
-  // iOS: odak kaymasın diye
-  document.addEventListener("gesturestart", (e) => e.preventDefault(), {passive:false});
-
-})();
-</script>
+
+    <div class="game-container" id="game-rows">
+        </div>
+
+    <div class="footer-totals">
+        <div class="total-box">
+            <div class="total-label">BİZ TOPLAM</div>
+            <div class="total-score" id="total-biz">0</div>
+        </div>
+        <div class="total-box">
+            <div class="total-label">DURUM</div>
+            <div class="total-score" id="game-status" style="font-size:16px;">Eşit</div>
+        </div>
+        <div class="total-box">
+            <div class="total-label">SİZ TOPLAM</div>
+            <div class="total-score" id="total-siz">0</div>
+        </div>
+    </div>
+
+    <div id="edit-modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">Değer Girin</h3>
+            <p id="modal-desc" style="font-size:12px; opacity:0.7;">Puan veya Ceza</p>
+            
+            <input type="number" id="modal-input" placeholder="0" style="width:100%; font-size:24px; padding:10px; margin-bottom:10px; background:rgba(0,0,0,0.5); border-radius:8px;">
+            
+            <button id="btn-set-siler" class="modal-btn btn-siler" onclick="setSiler()">Siler Ekle (-100)</button>
+            
+            <button class="modal-btn btn-normal" onclick="confirmInput()">Kaydet</button>
+            <button class="modal-btn btn-cancel" onclick="closeModal()">İptal</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const totalRounds = 11;
+        let players = ["Sefa", "Fatih", "Halil", "İlker"];
+        // Data Structure: 11 rows. Each row: [BizScore, SizScore, BizCeza, SizCeza]
+        // Values can be numbers or "SILER"
+        let gameData = Array(totalRounds).fill(null).map(() => ({
+            bizScore: 0,
+            sizScore: 0,
+            bizCeza: 0,
+            sizCeza: 0
+        }));
+
+        let activeCell = { row: 0, col: '' }; // Tracks which cell is being edited
+
+        // --- INIT ---
+        window.onload = function() {
+            loadGame();
+            renderTable();
+            updateTotals();
+        };
+
+        // --- CORE LOGIC ---
+        function savePlayers() {
+            players = [
+                document.getElementById('p1').value,
+                document.getElementById('p2').value,
+                document.getElementById('p3').value,
+                document.getElementById('p4').value
+            ];
+            saveGame();
+            renderTable();
+            toggleSettings();
+        }
+
+        function getDealer(rowIndex) {
+            // Pattern: 0->0, 1->1, 2->2, 3->3, 4->0 ...
+            return players[rowIndex % 4];
+        }
+
+        function calculateRowDiff(rowIdx) {
+            const row = gameData[rowIdx];
+            
+            // Logic: Siler = -100, otherwise value
+            const bizS = row.bizScore === 'SILER' ? -100 : Number(row.bizScore);
+            const sizS = row.sizScore === 'SILER' ? -100 : Number(row.sizScore);
+            
+            const bizTotal = bizS + Number(row.bizCeza);
+            const sizTotal = sizS + Number(row.sizCeza);
+
+            // Fark Calculation (Az olan iyidir, ama fark mutlak değer ve kimin önde olduğu)
+            // Biz: 101, Siz: 202 -> Biz 101 farkla önde (daha az)
+            const diff = Math.abs(bizTotal - sizTotal);
+            
+            if (diff === 0) return "-";
+            
+            if (bizTotal < sizTotal) {
+                return `<span class="diff-biz">BİZ<br>+${diff}</span>`;
+            } else {
+                return `<span class="diff-siz">SİZ<br>+${diff}</span>`;
+            }
+        }
+
+        function updateTotals() {
+            let bizGrand = 0;
+            let sizGrand = 0;
+
+            gameData.forEach(row => {
+                bizGrand += (row.bizScore === 'SILER' ? -100 : Number(row.bizScore)) + Number(row.bizCeza);
+                sizGrand += (row.sizScore === 'SILER' ? -100 : Number(row.sizScore)) + Number(row.sizCeza);
+            });
+
+            document.getElementById('total-biz').innerText = bizGrand;
+            document.getElementById('total-siz').innerText = sizGrand;
+
+            const statusEl = document.getElementById('game-status');
+            const diff = Math.abs(bizGrand - sizGrand);
+            
+            if (bizGrand < sizGrand) {
+                statusEl.innerHTML = `<span style="color:#81ecec">BİZ<br>+${diff}</span>`;
+            } else if (sizGrand < bizGrand) {
+                statusEl.innerHTML = `<span style="color:#fab1a0">SİZ<br>+${diff}</span>`;
+            } else {
+                statusEl.innerHTML = "Eşit";
+            }
+        }
+
+        // --- RENDER ---
+        function renderTable() {
+            const container = document.getElementById('game-rows');
+            container.innerHTML = '';
+
+            for (let i = 0; i < totalRounds; i++) {
+                const dealer = getDealer(i);
+                const diffHtml = calculateRowDiff(i);
+                
+                // Determine display values
+                const bS = gameData[i].bizScore === 'SILER' ? '<span class="siler-active">∞</span>' : (gameData[i].bizScore || '');
+                const sS = gameData[i].sizScore === 'SILER' ? '<span class="siler-active">∞</span>' : (gameData[i].sizScore || '');
+                const bC = gameData[i].bizCeza || '';
+                const sC = gameData[i].sizCeza || '';
+
+                const rowHtml = `
+                    <div class="game-row">
+                        <div class="cell" onclick="openEdit(${i}, 'bizScore')">${bS === '' ? '<span style="opacity:0.3">-</span>' : bS}</div>
+                        <div class="cell" onclick="openEdit(${i}, 'sizScore')">${sS === '' ? '<span style="opacity:0.3">-</span>' : sS}</div>
+                        <div class="cell" onclick="openEdit(${i}, 'bizCeza')" style="background:rgba(255,0,0,0.1)">${bC}</div>
+                        <div class="cell" onclick="openEdit(${i}, 'sizCeza')" style="background:rgba(255,0,0,0.1)">${sC}</div>
+                        <div class="cell dealer-name">${i+1}. ${dealer}</div>
+                        <div class="cell diff-cell">${diffHtml}</div>
+                    </div>
+                `;
+                container.innerHTML += rowHtml;
+            }
+        }
+
+        // --- MODAL & INPUTS ---
+        function openEdit(row, col) {
+            activeCell = { row, col };
+            const currentVal = gameData[row][col];
+            const modalInput = document.getElementById('modal-input');
+            const btnSiler = document.getElementById('btn-set-siler');
+            const desc = document.getElementById('modal-desc');
+
+            // Setup Modal
+            if (col.includes('Ceza')) {
+                btnSiler.style.display = 'none';
+                desc.innerText = "Ceza Puanı (Örn: 50, 100)";
+                modalInput.placeholder = "Ceza";
+            } else {
+                btnSiler.style.display = 'block';
+                desc.innerText = "Oyun Puanı (Bitmeyenler için)";
+                modalInput.placeholder = "Puan";
+            }
+
+            if (currentVal === 'SILER') {
+                modalInput.value = '';
+            } else {
+                modalInput.value = currentVal === 0 ? '' : currentVal;
+            }
+
+            document.getElementById('edit-modal').style.display = 'flex';
+            modalInput.focus();
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        function confirmInput() {
+            const val = document.getElementById('modal-input').value;
+            gameData[activeCell.row][activeCell.col] = val === '' ? 0 : parseInt(val);
+            saveGame();
+            renderTable();
+            updateTotals();
+            closeModal();
+        }
+
+        function setSiler() {
+            gameData[activeCell.row][activeCell.col] = 'SILER';
+            saveGame();
+            renderTable();
+            updateTotals();
+            closeModal();
+        }
+
+        // --- UTILS ---
+        function toggleSettings() {
+            const el = document.getElementById('players-setup');
+            el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function saveGame() {
+            localStorage.setItem('101_gameData', JSON.stringify(gameData));
+            localStorage.setItem('101_players', JSON.stringify(players));
+        }
+
+        function loadGame() {
+            const savedData = localStorage.getItem('101_gameData');
+            const savedPlayers = localStorage.getItem('101_players');
+
+            if (savedData) gameData = JSON.parse(savedData);
+            if (savedPlayers) {
+                players = JSON.parse(savedPlayers);
+                document.getElementById('p1').value = players[0];
+                document.getElementById('p2').value = players[1];
+                document.getElementById('p3').value = players[2];
+                document.getElementById('p4').value = players[3];
+            }
+        }
+
+        function resetGame() {
+            if(confirm('Tüm skorlar silinecek. Emin misiniz?')) {
+                gameData = Array(totalRounds).fill(null).map(() => ({
+                    bizScore: 0, sizScore: 0, bizCeza: 0, sizCeza: 0
+                }));
+                saveGame();
+                renderTable();
+                updateTotals();
+                toggleSettings();
+            }
+        }
+    </script>
 </body>
 </html>
