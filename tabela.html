@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>101 Skor Tablosu</title>
+    <title>101 Skor Pro</title>
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.15);
@@ -14,15 +14,16 @@
             --accent-color: #ffd700;
             --danger-color: #ff6b6b;
             --siler-color: #50e3c2;
+            --btn-bg: rgba(255,255,255,0.2);
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* Daha koyu modern ton */
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 20s ease infinite;
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
@@ -37,218 +38,182 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Glassmorphism Containers */
+        /* Glass Utility */
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header & Settings */
+        /* Header */
         header {
             padding: 15px;
-            padding-top: 50px; /* Safe area for iPhone notch */
+            padding-top: 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 50;
         }
-
-        h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
-        
+        h1 { margin: 0; font-size: 20px; font-weight: 800; }
         .settings-btn {
-            background: none;
-            border: 1px solid var(--glass-border);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
+            background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
+            color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;
         }
 
-        /* Players Input Area */
-        #players-setup {
-            padding: 10px 15px;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            gap: 10px;
-        }
+        /* Table Structure */
+        .game-container { flex: 1; overflow-y: auto; padding-bottom: 100px; }
         
-        .player-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        input[type="text"] {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        /* Main Table Grid */
-        .game-container {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 80px;
-        }
-
         .grid-header {
             display: grid;
-            grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1.5fr 1.5fr;
-            padding: 10px 5px;
-            font-size: 10px;
-            font-weight: bold;
-            text-align: center;
-            background: rgba(0,0,0,0.2);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            text-transform: uppercase;
+            grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
+            padding: 12px 2px;
+            font-size: 10px; font-weight: 800; text-align: center;
+            background: rgba(0,0,0,0.3);
+            position: sticky; top: 0; z-index: 40;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
 
         .game-row {
             display: grid;
-            grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1.5fr 1.5fr;
+            grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            min-height: 50px;
+            min-height: 55px;
         }
-
-        .game-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
+        .game-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
 
         .cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px;
-            position: relative;
-        }
-
-        /* Inputs in grid */
-        .score-input {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            color: white;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 4px; position: relative;
+            font-size: 14px; font-weight: 600;
             text-align: center;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 0;
+            overflow: hidden;
         }
 
-        .score-input:focus { outline: none; background: rgba(255,255,255,0.1); }
-        .score-input::placeholder { color: rgba(255,255,255,0.2); font-size: 10px; }
-
-        .siler-active {
-            font-size: 24px;
-            color: var(--siler-color);
-            pointer-events: none; /* Click handling via parent */
-        }
-
-        .dealer-name { font-size: 11px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .diff-cell { 
-            font-size: 10px; 
-            flex-direction: column; 
-            line-height: 1.2; 
-            font-weight: bold;
+        /* Score & Siler Styling */
+        .score-val { font-size: 15px; }
+        .siler-icons { 
+            color: var(--siler-color); 
+            font-size: 18px; 
+            line-height: 0.8; 
+            letter-spacing: -2px;
         }
         
-        .diff-biz { color: #81ecec; } /* Biz daha azsa */
-        .diff-siz { color: #fab1a0; } /* Siz daha azsa */
+        /* Penalty Tags */
+        .penalty-tag {
+            background: rgba(255, 107, 107, 0.3);
+            font-size: 9px; padding: 1px 4px;
+            border-radius: 4px; margin: 1px;
+            display: inline-block;
+        }
 
-        /* Total Footer */
+        /* Diff & Dealer */
+        .dealer-name { font-size: 10px; color: #ccc; opacity: 0.8; }
+        .diff-cell { font-size: 10px; font-weight: 800; line-height: 1.2; }
+        .diff-biz { color: #81ecec; text-shadow: 0 0 10px rgba(129, 236, 236, 0.3); }
+        .diff-siz { color: #fab1a0; text-shadow: 0 0 10px rgba(250, 177, 160, 0.3); }
+
+        /* Footer */
         .footer-totals {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(15px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: rgba(20, 20, 35, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; align-items: center;
             border-top: 1px solid var(--glass-border);
-            padding-bottom: 15px; /* Home bar spacing */
-            z-index: 20;
+            padding-bottom: 15px; z-index: 60;
         }
+        .total-box { text-align: center; }
+        .total-label { font-size: 9px; opacity: 0.6; margin-bottom: 2px; }
+        .total-score { font-size: 24px; font-weight: 800; }
 
-        .total-box {
-            text-align: center;
-        }
-        .total-label { font-size: 10px; opacity: 0.7; }
-        .total-score { font-size: 22px; font-weight: 800; }
-
-        /* Modal for Siler/Edit */
-        #edit-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: center;
+        /* MODALS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center;
             z-index: 100;
         }
         .modal-content {
-            background: #2d3436;
-            padding: 20px;
-            border-radius: 16px;
-            width: 80%;
-            text-align: center;
-            border: 1px solid var(--glass-border);
+            background: #252a34; width: 90%; max-width: 400px;
+            border-radius: 20px; padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .modal-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn-siler { background: var(--siler-color); color: #000; }
-        .btn-normal { background: #dfe6e9; color: #000; }
-        .btn-cancel { background: var(--danger-color); color: white; }
 
-        /* Helper for penalty inputs */
-        .penalty-helper {
-            font-size: 10px; color: #aaa; margin-bottom: 10px;
+        /* Score Modal Specifics */
+        .score-controls { display: flex; gap: 10px; margin: 15px 0; }
+        .control-btn { 
+            flex: 1; padding: 15px; border-radius: 12px; border: none;
+            font-weight: bold; font-size: 14px; cursor: pointer; color: #fff;
         }
+        .btn-add-siler { background: var(--siler-color); color: #000; }
+        .btn-rem-siler { background: rgba(255,255,255,0.1); }
+        
+        /* Penalty Modal Specifics */
+        .toggle-container {
+            display: flex; background: rgba(0,0,0,0.3);
+            border-radius: 10px; padding: 4px; margin-bottom: 15px;
+        }
+        .toggle-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 8px;
+            background: transparent; color: #aaa; font-weight: bold; transition: 0.2s;
+        }
+        .toggle-btn.active { background: var(--accent-color); color: #000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+        .num-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;
+        }
+        .num-btn {
+            background: rgba(255,255,255,0.1); border: none;
+            padding: 12px 0; border-radius: 8px; color: white;
+            font-size: 18px; font-weight: 600;
+        }
+        .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+
+        .penalty-list {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px;
+            max-height: 100px; overflow-y: auto;
+        }
+        .penalty-chip {
+            background: var(--danger-color); color: white;
+            padding: 5px 10px; border-radius: 15px; font-size: 12px;
+            display: flex; align-items: center; gap: 5px; cursor: pointer;
+        }
+
+        /* Common Modal Elements */
+        input[type="number"] {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 32px; text-align: center; padding: 15px; border-radius: 12px;
+            margin-bottom: 10px; box-sizing: border-box;
+        }
+        .close-btn {
+            width: 100%; padding: 15px; background: rgba(255,255,255,0.1);
+            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold;
+        }
+        .save-btn {
+            width: 100%; padding: 15px; background: #00b894;
+            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold;
+        }
+
+        /* Players Setup */
+        #players-modal { display: none; }
     </style>
 </head>
 <body>
 
     <header class="glass-panel">
-        <h1>101 SKOR</h1>
-        <button class="settings-btn" onclick="toggleSettings()">Oyuncular / Sıfırla</button>
+        <h1>101 PRO</h1>
+        <button class="settings-btn" onclick="openPlayersModal()">Ayarlar</button>
     </header>
-
-    <div id="players-setup" class="glass-panel">
-        <div class="player-inputs">
-            <input type="text" id="p1" value="Sefa" placeholder="1. Oyuncu">
-            <input type="text" id="p2" value="Fatih" placeholder="2. Oyuncu">
-            <input type="text" id="p3" value="Halil" placeholder="3. Oyuncu">
-            <input type="text" id="p4" value="İlker" placeholder="4. Oyuncu">
-        </div>
-        <button class="settings-btn" style="width:100%; background: var(--glass-bg);" onclick="savePlayers()">Oyuncuları Kaydet & Yenile</button>
-        <button class="settings-btn" style="width:100%; background: var(--danger-color); border:none; margin-top:5px;" onclick="resetGame()">Tüm Oyunu Sıfırla</button>
-    </div>
 
     <div class="grid-header glass-panel">
         <div>Biz<br>Oyun</div>
         <div>Siz<br>Oyun</div>
         <div>Biz<br>Ceza</div>
         <div>Siz<br>Ceza</div>
-        <div>Dağıtıcı</div>
+        <div>Dağ.</div>
         <div>Fark</div>
     </div>
 
@@ -262,7 +227,7 @@
         </div>
         <div class="total-box">
             <div class="total-label">DURUM</div>
-            <div class="total-score" id="game-status" style="font-size:16px;">Eşit</div>
+            <div class="total-score" id="status-diff" style="font-size:16px; color:#aaa">-</div>
         </div>
         <div class="total-box">
             <div class="total-label">SİZ TOPLAM</div>
@@ -270,104 +235,89 @@
         </div>
     </div>
 
-    <div id="edit-modal">
+    <div id="score-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-top:0">Değer Girin</h3>
-            <p id="modal-desc" style="font-size:12px; opacity:0.7;">Puan veya Ceza</p>
+            <h3 style="text-align:center; margin-top:0;">Oyun Puanı</h3>
+            <div style="text-align:center; margin-bottom:10px; opacity:0.7;">Puanı girin ve siler ekleyin</div>
             
-            <input type="number" id="modal-input" placeholder="0" style="width:100%; font-size:24px; padding:10px; margin-bottom:10px; background:rgba(0,0,0,0.5); border-radius:8px;">
+            <input type="number" id="score-input" placeholder="0">
             
-            <button id="btn-set-siler" class="modal-btn btn-siler" onclick="setSiler()">Siler Ekle (-100)</button>
+            <div class="score-controls">
+                <button class="control-btn btn-rem-siler" onclick="addSiler(-1)">Siler Sil</button>
+                <button class="control-btn btn-add-siler" onclick="addSiler(1)">Siler Ekle (-100)</button>
+            </div>
             
-            <button class="modal-btn btn-normal" onclick="confirmInput()">Kaydet</button>
-            <button class="modal-btn btn-cancel" onclick="closeModal()">İptal</button>
+            <div style="text-align:center; margin-bottom:15px;">
+                Şu an: <span id="current-siler-display" style="color:var(--siler-color); font-size:24px;"></span>
+            </div>
+
+            <button class="save-btn" onclick="saveScore()">Kaydet</button>
+            <button class="close-btn" onclick="closeModals()">İptal</button>
+        </div>
+    </div>
+
+    <div id="penalty-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin-top:0;">Ceza Ekle</h3>
+            
+            <div class="toggle-container">
+                <button class="toggle-btn active" id="btn-tek" onclick="setPenaltyMode('tek')">TEK (x10)</button>
+                <button class="toggle-btn" id="btn-cift" onclick="setPenaltyMode('cift')">ÇİFT (x20)</button>
+            </div>
+
+            <div class="num-grid">
+                </div>
+
+            <div style="font-size:12px; opacity:0.6; margin-top:10px;">Eklenen Cezalar (Silmek için tıklayın):</div>
+            <div class="penalty-list" id="penalty-list-container">
+                </div>
+
+            <button class="close-btn" onclick="closeModals()">Kapat</button>
+        </div>
+    </div>
+
+    <div id="players-modal" class="modal-overlay" style="z-index:110;">
+        <div class="modal-content">
+            <h3>Oyuncular</h3>
+            <input type="text" id="p1" placeholder="Oyuncu 1" style="font-size:18px; padding:10px; margin-bottom:5px;">
+            <input type="text" id="p2" placeholder="Oyuncu 2" style="font-size:18px; padding:10px; margin-bottom:5px;">
+            <input type="text" id="p3" placeholder="Oyuncu 3" style="font-size:18px; padding:10px; margin-bottom:5px;">
+            <input type="text" id="p4" placeholder="Oyuncu 4" style="font-size:18px; padding:10px; margin-bottom:15px;">
+            
+            <button class="save-btn" onclick="savePlayers()">Kaydet</button>
+            <button class="close-btn" style="background:var(--danger-color);" onclick="resetGame()">Oyunu Sıfırla</button>
+            <button class="close-btn" onclick="document.getElementById('players-modal').style.display='none'">Kapat</button>
         </div>
     </div>
 
     <script>
-        // --- DATA & STATE ---
-        const totalRounds = 11;
+        // --- DATA ---
         let players = ["Sefa", "Fatih", "Halil", "İlker"];
-        // Data Structure: 11 rows. Each row: [BizScore, SizScore, BizCeza, SizCeza]
-        // Values can be numbers or "SILER"
-        let gameData = Array(totalRounds).fill(null).map(() => ({
-            bizScore: 0,
-            sizScore: 0,
-            bizCeza: 0,
-            sizCeza: 0
-        }));
-
-        let activeCell = { row: 0, col: '' }; // Tracks which cell is being edited
+        // Veri Yapısı: Her satır için { bizScore: {val:0, siler:0}, sizScore: {val:0, siler:0}, bizCeza: [], sizCeza: [] }
+        // Ceza array örneği: [50, 100, 20]
+        let gameData = [];
+        let activeRow = 0;
+        let activeColType = ''; // 'bizScore', 'sizScore', 'bizCeza', 'sizCeza'
+        let tempPenaltyMode = 'tek'; // 'tek' or 'cift'
+        let tempScoreSiler = 0;
 
         // --- INIT ---
         window.onload = function() {
-            loadGame();
+            initGameData();
+            loadFromStorage();
             renderTable();
-            updateTotals();
+            createNumGrid();
         };
 
-        // --- CORE LOGIC ---
-        function savePlayers() {
-            players = [
-                document.getElementById('p1').value,
-                document.getElementById('p2').value,
-                document.getElementById('p3').value,
-                document.getElementById('p4').value
-            ];
-            saveGame();
-            renderTable();
-            toggleSettings();
-        }
-
-        function getDealer(rowIndex) {
-            // Pattern: 0->0, 1->1, 2->2, 3->3, 4->0 ...
-            return players[rowIndex % 4];
-        }
-
-        function calculateRowDiff(rowIdx) {
-            const row = gameData[rowIdx];
-            
-            // Logic: Siler = -100, otherwise value
-            const bizS = row.bizScore === 'SILER' ? -100 : Number(row.bizScore);
-            const sizS = row.sizScore === 'SILER' ? -100 : Number(row.sizScore);
-            
-            const bizTotal = bizS + Number(row.bizCeza);
-            const sizTotal = sizS + Number(row.sizCeza);
-
-            // Fark Calculation (Az olan iyidir, ama fark mutlak değer ve kimin önde olduğu)
-            // Biz: 101, Siz: 202 -> Biz 101 farkla önde (daha az)
-            const diff = Math.abs(bizTotal - sizTotal);
-            
-            if (diff === 0) return "-";
-            
-            if (bizTotal < sizTotal) {
-                return `<span class="diff-biz">BİZ<br>+${diff}</span>`;
-            } else {
-                return `<span class="diff-siz">SİZ<br>+${diff}</span>`;
-            }
-        }
-
-        function updateTotals() {
-            let bizGrand = 0;
-            let sizGrand = 0;
-
-            gameData.forEach(row => {
-                bizGrand += (row.bizScore === 'SILER' ? -100 : Number(row.bizScore)) + Number(row.bizCeza);
-                sizGrand += (row.sizScore === 'SILER' ? -100 : Number(row.sizScore)) + Number(row.sizCeza);
-            });
-
-            document.getElementById('total-biz').innerText = bizGrand;
-            document.getElementById('total-siz').innerText = sizGrand;
-
-            const statusEl = document.getElementById('game-status');
-            const diff = Math.abs(bizGrand - sizGrand);
-            
-            if (bizGrand < sizGrand) {
-                statusEl.innerHTML = `<span style="color:#81ecec">BİZ<br>+${diff}</span>`;
-            } else if (sizGrand < bizGrand) {
-                statusEl.innerHTML = `<span style="color:#fab1a0">SİZ<br>+${diff}</span>`;
-            } else {
-                statusEl.innerHTML = "Eşit";
+        function initGameData() {
+            gameData = [];
+            for(let i=0; i<11; i++) {
+                gameData.push({
+                    bizScore: { val: 0, siler: 0 },
+                    sizScore: { val: 0, siler: 0 },
+                    bizCeza: [],
+                    sizCeza: []
+                });
             }
         }
 
@@ -375,116 +325,219 @@
         function renderTable() {
             const container = document.getElementById('game-rows');
             container.innerHTML = '';
+            
+            let bizTotal = 0;
+            let sizTotal = 0;
 
-            for (let i = 0; i < totalRounds; i++) {
-                const dealer = getDealer(i);
-                const diffHtml = calculateRowDiff(i);
+            gameData.forEach((row, i) => {
+                const dealer = players[i % 4];
+
+                // Hesaplamalar
+                const bizSilerVal = row.bizScore.siler * -100;
+                const sizSilerVal = row.sizScore.siler * -100;
+                const bizPenaltySum = row.bizCeza.reduce((a,b)=>a+b, 0);
+                const sizPenaltySum = row.sizCeza.reduce((a,b)=>a+b, 0);
+
+                const rowBizTotal = Number(row.bizScore.val) + bizSilerVal + bizPenaltySum;
+                const rowSizTotal = Number(row.sizScore.val) + sizSilerVal + sizPenaltySum;
                 
-                // Determine display values
-                const bS = gameData[i].bizScore === 'SILER' ? '<span class="siler-active">∞</span>' : (gameData[i].bizScore || '');
-                const sS = gameData[i].sizScore === 'SILER' ? '<span class="siler-active">∞</span>' : (gameData[i].sizScore || '');
-                const bC = gameData[i].bizCeza || '';
-                const sC = gameData[i].sizCeza || '';
+                bizTotal += rowBizTotal;
+                sizTotal += rowSizTotal;
 
-                const rowHtml = `
+                // Fark Gösterimi
+                const absDiff = Math.abs(rowBizTotal - rowSizTotal);
+                let diffHtml = '<span style="opacity:0.2">-</span>';
+                if(rowBizTotal !== 0 || rowSizTotal !== 0) {
+                    if (rowBizTotal < rowSizTotal) {
+                        diffHtml = `<span class="diff-biz">BİZ<br>+${absDiff}</span>`;
+                    } else if (rowSizTotal < rowBizTotal) {
+                        diffHtml = `<span class="diff-siz">SİZ<br>+${absDiff}</span>`;
+                    } else {
+                        diffHtml = "EŞİT";
+                    }
+                }
+
+                // Siler string oluşturma (∞∞)
+                const bizSilerStr = "∞".repeat(row.bizScore.siler);
+                const sizSilerStr = "∞".repeat(row.sizScore.siler);
+
+                // Ceza HTML oluşturma
+                const bizCezaHtml = row.bizCeza.map(c => `<span class="penalty-tag">${c}</span>`).join('');
+                const sizCezaHtml = row.sizCeza.map(c => `<span class="penalty-tag">${c}</span>`).join('');
+
+                const html = `
                     <div class="game-row">
-                        <div class="cell" onclick="openEdit(${i}, 'bizScore')">${bS === '' ? '<span style="opacity:0.3">-</span>' : bS}</div>
-                        <div class="cell" onclick="openEdit(${i}, 'sizScore')">${sS === '' ? '<span style="opacity:0.3">-</span>' : sS}</div>
-                        <div class="cell" onclick="openEdit(${i}, 'bizCeza')" style="background:rgba(255,0,0,0.1)">${bC}</div>
-                        <div class="cell" onclick="openEdit(${i}, 'sizCeza')" style="background:rgba(255,0,0,0.1)">${sC}</div>
-                        <div class="cell dealer-name">${i+1}. ${dealer}</div>
+                        <div class="cell" onclick="openScoreModal(${i}, 'bizScore')">
+                            <div class="score-val">${row.bizScore.val || (row.bizScore.siler > 0 ? '' : '-')}</div>
+                            <div class="siler-icons">${bizSilerStr}</div>
+                        </div>
+                        <div class="cell" onclick="openScoreModal(${i}, 'sizScore')">
+                            <div class="score-val">${row.sizScore.val || (row.sizScore.siler > 0 ? '' : '-')}</div>
+                            <div class="siler-icons">${sizSilerStr}</div>
+                        </div>
+                        <div class="cell" onclick="openPenaltyModal(${i}, 'bizCeza')" style="background:rgba(255,100,100,0.05)">
+                            ${bizCezaHtml || '<span style="opacity:0.2">-</span>'}
+                        </div>
+                        <div class="cell" onclick="openPenaltyModal(${i}, 'sizCeza')" style="background:rgba(255,100,100,0.05)">
+                            ${sizCezaHtml || '<span style="opacity:0.2">-</span>'}
+                        </div>
+                        <div class="cell dealer-name">${dealer}</div>
                         <div class="cell diff-cell">${diffHtml}</div>
                     </div>
                 `;
-                container.innerHTML += rowHtml;
-            }
-        }
+                container.insertAdjacentHTML('beforeend', html);
+            });
 
-        // --- MODAL & INPUTS ---
-        function openEdit(row, col) {
-            activeCell = { row, col };
-            const currentVal = gameData[row][col];
-            const modalInput = document.getElementById('modal-input');
-            const btnSiler = document.getElementById('btn-set-siler');
-            const desc = document.getElementById('modal-desc');
+            // Alt Toplamlar
+            document.getElementById('total-biz').innerText = bizTotal;
+            document.getElementById('total-siz').innerText = sizTotal;
 
-            // Setup Modal
-            if (col.includes('Ceza')) {
-                btnSiler.style.display = 'none';
-                desc.innerText = "Ceza Puanı (Örn: 50, 100)";
-                modalInput.placeholder = "Ceza";
+            const grandDiff = Math.abs(bizTotal - sizTotal);
+            const statusEl = document.getElementById('status-diff');
+            
+            if (bizTotal < sizTotal) {
+                statusEl.innerHTML = `<span style="color:#81ecec">BİZ ÖNDE<br>+${grandDiff}</span>`;
+            } else if (sizTotal < bizTotal) {
+                statusEl.innerHTML = `<span style="color:#fab1a0">SİZ ÖNDE<br>+${grandDiff}</span>`;
             } else {
-                btnSiler.style.display = 'block';
-                desc.innerText = "Oyun Puanı (Bitmeyenler için)";
-                modalInput.placeholder = "Puan";
+                statusEl.innerHTML = "EŞİT";
             }
 
-            if (currentVal === 'SILER') {
-                modalInput.value = '';
-            } else {
-                modalInput.value = currentVal === 0 ? '' : currentVal;
-            }
-
-            document.getElementById('edit-modal').style.display = 'flex';
-            modalInput.focus();
+            saveToStorage();
         }
 
-        function closeModal() {
-            document.getElementById('edit-modal').style.display = 'none';
+        // --- SCORE MODAL LOGIC ---
+        function openScoreModal(row, type) {
+            activeRow = row;
+            activeColType = type;
+            const data = gameData[row][type];
+            
+            document.getElementById('score-input').value = data.val === 0 ? '' : data.val;
+            tempScoreSiler = data.siler;
+            updateSilerDisplay();
+            
+            document.getElementById('score-modal').style.display = 'flex';
         }
 
-        function confirmInput() {
-            const val = document.getElementById('modal-input').value;
-            gameData[activeCell.row][activeCell.col] = val === '' ? 0 : parseInt(val);
-            saveGame();
+        function addSiler(delta) {
+            tempScoreSiler += delta;
+            if(tempScoreSiler < 0) tempScoreSiler = 0;
+            updateSilerDisplay();
+        }
+
+        function updateSilerDisplay() {
+            document.getElementById('current-siler-display').innerText = "∞".repeat(tempScoreSiler);
+        }
+
+        function saveScore() {
+            const val = document.getElementById('score-input').value;
+            gameData[activeRow][activeColType].val = val === '' ? 0 : parseInt(val);
+            gameData[activeRow][activeColType].siler = tempScoreSiler;
+            
+            closeModals();
             renderTable();
-            updateTotals();
-            closeModal();
         }
 
-        function setSiler() {
-            gameData[activeCell.row][activeCell.col] = 'SILER';
-            saveGame();
-            renderTable();
-            updateTotals();
-            closeModal();
-        }
-
-        // --- UTILS ---
-        function toggleSettings() {
-            const el = document.getElementById('players-setup');
-            el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function saveGame() {
-            localStorage.setItem('101_gameData', JSON.stringify(gameData));
-            localStorage.setItem('101_players', JSON.stringify(players));
-        }
-
-        function loadGame() {
-            const savedData = localStorage.getItem('101_gameData');
-            const savedPlayers = localStorage.getItem('101_players');
-
-            if (savedData) gameData = JSON.parse(savedData);
-            if (savedPlayers) {
-                players = JSON.parse(savedPlayers);
-                document.getElementById('p1').value = players[0];
-                document.getElementById('p2').value = players[1];
-                document.getElementById('p3').value = players[2];
-                document.getElementById('p4').value = players[3];
+        // --- PENALTY MODAL LOGIC ---
+        function createNumGrid() {
+            const grid = document.querySelector('.num-grid');
+            for(let i=1; i<=13; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn';
+                btn.innerText = i;
+                btn.onclick = () => addPenaltyValue(i);
+                grid.appendChild(btn);
             }
+        }
+
+        function openPenaltyModal(row, type) {
+            activeRow = row;
+            activeColType = type;
+            renderPenaltyList();
+            document.getElementById('penalty-modal').style.display = 'flex';
+            setPenaltyMode('tek'); // Reset to default
+        }
+
+        function setPenaltyMode(mode) {
+            tempPenaltyMode = mode;
+            document.getElementById('btn-tek').className = mode === 'tek' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('btn-cift').className = mode === 'cift' ? 'toggle-btn active' : 'toggle-btn';
+        }
+
+        function addPenaltyValue(num) {
+            let penalty = 0;
+            if (tempPenaltyMode === 'tek') penalty = num * 10;
+            else penalty = num * 20;
+
+            gameData[activeRow][activeColType].push(penalty);
+            renderPenaltyList();
+            renderTable(); // Update background table instantly
+        }
+
+        function removePenalty(index) {
+            gameData[activeRow][activeColType].splice(index, 1);
+            renderPenaltyList();
+            renderTable();
+        }
+
+        function renderPenaltyList() {
+            const list = document.getElementById('penalty-list-container');
+            list.innerHTML = '';
+            const penalties = gameData[activeRow][activeColType];
+            
+            penalties.forEach((p, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'penalty-chip';
+                chip.innerHTML = `${p} <span>✕</span>`;
+                chip.onclick = () => removePenalty(index);
+                list.appendChild(chip);
+            });
+        }
+
+        // --- GENERIC ---
+        function closeModals() {
+            document.getElementById('score-modal').style.display = 'none';
+            document.getElementById('penalty-modal').style.display = 'none';
+        }
+
+        function openPlayersModal() {
+            document.getElementById('p1').value = players[0];
+            document.getElementById('p2').value = players[1];
+            document.getElementById('p3').value = players[2];
+            document.getElementById('p4').value = players[3];
+            document.getElementById('players-modal').style.display = 'flex';
+        }
+
+        function savePlayers() {
+            players = [
+                document.getElementById('p1').value || "1. Oyuncu",
+                document.getElementById('p2').value || "2. Oyuncu",
+                document.getElementById('p3').value || "3. Oyuncu",
+                document.getElementById('p4').value || "4. Oyuncu"
+            ];
+            document.getElementById('players-modal').style.display = 'none';
+            renderTable();
         }
 
         function resetGame() {
-            if(confirm('Tüm skorlar silinecek. Emin misiniz?')) {
-                gameData = Array(totalRounds).fill(null).map(() => ({
-                    bizScore: 0, sizScore: 0, bizCeza: 0, sizCeza: 0
-                }));
-                saveGame();
+            if(confirm('Tüm skorlar silinecek!')) {
+                initGameData();
                 renderTable();
-                updateTotals();
-                toggleSettings();
+                document.getElementById('players-modal').style.display = 'none';
             }
+        }
+
+        // --- STORAGE ---
+        function saveToStorage() {
+            localStorage.setItem('101_pro_data', JSON.stringify(gameData));
+            localStorage.setItem('101_pro_players', JSON.stringify(players));
+        }
+
+        function loadFromStorage() {
+            const d = localStorage.getItem('101_pro_data');
+            const p = localStorage.getItem('101_pro_players');
+            if(d) gameData = JSON.parse(d);
+            if(p) players = JSON.parse(p);
         }
     </script>
 </body>
