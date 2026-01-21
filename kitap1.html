@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Liquid Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --accent: #00d2ff;
+            --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            --danger: #ff5f6d;
+            --success: #00b09b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+        }
+
+        /* Animated Liquid Background */
+        .liquid-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: #0f0c29;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute; filter: blur(80px); opacity: 0.6;
+            animation: move 20s infinite alternate;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #3a1c71; border-radius: 40% 60% 70% 30%; animation-duration: 25s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #d76d77; border-radius: 60% 40% 30% 70%; animation-duration: 30s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #ffaf7b; border-radius: 30% 70% 70% 30%; animation-duration: 22s; }
+
+        @keyframes move { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(20px, 40px) rotate(20deg); } }
+
+        /* Glass Components */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Date Header */
+        header {
+            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .date-picker-wrapper {
+            position: relative; width: 100%; max-width: 300px;
+        }
+        .date-display {
+            font-size: 18px; font-weight: 600; text-align: center; padding: 12px;
+            color: var(--text-primary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        input[type="date"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+        }
+
+        /* Container */
+        .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
+
+        /* Daily View - Question State */
+        .question-card {
+            text-align: center; padding: 40px 20px; margin-top: 20px;
+        }
+        .question-title { font-size: 24px; font-weight: 700; margin-bottom: 30px; line-height: 1.3; }
+        
+        .action-buttons { display: flex; gap: 15px; justify-content: center; }
+        .btn-lg {
+            flex: 1; padding: 18px; border-radius: 20px; border: none; font-size: 18px; font-weight: 600; cursor: pointer;
+            transition: transform 0.2s; color: white;
+        }
+        .btn-lg:active { transform: scale(0.95); }
+        .btn-yes { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4); }
+        .btn-no { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: var(--text-secondary); }
+
+        /* Form State */
+        .entry-form { margin-top: 20px; display: none; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; margin-left: 4px; }
+        .glass-input, .glass-select {
+            width: 100%; padding: 16px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+            border-radius: 16px; color: white; font-size: 16px; appearance: none; outline: none;
+        }
+        .glass-select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 20px;
+        }
+        .btn-save {
+            width: 100%; background: var(--accent-gradient); padding: 18px; border-radius: 16px;
+            color: white; font-weight: 700; font-size: 16px; border: none; margin-top: 10px;
+        }
+
+        /* Summary State (Result) */
+        .daily-summary { margin-top: 20px; display: none; }
+        .summary-card { padding: 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .book-cover {
+            width: 50px; height: 75px; background: rgba(0,0,0,0.3); border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+        }
+        .summary-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .summary-info p { font-size: 14px; color: var(--accent); }
+        .add-more-btn {
+            background: none; border: 1px dashed var(--glass-border); color: var(--text-secondary);
+            width: 100%; padding: 15px; border-radius: 16px; cursor: pointer;
+        }
+
+        /* Bottom Nav */
+        nav {
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            height: 70px; display: flex; justify-content: space-around; align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-secondary); background: none; border: none; font-size: 10px; opacity: 0.7;
+            transition: all 0.3s;
+        }
+        .nav-item.active { opacity: 1; color: var(--accent); transform: translateY(-5px); }
+        .nav-item svg { width: 24px; height: 24px; }
+
+        /* Modals */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            z-index: 200; display: flex; align-items: flex-end;
+            visibility: hidden; opacity: 0; transition: all 0.3s;
+        }
+        .modal.active { visibility: visible; opacity: 1; }
+        .modal-content {
+            background: #1e293b; width: 100%; padding: 30px 20px 50px;
+            border-radius: 30px 30px 0 0; border-top: 1px solid var(--glass-border);
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+
+        .hidden { display: none !important; }
+
+        /* Animation Classes */
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div id="view-daily">
+        <header>
+            <div class="glass-panel date-picker-wrapper">
+                <div class="date-display" id="dateDisplayLabel">
+                    📅 <span id="currentDateText">Bugün</span>
+                </div>
+                <input type="date" id="datePicker">
+            </div>
+        </header>
+
+        <div class="container">
+            <div id="state-question" class="glass-panel question-card fade-in">
+                <h2 class="question-title">Bugün kitap okudun mu?</h2>
+                <div class="action-buttons">
+                    <button class="btn-lg btn-yes" onclick="showEntryForm()">Evet 📚</button>
+                    <button class="btn-lg btn-no" onclick="markAsRestDay()">Hayır 💤</button>
+                </div>
+            </div>
+
+            <div id="state-form" class="glass-panel question-card entry-form fade-in">
+                <h3 style="margin-bottom:20px;">Okuma Kaydı</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Hangi Kitap?</label>
+                    <select id="bookSelect" class="glass-select" onchange="checkNewBook(this)">
+                        </select>
+                </div>
+
+                <div id="newBookFields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Yeni Kitap Adı</label>
+                        <input type="text" id="newTitle" class="glass-input" placeholder="Kitap adını girin...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Toplam Sayfa</label>
+                        <input type="number" id="newTotalPages" class="glass-input" placeholder="Örn: 300">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bugün Okunan Sayfa Sayısı</label>
+                    <input type="number" id="pagesRead" class="glass-input" placeholder="Örn: 20">
+                </div>
+
+                <button class="btn-save" onclick="saveEntry()">Kaydet</button>
+                <button onclick="resetState()" style="background:none; border:none; color:var(--text-secondary); margin-top:15px; font-size:14px;">İptal</button>
+            </div>
+
+            <div id="state-summary" class="daily-summary fade-in">
+                <div id="summaryList"></div>
+                <button class="add-more-btn" onclick="showEntryForm()">+ Başka kitap ekle</button>
+            </div>
+            
+            <div id="state-rest" class="glass-panel question-card hidden fade-in">
+                <div style="font-size: 40px; margin-bottom:10px;">😌</div>
+                <h3>Bugün dinlenme günü.</h3>
+                <p style="color:var(--text-secondary); margin-top:5px; font-size:14px;">Yarın telafi ederiz!</p>
+                <button onclick="showEntryForm()" style="margin-top:20px; background:none; border:1px solid var(--glass-border); color:white; padding:8px 16px; border-radius:12px;">Fikrimi Değiştirdim</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-library" class="hidden">
+        <header><h2 style="font-size:20px;">Kitaplığım</h2></header>
+        <div class="container" id="libraryList" style="padding-top:20px; padding-bottom:100px;">
+            </div>
+    </div>
+
+    <nav class="glass-panel">
+        <button class="nav-item active" onclick="switchTab('daily', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Günlük
+        </button>
+        <button class="nav-item" onclick="switchTab('library', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            Kitaplık
+        </button>
+    </nav>
+
+    <script>
+        // --- Data Management ---
+        const DB_KEY = 'liquid_lib_v1';
+        let books = [];
+        let readingHistory = []; // { date: 'YYYY-MM-DD', bookId: 1, pages: 20 }
+        let currentDate = new Date().toISOString().split('T')[0];
+
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem(DB_KEY));
+            if (data) {
+                books = data.books || [];
+                readingHistory = data.readingHistory || [];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(DB_KEY, JSON.stringify({ books, readingHistory }));
+        }
+
+        // --- Date Handling ---
+        const datePicker = document.getElementById('datePicker');
+        const dateText = document.getElementById('currentDateText');
+
+        datePicker.value = currentDate;
+        updateDateLabel(currentDate);
+
+        datePicker.addEventListener('change', (e) => {
+            currentDate = e.target.value;
+            updateDateLabel(currentDate);
+            renderDailyView(); // Re-render logic based on new date
+        });
+
+        function updateDateLabel(dateStr) {
+            const d = new Date(dateStr);
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (dateStr === today) {
+                dateText.innerText = "Bugün";
+            } else {
+                dateText.innerText = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
+            }
+        }
+
+        // --- Core Logic: Daily View Renderer ---
+        function renderDailyView() {
+            // 1. Reset all states
+            document.getElementById('state-question').classList.add('hidden');
+            document.getElementById('state-form').classList.add('hidden');
+            document.getElementById('state-summary').classList.add('hidden');
+            document.getElementById('state-rest').classList.add('hidden');
+
+            // 2. Find history for this specific date
+            const dayEntries = readingHistory.filter(h => h.date === currentDate);
+            
+            // Check if user explicitly marked as "No Read" (we can store this as a special entry bookId: -1)
+            const restEntry = dayEntries.find(h => h.bookId === -1);
+
+            if (restEntry) {
+                document.getElementById('state-rest').classList.remove('hidden');
+            } else if (dayEntries.length > 0) {
+                // We have readings
+                renderSummaryList(dayEntries);
+                document.getElementById('state-summary').classList.remove('hidden');
+                document.getElementById('state-summary').style.display = 'block'; // Ensure block for flex contents
+            } else {
+                // No data for this day
+                document.getElementById('state-question').classList.remove('hidden');
+            }
+        }
+
+        // --- Interaction Functions ---
+        function showEntryForm() {
+            document.getElementById('state-question').classList.add('hidden');
+            document.getElementById('state-summary').classList.add('hidden');
+            document.getElementById('state-rest').classList.add('hidden');
+            document.getElementById('state-form').classList.remove('hidden');
+            document.getElementById('state-form').style.display = 'block';
+
+            populateBookSelect();
+            // Reset fields
+            document.getElementById('pagesRead').value = '';
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newTotalPages').value = '';
+            document.getElementById('newBookFields').classList.add('hidden');
+        }
+
+        function resetState() {
+            renderDailyView();
+        }
+
+        function markAsRestDay() {
+            // Save a "rest" entry
+            readingHistory = readingHistory.filter(h => h.date !== currentDate); // Clear existing just in case
+            readingHistory.push({
+                id: Date.now(),
+                date: currentDate,
+                bookId: -1,
+                pages: 0
+            });
+            saveData();
+            renderDailyView();
+        }
+
+        function populateBookSelect() {
+            const select = document.getElementById('bookSelect');
+            select.innerHTML = '<option value="" disabled selected>Kitap Seçin</option>';
+            
+            // Filter books that are not completed or recently active
+            const activeBooks = books.filter(b => b.status !== 'completed');
+            
+            activeBooks.forEach(b => {
+                select.innerHTML += `<option value="${b.id}">${b.title}</option>`;
+            });
+            
+            select.innerHTML += '<option value="new">+ Yeni Kitap Ekle...</option>';
+        }
+
+        function checkNewBook(select) {
+            const newVal = document.getElementById('newBookFields');
+            if (select.value === 'new') {
+                newVal.classList.remove('hidden');
+            } else {
+                newVal.classList.add('hidden');
+            }
+        }
+
+        function saveEntry() {
+            const select = document.getElementById('bookSelect');
+            const pagesInput = document.getElementById('pagesRead');
+            let bookId = select.value;
+            const pages = parseInt(pagesInput.value);
+
+            if (!bookId || !pages) { alert('Lütfen bilgileri doldurun.'); return; }
+
+            // Handle New Book
+            if (bookId === 'new') {
+                const title = document.getElementById('newTitle').value;
+                const total = parseInt(document.getElementById('newTotalPages').value);
+                if (!title || !total) { alert('Yeni kitap bilgilerini girin.'); return; }
+                
+                const newBook = {
+                    id: Date.now(),
+                    title: title,
+                    totalPages: total,
+                    currentPage: 0,
+                    status: 'reading',
+                    cover: null
+                };
+                books.push(newBook);
+                bookId = newBook.id;
+            }
+
+            // Update Book Progress
+            const bookIndex = books.findIndex(b => b.id == bookId);
+            if (bookIndex > -1) {
+                books[bookIndex].currentPage += pages;
+                if(books[bookIndex].currentPage >= books[bookIndex].totalPages) {
+                    books[bookIndex].currentPage = books[bookIndex].totalPages;
+                    books[bookIndex].status = 'completed';
+                    alert('Tebrikler! Kitabı bitirdin. 🎉');
+                }
+            }
+
+            // Save History Entry
+            readingHistory.push({
+                id: Date.now(),
+                date: currentDate,
+                bookId: parseInt(bookId),
+                pages: pages
+            });
+
+            // If there was a "rest" entry for this day, remove it
+            readingHistory = readingHistory.filter(h => !(h.date === currentDate && h.bookId === -1));
+
+            saveData();
+            renderDailyView();
+            renderLibrary(); // Update library tab in background
+        }
+
+        function renderSummaryList(entries) {
+            const list = document.getElementById('summaryList');
+            let html = '';
+            
+            entries.forEach(entry => {
+                const book = books.find(b => b.id === entry.bookId);
+                if (!book) return;
+                
+                html += `
+                <div class="glass-panel summary-card">
+                    <div class="book-cover">📖</div>
+                    <div class="summary-info">
+                        <h3>${book.title}</h3>
+                        <p>+${entry.pages} Sayfa okundu</p>
+                    </div>
+                </div>`;
+            });
+
+            // Calculate daily total
+            const total = entries.reduce((acc, curr) => acc + curr.pages, 0);
+            html = `<div style="text-align:center; margin-bottom:20px; color:var(--text-secondary); font-size:14px;">
+                ${currentDate === new Date().toISOString().split('T')[0] ? 'Bugün' : 'Bu tarihte'} toplam <strong style="color:white">${total}</strong> sayfa okudun.
+            </div>` + html;
+
+            list.innerHTML = html;
+        }
+
+        // --- Library Tab Logic ---
+        function renderLibrary() {
+            const container = document.getElementById('libraryList');
+            if (books.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary)">Henüz kitap yok.</div>';
+                return;
+            }
+
+            container.innerHTML = books.map(b => {
+                const progress = Math.min(100, Math.round((b.currentPage / b.totalPages) * 100));
+                return `
+                <div class="glass-panel summary-card" style="margin-bottom:15px; display:block;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="font-size:18px;">${b.title}</h3>
+                        <span style="font-size:12px; padding:4px 8px; background:rgba(255,255,255,0.1); border-radius:8px;">%${progress}</span>
+                    </div>
+                    <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                        <div style="height:100%; width:${progress}%; background:var(--accent-gradient);"></div>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-top:8px; display:flex; justify-content:space-between;">
+                        <span>${b.currentPage} / ${b.totalPages} syf</span>
+                        <span>${b.status === 'completed' ? 'Tamamlandı ✅' : 'Okunuyor'}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (tab === 'daily') {
+                document.getElementById('view-daily').classList.remove('hidden');
+                document.getElementById('view-library').classList.add('hidden');
+                renderDailyView();
+            } else {
+                document.getElementById('view-daily').classList.add('hidden');
+                document.getElementById('view-library').classList.remove('hidden');
+                renderLibrary();
+            }
+        }
+
+        // --- Init ---
+        loadData();
+        renderDailyView();
+        renderLibrary();
+
+    </script>
+</body>
+</html>
