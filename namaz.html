@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Namaz Takip</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --accent-color: #00f2fe;
+            --accent-gradient: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --text-color: #ffffff;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+            /* iPhone Notch Area Fix */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Moving Background Blobs for Liquid Effect */
+        .blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: move 10s infinite alternate;
+        }
+
+        .blob-1 { top: 10%; left: 10%; width: 300px; height: 300px; background: #7b2cbf; border-radius: 40% 60% 70% 30%; }
+        .blob-2 { bottom: 10%; right: 10%; width: 350px; height: 350px; background: #4361ee; border-radius: 60% 40% 30% 70%; animation-delay: -5s; }
+
+        @keyframes move {
+            from { transform: translate(0, 0) rotate(0deg); }
+            to { transform: translate(20px, 40px) rotate(20deg); }
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 450px; /* iPhone Max Width Logic */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.5px; }
+        h1 { font-size: 28px; margin-bottom: 5px; }
+        p { margin: 0; opacity: 0.8; font-size: 15px; }
+
+        /* Date Picker Section */
+        .date-section {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="date"] {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-family: var(--font-family);
+            outline: none;
+            width: 100%;
+            text-align: center;
+            margin-top: 10px;
+            -webkit-appearance: none;
+        }
+
+        /* Prayer List */
+        .prayer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .prayer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .prayer-item.completed {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.4);
+        }
+
+        .prayer-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prayer-name { font-size: 18px; font-weight: 600; }
+        .prayer-rekat { font-size: 13px; opacity: 0.6; margin-top: 2px; }
+
+        /* Custom Checkbox */
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        input[type="checkbox"] { display: none; }
+        input[type="checkbox"]:checked + .toggle {
+            background: var(--accent-gradient);
+        }
+        input[type="checkbox"]:checked + .toggle::after {
+            left: 22px;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b6b; /* Redish for missing */
+            margin-top: 5px;
+        }
+
+        .stat-label { font-size: 12px; opacity: 0.7; }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 1s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Button */
+        .action-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+            display: none; /* JS ile kontrol edilecek */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="glass-card date-section">
+            <h1>İbadet Takibi</h1>
+            <p>Bugünü değerlendir</p>
+            <input type="date" id="datePicker">
+        </div>
+
+        <div class="glass-card" id="prayerPanel">
+            <div class="prayer-list" id="prayerListContainer">
+                </div>
+        </div>
+
+        <div class="glass-card">
+            <h3>Yıllık İstatistik</h3>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Eksik Namaz</div>
+                    <div class="stat-value" id="missedCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Eksik Rekat</div>
+                    <div class="stat-value" id="missedRakat">0</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span>Yıllık Başarı Oranı</span>
+                    <span id="percentText">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Veri Yapısı ve Tanımlar
+        const prayers = [
+            { id: 'sabah', name: 'Sabah', rekat: 4 },
+            { id: 'ogle', name: 'Öğle', rekat: 10 },
+            { id: 'ikindi', name: 'İkindi', rekat: 8 },
+            { id: 'aksam', name: 'Akşam', rekat: 5 },
+            { id: 'yatsi', name: 'Yatsı', rekat: 13 }
+        ];
+
+        const datePicker = document.getElementById('datePicker');
+        const prayerListContainer = document.getElementById('prayerListContainer');
+        const missedCountEl = document.getElementById('missedCount');
+        const missedRakatEl = document.getElementById('missedRakat');
+        const progressBarEl = document.getElementById('progressBar');
+        const percentTextEl = document.getElementById('percentText');
+
+        // Başlangıç: Bugünün tarihini ayarla
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.value = today;
+
+        // Uygulama Başlatma
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDay(today);
+            calculateStats();
+        });
+
+        // Tarih değişince verileri yükle
+        datePicker.addEventListener('change', (e) => {
+            loadDay(e.target.value);
+        });
+
+        function loadDay(date) {
+            prayerListContainer.innerHTML = ''; // Temizle
+            const data = getStoredData();
+            const dayData = data[date] || {}; // O günün verisi yoksa boş obje
+
+            prayers.forEach(prayer => {
+                const isCompleted = dayData[prayer.id] === true;
+                
+                const item = document.createElement('div');
+                item.className = `prayer-item ${isCompleted ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div class="prayer-info">
+                        <span class="prayer-name">${prayer.name}</span>
+                        <span class="prayer-rekat">${prayer.rekat} Rekat</span>
+                    </div>
+                    <label>
+                        <input type="checkbox" 
+                            ${isCompleted ? 'checked' : ''} 
+                            onchange="togglePrayer('${date}', '${prayer.id}', this)">
+                        <div class="toggle"></div>
+                    </label>
+                `;
+                prayerListContainer.appendChild(item);
+            });
+        }
+
+        function togglePrayer(date, prayerId, checkbox) {
+            const data = getStoredData();
+            if (!data[date]) data[date] = {};
+            
+            data[date][prayerId] = checkbox.checked;
+            
+            // Görsel güncelleme (yeşil border vs)
+            const parentItem = checkbox.closest('.prayer-item');
+            if(checkbox.checked) {
+                parentItem.classList.add('completed');
+            } else {
+                parentItem.classList.remove('completed');
+            }
+
+            saveData(data);
+            calculateStats(); // İstatistikleri güncelle
+        }
+
+        function calculateStats() {
+            const data = getStoredData();
+            const currentYear = new Date().getFullYear();
+            
+            // Yılın başlangıcından bugüne kadar olan günleri hesapla
+            const startOfYear = new Date(currentYear, 0, 1);
+            const now = new Date();
+            const oneDay = 24 * 60 * 60 * 1000;
+            const daysPassed = Math.round(Math.abs((now - startOfYear) / oneDay)) + 1; // Bugün dahil
+
+            let totalPrayersShouldBe = daysPassed * 5;
+            let totalCompleted = 0;
+            let totalMissedCount = 0;
+            let totalMissedRakat = 0;
+
+            // Yıl başından bugüne kadar olan her günü kontrol et
+            for (let i = 0; i < daysPassed; i++) {
+                const checkDate = new Date(currentYear, 0, 1 + i).toISOString().split('T')[0];
+                const dayRecord = data[checkDate] || {};
+
+                prayers.forEach(p => {
+                    if (dayRecord[p.id]) {
+                        totalCompleted++;
+                    } else {
+                        totalMissedCount++;
+                        totalMissedRakat += p.rekat;
+                    }
+                });
+            }
+
+            // Arayüzü Güncelle
+            missedCountEl.textContent = totalMissedCount;
+            missedRakatEl.textContent = totalMissedRakat;
+
+            // Yüzde Hesaplama
+            let percentage = 0;
+            if (totalPrayersShouldBe > 0) {
+                percentage = Math.round((totalCompleted / totalPrayersShouldBe) * 100);
+            }
+            
+            progressBarEl.style.width = `${percentage}%`;
+            percentTextEl.textContent = `%${percentage}`;
+            
+            // Renk değişimi (Düşükse kırmızı, yüksekse mavi/yeşil tonu)
+            if(percentage < 50) {
+                progressBarEl.style.background = 'linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)';
+            } else {
+                progressBarEl.style.background = 'var(--accent-gradient)';
+            }
+        }
+
+        // LocalStorage Yardımcıları
+        function getStoredData() {
+            const stored = localStorage.getItem('namazTakipData');
+            return stored ? JSON.parse(stored) : {};
+        }
+
+        function saveData(data) {
+            localStorage.setItem('namazTakipData', JSON.stringify(data));
+        }
+    </script>
+</body>
+</html>
