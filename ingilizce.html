@@ -8,10 +8,9 @@
     <title>English Day</title>
     <style>
         :root {
-            /* Apple Dark Mode Renkleri */
             --bg-body: #000000;
-            --glass-bg: rgba(28, 28, 30, 0.85); /* Daha koyu ve opak */
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(28, 28, 30, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.12);
             --primary: #0a84ff;
             --accent: #30d158;
             --purple: #bf5af2;
@@ -20,11 +19,9 @@
             --text-gray: #8e8e93;
         }
 
-        /* --- TEMEL AYARLAR --- */
-        html {
-            height: -webkit-fill-available; /* iPhone Safari tam boy düzeltmesi */
-        }
-
+        /* --- SAYFA YAPISI --- */
+        html { height: -webkit-fill-available; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -32,33 +29,27 @@
             background: var(--bg-body);
             color: var(--text);
             min-height: 100vh;
-            min-height: -webkit-fill-available;
-            /* iPhone alt çubuğu için ekstra boşluk */
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            /* iPhone alt çubuk payı */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
         }
 
-        /* Arkaplan Efekti */
         .bg-gradient {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at top left, #1c1c1e, #000);
             z-index: -2;
         }
 
         .container {
             max-width: 100%;
-            margin: 0 auto;
             padding: 20px;
-            /* iPhone üst çentiği için boşluk */
+            /* iPhone üst çentik payı */
             padding-top: calc(50px + env(safe-area-inset-top));
-            box-sizing: border-box;
         }
 
         /* --- BİLEŞENLER --- */
+        h1 { font-size: 2.2rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -0.5px; }
         
-        /* Butonlar */
         button {
             width: 100%;
             padding: 18px;
@@ -67,76 +58,60 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            margin-bottom: 15px;
-            transition: transform 0.1s;
-            /* Dokunma alanını genişlet */
-            touch-action: manipulation; 
-        }
-        button:active { transform: scale(0.97); opacity: 0.8; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3); }
-        .btn-secondary { background: rgba(255,255,255,0.12); color: white; backdrop-filter: blur(10px); }
-        .btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(48, 209, 88, 0.3); }
-
-        /* Giriş Alanları */
-        input[type="date"] {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
+            margin-bottom: 12px;
+            background: var(--primary);
             color: white;
-            font-size: 1.2rem;
-            text-align: center;
-            appearance: none;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+            transition: transform 0.1s;
         }
+        button:active { transform: scale(0.97); opacity: 0.9; }
+        .btn-secondary { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); }
+        .btn-accent { background: var(--accent); }
 
-        /* Editör Alanı */
         textarea {
             width: 100%;
-            height: 50vh; /* Ekranın yarısı kadar */
+            height: 50vh;
             background: #1c1c1e;
             color: #fff;
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 15px;
-            font-size: 16px; /* 16px altı iPhone'da zoom yapar, bunu engelliyoruz */
+            font-family: monospace;
+            font-size: 14px; /* Zoom engellemek için */
             box-sizing: border-box;
             margin-bottom: 15px;
+            white-space: pre-wrap;
         }
 
-        /* Ekran Yönetimi */
-        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .screen.active { display: block; opacity: 1; }
+        input[type="date"] {
+            width: 100%; padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: white; font-size: 1.2rem;
+            text-align: center; appearance: none;
+            margin-bottom: 20px; box-sizing: border-box;
+        }
 
-        /* --- KART TASARIMI --- */
+        /* --- KART TASARIMLARI --- */
         .card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 40px; /* Bir sonraki kartla mesafe */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none; /* JS ile açılacak */
-            
-            /* Animasyon */
+            padding: 22px;
+            margin-bottom: 40px;
+            display: none;
+            opacity: 0;
             transform: translateY(20px);
-            transition: all 0.5s ease-out;
+            transition: all 0.5s ease;
         }
-        .card.visible { 
-            display: block; 
-            opacity: 1; 
-            transform: translateY(0); 
-        }
+        .card.visible { display: block; opacity: 1; transform: translateY(0); }
 
-        /* Başlıklar */
         .section-header {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             border-bottom: 1px solid rgba(255,255,255,0.15);
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             margin-bottom: 20px;
             color: #fff;
             font-weight: 700;
@@ -150,87 +125,84 @@
             padding: 15px;
             border-left: 4px solid var(--primary);
         }
-        .v-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .v-word { font-size: 1.2rem; font-weight: 700; color: #fff; }
-        .v-pron { font-size: 0.8rem; color: #aaa; font-style: italic; }
-        .v-mean { color: var(--accent); font-weight: 600; display: block; margin-bottom: 8px; }
-        .v-ex { font-size: 0.95rem; color: #ddd; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; }
+        .v-top { display: flex; justify-content: space-between; align-items: baseline; }
+        .v-word { font-size: 1.25rem; font-weight: 700; }
+        .v-pron { font-size: 0.85rem; color: #aaa; font-style: italic; }
+        .v-mean { color: var(--accent); font-weight: 600; display: block; margin: 5px 0; }
+        .v-ex { font-size: 0.9rem; color: #ddd; opacity: 0.9; }
 
-        /* 2. GÜNLÜK KALIPLAR (Özel Format) */
+        /* 2. KALIPLAR (Özel) */
         .phrase-unit {
             background: rgba(255,255,255,0.05);
             border-radius: 18px;
             padding: 18px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        .ph-title { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 12px; display: block; }
-        .ph-info { margin-bottom: 8px; font-size: 0.95rem; line-height: 1.4; color: #ddd; }
-        .ph-label { font-size: 0.75rem; color: var(--purple); font-weight: 700; text-transform: uppercase; margin-right: 6px; }
-        .ph-dialogue-box {
+        .ph-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: block; }
+        .ph-row { margin-bottom: 8px; font-size: 0.95rem; color: #ddd; }
+        .ph-tag { color: var(--purple); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-right: 5px; }
+        .ph-dialogue {
             background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 12px;
-            font-size: 0.95rem;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            margin-top: 10px;
             border-left: 3px solid var(--orange);
         }
 
-        /* 3. OKUMA & DİYALOG */
-        .reading-text { line-height: 1.6; font-size: 1.05rem; white-space: pre-wrap; color: #eee; }
+        /* 3. DİYALOG & OKUMA */
         .chat-container { display: flex; flex-direction: column; gap: 10px; }
         .chat-bubble {
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 88%;
-            font-size: 1rem;
-            line-height: 1.4;
+            padding: 12px 16px; border-radius: 18px;
+            max-width: 88%; font-size: 1rem; line-height: 1.4;
         }
-        .chat-left { background: rgba(255,255,255,0.15); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-right { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; text-align: right; }
-        .chat-tr { display: block; font-size: 0.8rem; opacity: 0.7; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px; }
+        .chat-left { background: rgba(255,255,255,0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-right { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; text-align: right; }
+        .chat-tr { font-size: 0.8rem; opacity: 0.7; display: block; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); }
 
-        /* Navigasyon Butonu */
+        .reading-text { line-height: 1.6; font-size: 1.05rem; white-space: pre-wrap; color: #eee; }
+        
+        /* Navigasyon */
         .nav-btn {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            margin-top: 25px;
-            font-weight: 700;
+            background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 20px;
         }
         
-        /* Uyarılar */
-        .alert-box {
-            position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
-            background: #333; padding: 10px 20px; border-radius: 30px;
-            z-index: 1000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            font-size: 0.9rem; width: 80%; text-align: center;
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Bildirim */
+        #alert-box {
+            position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+            background: #222; color: #fff; padding: 12px 24px; border-radius: 30px;
+            z-index: 999; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
     <div class="bg-gradient"></div>
-    <div id="alert-box" class="alert-box"></div>
+    <div id="alert-box"></div>
 
     <div class="container">
         
         <div id="home-screen" class="screen active" style="text-align: center; padding-top: 20px;">
-            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">English Day</h1>
-            <p style="color: #888; margin-bottom: 40px;">Bugünün çalışmasına hazır mısın?</p>
+            <h1>English Day 📅</h1>
+            <p style="color:#888; margin-bottom: 30px;">Bugün ne çalışıyoruz?</p>
             
-            <div style="text-align: left; margin-bottom: 5px; color: #aaa; font-size: 0.9rem;">Tarih Seç:</div>
+            <div style="text-align: left; color:#aaa; font-size:0.9rem; margin-bottom:5px; margin-left:5px;">Tarih Seç:</div>
             <input type="date" id="date-picker">
             
-            <button class="btn-primary" onclick="startLesson()">Dersi Başlat ▶️</button>
-            <button class="btn-secondary" onclick="openEditor()">📝 İçerik Ekle/Düzenle</button>
+            <button onclick="startLesson()">Dersi Başlat ▶️</button>
+            <button class="btn-secondary" onclick="openEditor()">📝 İçerik Yapıştır</button>
         </div>
 
         <div id="editor-screen" class="screen">
             <h2 style="margin-bottom: 10px;">İçerik Editörü</h2>
-            <p style="color: #aaa; font-size: 0.9rem;">Metni aşağıya yapıştır:</p>
-            <textarea id="content-input" placeholder="Metni buraya yapıştır..."></textarea>
+            <p style="color:#aaa; font-size:0.85rem; margin-bottom:10px;">Metni WhatsApp veya Notlardan kopyalayıp buraya yapıştır:</p>
+            <textarea id="content-input" placeholder="Buraya yapıştır..."></textarea>
             
             <button class="btn-accent" onclick="saveContent()">Kaydet 💾</button>
             <button class="btn-secondary" onclick="goHome()">İptal ✕</button>
@@ -238,53 +210,48 @@
 
         <div id="lesson-screen" class="screen">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <span id="lesson-date" style="color: #888; font-weight: 600;"></span>
-                <button onclick="goHome()" style="width: auto; padding: 8px 15px; margin:0; font-size: 0.8rem; background: rgba(255,255,255,0.1); border-radius: 20px;">Kapat</button>
+                <span id="lesson-date" style="color:#888; font-weight:600;"></span>
+                <button onclick="goHome()" style="width:auto; padding:8px 16px; margin:0; font-size:0.8rem; background:rgba(255,255,255,0.15);">Çıkış</button>
             </div>
             
-            <div id="lesson-content">
-                </div>
+            <div id="lesson-content"></div>
             
-            <div style="height: 100px;"></div>
+            <div style="height: 120px;"></div>
         </div>
 
     </div>
 
     <script>
+        // --- TEMEL FONKSİYONLAR ---
         const datePicker = document.getElementById('date-picker');
-        datePicker.valueAsDate = new Date(); // Varsayılan bugün
+        datePicker.valueAsDate = new Date();
 
         function showAlert(msg) {
-            const el = document.getElementById('alert-box');
-            el.innerText = msg;
-            el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 3000);
+            const box = document.getElementById('alert-box');
+            box.innerText = msg; box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 3000);
         }
 
         function goHome() {
-            showScreen('home-screen');
-            window.scrollTo(0,0);
-        }
-
-        function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.getElementById('home-screen').classList.add('active');
+            window.scrollTo(0,0);
         }
 
         function openEditor() {
             const date = datePicker.value;
-            if(!date) return showAlert('Lütfen tarih seçin.');
-            
+            if(!date) return showAlert('Tarih seçin.');
             const saved = localStorage.getItem('eng_day_' + date);
             document.getElementById('content-input').value = saved || "";
-            showScreen('editor-screen');
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('editor-screen').classList.add('active');
         }
 
         function saveContent() {
             const date = datePicker.value;
             const content = document.getElementById('content-input').value;
             if(!content.trim()) return;
-
             localStorage.setItem('eng_day_' + date, content);
             showAlert('Kaydedildi! ✅');
             setTimeout(goHome, 800);
@@ -293,43 +260,38 @@
         function startLesson() {
             const date = datePicker.value;
             if(!date) return showAlert('Tarih seçin.');
-
-            const rawContent = localStorage.getItem('eng_day_' + date);
-            if(!rawContent) {
-                if(confirm("Bu tarih için içerik yok. Eklemek ister misiniz?")) openEditor();
+            const content = localStorage.getItem('eng_day_' + date);
+            if(!content) {
+                if(confirm("İçerik yok. Eklemek ister misiniz?")) openEditor();
                 return;
             }
-
-            renderLesson(rawContent, date);
-            showScreen('lesson-screen');
+            renderLesson(content, date);
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('lesson-screen').classList.add('active');
         }
 
-        // --- İÇERİK İŞLEME MOTORU (PARSER) ---
-        function renderLesson(markdown, date) {
+        // --- AKILLI AYRIŞTIRICI (PARSER) ---
+        function renderLesson(text, date) {
             const container = document.getElementById('lesson-content');
             container.innerHTML = '';
-            document.getElementById('lesson-date').innerText = date;
+            document.getElementById('lesson-date').innerText = date.split('-').reverse().join('.');
 
-            // Bölümleri ### işaretinden ayır
-            const sections = markdown.split('###').filter(s => s.trim().length > 0);
+            // 1. ADIM: Bölümleri "⸻" çizgisiyle ayır (Senin yapıştırdığın metindeki ayraç)
+            // Eğer "⸻" yoksa belki "---" vardır diye onu da kontrol eder.
+            let sections = text.split(/⸻|---/).filter(s => s.trim().length > 0);
 
             sections.forEach((sectionRaw, index) => {
-                // Satırları ayır (Telefondan gelen \r\n karakterlerini temizle)
-                const lines = sectionRaw.replace(/\r\n/g, '\n').trim().split('\n');
-                
-                // Başlık satırı (İlk satır)
-                const titleLine = lines[0].replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim(); 
-                
-                // İçerik satırları
-                const contentLines = lines.slice(1);
-                const fullText = contentLines.join('\n').trim();
+                const lines = sectionRaw.trim().split('\n').filter(l => l.trim() !== ""); // Boş satırları at
+                if(lines.length === 0) return;
 
+                // Başlık Satırını Bul (Genelde ilk satır)
+                const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim(); 
+                
                 // KART OLUŞTUR
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.id = `card-${index}`;
-                
-                // Sadece ilk kartı göster
                 if(index === 0) card.classList.add('visible');
 
                 // Başlık Ekle
@@ -338,128 +300,116 @@
                 h2.innerText = titleLine;
                 card.appendChild(h2);
 
-                // --- TÜR TESPİTİ VE İŞLEME ---
+                const contentLines = lines.slice(1);
+                const fullText = contentLines.join('\n');
 
-                // 1. KELİMELER TABLOSU
+                // --- İÇERİK TÜRÜNÜ TAHMİN ET VE İŞLE ---
+
+                // 1. KELİMELER (Tablo yapısı: Kelime [tab] Okunuş [tab] Anlam...)
                 if (titleLine.toLowerCase().includes('kelimeler') || titleLine.toLowerCase().includes('vocabulary')) {
                     const grid = document.createElement('div');
                     grid.className = 'vocab-grid';
                     
-                    const rows = contentLines.filter(l => l.includes('|') && !l.includes('---'));
-                    rows.forEach((row, i) => {
-                        if (i === 0) return; 
-                        const cols = row.split('|').map(c => c.trim()).filter(c => c !== '');
-                        if (cols.length >= 3) {
-                            const div = document.createElement('div');
-                            div.className = 'vocab-item';
-                            div.innerHTML = `
+                    contentLines.forEach(line => {
+                        // Sekme (Tab) veya 2'den fazla boşlukla ayır
+                        const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
+                        
+                        // Başlık satırı değilse ve en az 3 sütun varsa
+                        if (cols.length >= 3 && !cols[0].toLowerCase().includes('ingilizce')) {
+                            const item = document.createElement('div');
+                            item.className = 'vocab-item';
+                            // Format: [0]Word [1]Pron [2]Mean [3]ExEn [4]ExTr
+                            item.innerHTML = `
                                 <div class="v-top">
                                     <span class="v-word">${cols[0]}</span>
-                                    <span class="v-pron">/${cols[1]}/</span>
+                                    <span class="v-pron">/${cols[1] || ''}/</span>
                                 </div>
                                 <span class="v-mean">${cols[2]}</span>
-                                <div class="v-ex">${cols[3]}<br><span style="color:#888;font-size:0.85rem">${cols[4]}</span></div>
+                                <div class="v-ex">${cols[3] || ''}<br><span style="color:#999; font-size:0.8rem">${cols[4] || ''}</span></div>
                             `;
-                            grid.appendChild(div);
+                            grid.appendChild(item);
                         }
                     });
                     card.appendChild(grid);
                 }
 
-                // 2. GÜNLÜK KALIPLAR (ÖZEL AYRIŞTIRICI)
+                // 2. KALIPLAR (Madde işaretli liste: • Cümle, • Anlamı...)
                 else if (titleLine.toLowerCase().includes('kalıplar') || titleLine.toLowerCase().includes('phrases')) {
-                    // Metni baştan sona tara
-                    const rawLines = fullText.split('\n');
                     let currentPhrase = null;
-
-                    rawLines.forEach(line => {
-                        let trimmed = line.trim();
-                        // Yeni Kalıp Tespiti: "* **" ile başlar
-                        if (trimmed.startsWith('* **') || (trimmed.startsWith('*') && trimmed.includes('**') && !trimmed.includes(':'))) {
+                    
+                    contentLines.forEach(line => {
+                        const cleanLine = line.replace(/^•\s*/, '').trim(); // Baştaki noktayı sil
+                        
+                        // Yeni Kalıp Tespiti: "Anlamı:", "Kullanımı:" içermiyorsa ve uzunsa, muhtemelen yeni bir İngilizce cümle.
+                        if (!cleanLine.startsWith('Anlamı:') && !cleanLine.startsWith('Kullanımı:') && !cleanLine.startsWith('Örnek:')) {
+                            // Öncekini kaydet
+                            if(currentPhrase) appendPhrase(card, currentPhrase);
                             
-                            // Önceki varsa bas
-                            if (currentPhrase) appendPhrase(card, currentPhrase);
-                            
-                            // Yeni başlat
-                            currentPhrase = { 
-                                text: trimmed.replace(/\*\*/g, '').replace(/^\*\s*/, '').trim(),
-                                meaning: '', usage: '', example: '' 
-                            };
+                            currentPhrase = { text: cleanLine, mean: '', use: '', ex: '' };
                         }
                         else if (currentPhrase) {
-                            if (trimmed.includes('Anlamı:')) currentPhrase.meaning = trimmed.split('Anlamı:')[1].trim();
-                            else if (trimmed.includes('Kullanımı:')) currentPhrase.usage = trimmed.split('Kullanımı:')[1].trim();
-                            else if (trimmed.includes('Örnek:')) currentPhrase.example = trimmed.split('Örnek:')[1].trim();
+                            if (cleanLine.startsWith('Anlamı:')) currentPhrase.mean = cleanLine.replace('Anlamı:', '').trim();
+                            else if (cleanLine.startsWith('Kullanımı:')) currentPhrase.use = cleanLine.replace('Kullanımı:', '').trim();
+                            else if (cleanLine.startsWith('Örnek:')) currentPhrase.ex = cleanLine.replace('Örnek:', '').trim();
                         }
                     });
                     if(currentPhrase) appendPhrase(card, currentPhrase);
                 }
 
-                // 3. DİYALOG
+                // 3. DİYALOG (Tablo: Kişi [tab] Eng [tab] Tr)
                 else if (titleLine.toLowerCase().includes('diyalog') || titleLine.toLowerCase().includes('dialogue')) {
-                    const chatBox = document.createElement('div');
-                    chatBox.className = 'chat-container';
-                    const rows = contentLines.filter(l => l.includes('|') && !l.includes('---'));
-                    rows.forEach((row, i) => {
-                        if (i === 0) return;
-                        const cols = row.split('|').map(c => c.trim()).filter(c => c !== '');
-                        if (cols.length >= 3) {
-                            const spk = cols[0].replace(/\*|:/g, '');
-                            const isA = spk.includes('A');
-                            const bubble = document.createElement('div');
-                            bubble.className = `chat-bubble ${isA ? 'chat-left' : 'chat-right'}`;
-                            bubble.innerHTML = `
-                                <strong style="font-size:0.75rem; display:block; margin-bottom:2px; opacity:0.8">${spk}</strong>
+                    const box = document.createElement('div');
+                    box.className = 'chat-container';
+                    
+                    contentLines.forEach(line => {
+                         const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
+                         // A: veya B: ile başlayanları yakala veya sütun sayısına bak
+                         if(cols.length >= 2 && !cols[0].includes('Kişi')) {
+                             const speaker = cols[0].replace(':','');
+                             const isA = speaker.includes('A');
+                             const bub = document.createElement('div');
+                             bub.className = `chat-bubble ${isA ? 'chat-left' : 'chat-right'}`;
+                             bub.innerHTML = `
+                                <strong>${speaker}</strong><br>
                                 ${cols[1]}
-                                <span class="chat-tr">${cols[2]}</span>
-                            `;
-                            chatBox.appendChild(bubble);
-                        }
+                                <span class="chat-tr">${cols[2] || ''}</span>
+                             `;
+                             box.appendChild(bub);
+                         }
                     });
-                    card.appendChild(chatBox);
+                    card.appendChild(box);
                 }
 
-                // 4. DİĞER (Okuma, Ödev vb.)
+                // 4. DİĞERLERİ (Reading, Ödev vb.)
                 else {
                     const div = document.createElement('div');
                     div.className = 'reading-text';
+                    // "Anlama Soruları" kısmını kalın yap
                     let html = fullText
-                        .replace(/> (.*)/g, '<blockquote style="border-left:3px solid var(--accent); margin:10px 0; padding-left:10px; color:#ccc;">$1</blockquote>')
-                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent)">$1</strong>')
-                        .replace(/^\* /gm, '• ')
+                        .replace(/Anlama Soruları:/g, '<br><strong style="color:var(--accent)">❓ Anlama Soruları:</strong>')
                         .replace(/\n/g, '<br>');
                     div.innerHTML = html;
                     card.appendChild(div);
                 }
 
-                // --- İLERLEME BUTONU ---
+                // BUTONLAR
                 if (index < sections.length - 1) {
                     const btn = document.createElement('button');
                     btn.className = 'nav-btn';
-                    btn.innerHTML = 'Tamamladım, Sıradaki 👇';
+                    btn.innerText = 'Tamamladım, Sıradaki 👇';
                     btn.onclick = function() {
-                        this.style.display = 'none'; // Butonu gizle
-                        const nextId = `card-${index+1}`;
-                        const nextCard = document.getElementById(nextId);
-                        
-                        // Görünür yap
-                        nextCard.classList.add('visible');
-                        
-                        // Kaydır (iOS için setTimeout gerekli)
-                        setTimeout(() => {
-                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
+                        this.style.display = 'none';
+                        const next = document.getElementById(`card-${index+1}`);
+                        next.classList.add('visible');
+                        setTimeout(() => next.scrollIntoView({behavior:'smooth', block:'start'}), 100);
                     };
                     card.appendChild(btn);
                 } else {
                     const btn = document.createElement('button');
-                    btn.className = 'btn-accent'; // Yeşil Bitiş Butonu
+                    btn.className = 'btn-accent';
+                    btn.innerText = 'Bitir 🎉';
                     btn.style.marginTop = '20px';
-                    btn.innerHTML = 'Dersi Bitir 🎉';
-                    btn.onclick = () => {
-                        showAlert('Tebrikler! Günlük hedef tamamlandı.');
-                        setTimeout(goHome, 2000);
-                    };
+                    btn.onclick = () => { showAlert('Tebrikler!'); setTimeout(goHome, 1500); };
                     card.appendChild(btn);
                 }
 
@@ -468,22 +418,20 @@
         }
 
         function appendPhrase(container, data) {
-            // A ve B karakterlerini renklendir
-            let ex = data.example
-                .replace(/\*\*A:\*\*/g, '<b style="color:var(--primary)">A:</b>')
-                .replace(/\*\*B:\*\*/g, '<b style="color:var(--orange)">B:</b>')
+            // A: ve B: renklendirme
+            let coloredEx = data.ex
                 .replace(/A:/g, '<b style="color:var(--primary)">A:</b>')
                 .replace(/B:/g, '<b style="color:var(--orange)">B:</b>');
 
-            const div = document.createElement('div');
-            div.className = 'phrase-unit';
-            div.innerHTML = `
+            const el = document.createElement('div');
+            el.className = 'phrase-unit';
+            el.innerHTML = `
                 <span class="ph-title">${data.text}</span>
-                <div class="ph-info"><span class="ph-label">ANLAM:</span> ${data.meaning}</div>
-                <div class="ph-info"><span class="ph-label">KULLANIM:</span> ${data.usage}</div>
-                <div class="ph-dialogue-box">${ex}</div>
+                <div class="ph-row"><span class="ph-tag">ANLAM:</span> ${data.mean}</div>
+                <div class="ph-row"><span class="ph-tag">KULLANIM:</span> ${data.use}</div>
+                <div class="ph-dialogue">${coloredEx}</div>
             `;
-            container.appendChild(div);
+            container.appendChild(el);
         }
     </script>
 </body>
