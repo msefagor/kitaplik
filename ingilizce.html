@@ -11,15 +11,15 @@
             --bg-body: #000000;
             --glass-bg: rgba(28, 28, 30, 0.85);
             --glass-border: rgba(255, 255, 255, 0.12);
-            --primary: #0a84ff;
-            --accent: #32d74b;
+            --primary: #0a84ff; /* Apple Blue */
+            --accent: #32d74b;  /* Apple Green */
             --purple: #bf5af2;
             --orange: #ff9f0a;
             --text: #ffffff;
             --text-gray: #8e8e93;
         }
 
-        /* --- TEMEL AYARLAR --- */
+        /* --- SAYFA YAPISI --- */
         html { height: -webkit-fill-available; }
         
         body {
@@ -29,7 +29,9 @@
             background: var(--bg-body);
             color: var(--text);
             min-height: 100vh;
+            /* iPhone alt çubuk ve üst çentik ayarları */
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
+            padding-top: env(safe-area-inset-top);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -42,10 +44,10 @@
         .container {
             max-width: 100%;
             padding: 20px;
-            padding-top: calc(50px + env(safe-area-inset-top));
+            padding-top: 40px;
         }
 
-        /* --- BİLEŞENLER --- */
+        /* --- BUTONLAR & GİRİŞLER --- */
         h1 { font-size: 2.2rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -0.5px; }
         
         button {
@@ -70,7 +72,7 @@
             margin-bottom: 20px; box-sizing: border-box;
         }
 
-        /* --- KART YAPISI --- */
+        /* --- KART GENEL --- */
         .card {
             background: var(--glass-bg);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -98,16 +100,14 @@
         .v-mean { color: var(--accent); font-weight: 600; display: block; margin: 6px 0; }
         .v-ex { font-size: 0.9rem; color: #ddd; opacity: 0.9; line-height: 1.4; }
 
-        /* 2. KALIPLAR (Tek Kart Yapısı) */
+        /* 2. KALIPLAR (Tek Kart) */
         .phrase-unit {
             background: rgba(255,255,255,0.05); border-radius: 20px;
             padding: 20px; margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden;
         }
         .phrase-unit::before {
-            content:''; position: absolute; left:0; top:0; bottom:0; width:5px;
-            background: var(--purple);
+            content:''; position: absolute; left:0; top:0; bottom:0; width:5px; background: var(--purple);
         }
         .ph-title { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 15px; display: block; line-height: 1.3; }
         .ph-meta {
@@ -128,8 +128,7 @@
             padding: 10px 15px; border-radius: 12px; color: #fff; font-size: 0.95rem;
         }
         .eng-text-box {
-            font-size: 1.05rem; line-height: 1.6; color: #fff;
-            padding: 10px; border-left: 2px solid #fff;
+            font-size: 1.05rem; line-height: 1.6; color: #fff; padding: 10px; border-left: 2px solid #fff;
         }
         .tr-text-box {
             background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;
@@ -138,19 +137,67 @@
         .questions-box { margin-top: 10px; }
         .q-title { color: var(--accent); font-weight: bold; margin-bottom: 8px; display: block; }
 
-        /* 4. ÖDEV (Ayrıştırılmış) */
+        /* 4. DİYALOG (Sohbet Görünümü - DÜZELTİLDİ) */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Baloncuklar arası boşluk */
+            padding: 5px;
+        }
+        
+        .chat-bubble {
+            padding: 14px 18px;
+            border-radius: 20px;
+            max-width: 85%;
+            font-size: 1.05rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* A Kişisi (Sol - Gri) */
+        .chat-left {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.15);
+            border-bottom-left-radius: 4px; /* Mesaj kuyruğu efekti */
+            color: #fff;
+        }
+
+        /* B Kişisi (Sağ - Mavi) */
+        .chat-right {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px; /* Mesaj kuyruğu efekti */
+            text-align: right;
+        }
+
+        .chat-speaker {
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            display: block;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .chat-tr {
+            font-size: 0.85rem;
+            opacity: 0.75;
+            display: block;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-weight: 400;
+        }
+
+        /* 5. ÖDEV */
         .hw-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .hw-title { color: var(--orange); font-weight: bold; display: block; margin-bottom: 10px; font-size: 1.1rem; }
         .hw-content { line-height: 1.6; font-size: 1rem; padding-left: 5px; }
 
-        /* DİYALOG SOHBETİ */
-        .chat-container { display: flex; flex-direction: column; gap: 10px; }
-        .chat-bubble { padding: 12px 16px; border-radius: 18px; max-width: 88%; font-size: 1rem; line-height: 1.4; }
-        .chat-left { background: rgba(255,255,255,0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
-        .chat-right { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; text-align: right; }
-        .chat-tr { font-size: 0.8rem; opacity: 0.7; display: block; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 4px; }
-
-        .nav-btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 20px; }
+        /* NAVİGASYON */
+        .nav-btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 25px; }
         
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.3s ease; }
@@ -180,8 +227,8 @@
 
         <div id="editor-screen" class="screen">
             <h2>İçerik Editörü</h2>
-            <p style="color:#aaa; font-size:0.85rem; margin-bottom:10px;">Telefondan kopyaladığın metni buraya yapıştır:</p>
-            <textarea id="content-input" placeholder="Metni buraya yapıştır..."></textarea>
+            <p style="color:#aaa; font-size:0.85rem; margin-bottom:10px;">Metni aşağıya yapıştır:</p>
+            <textarea id="content-input" placeholder="..."></textarea>
             <button class="btn-accent" onclick="saveContent()">Kaydet 💾</button>
             <button class="btn-secondary" onclick="goHome()">İptal ✕</button>
         </div>
@@ -243,13 +290,12 @@
             document.getElementById('lesson-screen').classList.add('active');
         }
 
-        // --- GELİŞMİŞ AYRIŞTIRICI (PARSER V2) ---
+        // --- AKILLI AYRIŞTIRICI (PARSER V3 - DİYALOG FIX) ---
         function renderLesson(text, date) {
             const container = document.getElementById('lesson-content');
             container.innerHTML = '';
             document.getElementById('lesson-date').innerText = date.split('-').reverse().join('.');
 
-            // Metni ayır
             let sections = text.split(/⸻|---/).filter(s => s.trim().length > 0);
 
             sections.forEach((sectionRaw, index) => {
@@ -259,7 +305,6 @@
                 const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim(); 
                 const contentLines = lines.slice(1);
 
-                // Kart Oluştur
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.id = `card-${index}`;
@@ -270,28 +315,20 @@
                 h2.innerText = titleLine;
                 card.appendChild(h2);
 
-                // 1. KELİMELER (Tablo Başlığını Gizle)
+                // 1. KELİMELER
                 if (titleLine.toLowerCase().includes('kelimeler') || titleLine.toLowerCase().includes('vocabulary')) {
                     const grid = document.createElement('div');
                     grid.className = 'vocab-grid';
-                    
                     contentLines.forEach(line => {
-                        // Parantez içindeki (10-15 yeni kelime) gibi notları atla
                         if(line.includes('(') && line.includes('kelime')) return;
-
                         const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
-                        
-                        // Başlık satırını atla (İngilizce Kelime... yazan satır)
                         if (cols.length >= 2 && (cols[0].includes('İngilizce Kelime') || cols[0].includes('Okunuşu'))) return;
 
                         if (cols.length >= 3) {
                             const item = document.createElement('div');
                             item.className = 'vocab-item';
                             item.innerHTML = `
-                                <div class="v-top">
-                                    <span class="v-word">${cols[0]}</span>
-                                    <span class="v-pron">/${cols[1] || ''}/</span>
-                                </div>
+                                <div class="v-top"><span class="v-word">${cols[0]}</span><span class="v-pron">/${cols[1] || ''}/</span></div>
                                 <span class="v-mean">${cols[2]}</span>
                                 <div class="v-ex">${cols[3] || ''}<br><span style="color:#999; font-size:0.8rem">${cols[4] || ''}</span></div>
                             `;
@@ -301,76 +338,55 @@
                     card.appendChild(grid);
                 }
 
-                // 2. KALIPLAR (Tek Kartta Birleştirme)
+                // 2. KALIPLAR (Tek Kart)
                 else if (titleLine.toLowerCase().includes('kalıplar') || titleLine.toLowerCase().includes('phrases')) {
                     let currentPhrase = null;
-
                     contentLines.forEach(line => {
-                        // "• " temizle
                         let cleanLine = line.replace(/^[•\t\s]+/, '').trim();
-                        
-                        // (5-8 yeni kalıp) gibi satırları atla
                         if (cleanLine.startsWith('(') || cleanLine.length < 3) return;
-
-                        // Kontrol: Bu satır bir özellik mi (Anlam/Kullanım/Örnek) yoksa yeni cümle mi?
                         const isProperty = cleanLine.startsWith('Anlamı:') || cleanLine.startsWith('Kullanımı:') || cleanLine.startsWith('Örnek:');
 
                         if (!isProperty) {
-                            // Yeni bir cümle başladı, öncekini bas
                             if(currentPhrase) appendPhrase(card, currentPhrase);
                             currentPhrase = { text: cleanLine, mean: '', use: '', ex: '' };
-                        }
-                        else if (currentPhrase) {
+                        } else if (currentPhrase) {
                             if (cleanLine.startsWith('Anlamı:')) currentPhrase.mean = cleanLine.replace('Anlamı:', '').trim();
                             else if (cleanLine.startsWith('Kullanımı:')) currentPhrase.use = cleanLine.replace('Kullanımı:', '').trim();
                             else if (cleanLine.startsWith('Örnek:')) currentPhrase.ex = cleanLine.replace('Örnek:', '').trim();
                         }
                     });
-                    // Sonuncuyu bas
                     if(currentPhrase) appendPhrase(card, currentPhrase);
                 }
 
-                // 3. OKUMA (Ayrıştırılmış Görünüm)
+                // 3. OKUMA
                 else if (titleLine.toLowerCase().includes('okuma') || titleLine.toLowerCase().includes('reading')) {
                     const div = document.createElement('div');
                     div.className = 'reading-container';
-                    
                     let fullText = contentLines.join('\n');
                     
-                    // Senaryo
                     fullText = fullText.replace(/Senaryo:(.*?)(\n|$)/, '<div class="scenario-box">🎬 <b>Senaryo:</b> $1</div>');
                     
-                    // Türkçe Çeviri Bloğu
                     if(fullText.includes('Tam Türkçe Çevirisi:')) {
                         const parts = fullText.split('Tam Türkçe Çevirisi:');
-                        // İngilizce kısım (üstteki)
-                        let engPart = parts[0].replace(/<div class="scenario-box">.*?<\/div>/s, ''); // Senaryoyu çıkar
+                        let engPart = parts[0].replace(/<div class="scenario-box">.*?<\/div>/s, '');
                         
-                        // HTML oluştur
                         let html = '';
-                        // Senaryo varsa en başa ekle (zaten replace ile html olduysa)
                         const scenarioMatch = fullText.match(/<div class="scenario-box">.*?<\/div>/s);
                         if(scenarioMatch) html += scenarioMatch[0];
 
-                        // İngilizce Metin
                         html += `<div class="eng-text-box">${engPart.trim().replace(/\n/g, '<br>')}</div>`;
 
-                        // Türkçe Metin (Alttaki) - Soruları ayır
                         let trPart = parts[1];
                         let questionsPart = "";
-                        
                         if(trPart.includes('Anlama Soruları:')) {
                             const trSplit = trPart.split('Anlama Soruları:');
                             trPart = trSplit[0];
                             questionsPart = trSplit[1];
                         }
-
                         html += `<div class="tr-text-box">🇹🇷 <b>Çeviri:</b><br>${trPart.trim().replace(/\n/g, '<br>')}</div>`;
-
                         if(questionsPart) {
                             html += `<div class="questions-box"><span class="q-title">❓ Anlama Soruları:</span>${questionsPart.trim().replace(/\n/g, '<br>')}</div>`;
                         }
-                        
                         div.innerHTML = html;
                     } else {
                         div.innerHTML = fullText.replace(/\n/g, '<br>');
@@ -378,50 +394,79 @@
                     card.appendChild(div);
                 }
 
-                // 4. ÖDEV (Ayrıştırılmış)
+                // 4. ÖDEV
                 else if (titleLine.toLowerCase().includes('ödev') || titleLine.toLowerCase().includes('homework')) {
                      const div = document.createElement('div');
-                     
-                     // Metni A. ve B. diye bölmeye çalış
                      let fullText = contentLines.join('\n');
-                     
-                     // A. Bölümü
-                     if(fullText.includes('A. Cümle Tamamlama:')) {
-                         fullText = fullText.replace('A. Cümle Tamamlama:', '<div class="hw-block"><span class="hw-title">A. Cümle Tamamlama:</span><div class="hw-content">');
-                     }
-                     // B. Bölümü (A'yı kapatıp B'yi aç)
-                     if(fullText.includes('B. Yazma Görevi:')) {
-                         fullText = fullText.replace('B. Yazma Görevi:', '</div></div><div class="hw-block"><span class="hw-title">B. Yazma Görevi:</span><div class="hw-content">');
-                     }
-                     
-                     // Sonunu kapat
+                     if(fullText.includes('A. Cümle Tamamlama:')) fullText = fullText.replace('A. Cümle Tamamlama:', '<div class="hw-block"><span class="hw-title">A. Cümle Tamamlama:</span><div class="hw-content">');
+                     if(fullText.includes('B. Yazma Görevi:')) fullText = fullText.replace('B. Yazma Görevi:', '</div></div><div class="hw-block"><span class="hw-title">B. Yazma Görevi:</span><div class="hw-content">');
                      fullText += '</div></div>';
                      fullText = fullText.replace(/\n/g, '<br>');
-                     
                      div.innerHTML = fullText;
                      card.appendChild(div);
                 }
 
-                // 5. DİYALOG (Standart)
+                // 5. DİYALOG (Mesajlaşma Görünümü - DÜZELTİLDİ)
                 else if (titleLine.toLowerCase().includes('diyalog')) {
                     const box = document.createElement('div');
                     box.className = 'chat-container';
+                    
                     contentLines.forEach(line => {
-                         if(line.includes('(') && line.includes('diyalog')) return; // Notları atla
-                         const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
-                         if(cols.length >= 2 && !cols[0].includes('Kişi')) {
-                             const speaker = cols[0].replace(':','');
+                         if(line.includes('(') && line.includes('diyalog')) return; 
+                         if(line.toLowerCase().includes('kişi') && line.toLowerCase().includes('ingilizce')) return;
+
+                         // Akıllı Ayırma: Tab yoksa bile A: ve B: ile başlarsa yakala
+                         let speaker = "";
+                         let textEn = "";
+                         let textTr = "";
+
+                         const trimmed = line.trim();
+                         
+                         // Eğer satır "A:" veya "B:" ile başlıyorsa
+                         if (trimmed.startsWith('A:') || trimmed.startsWith('B:')) {
+                             // İlk ":" işaretinden böl
+                             let firstSplit = trimmed.split(':'); 
+                             speaker = firstSplit[0] + ":"; // "A:"
+                             
+                             // Geri kalanı İngilizce ve Türkçe olarak ayırmayı dene
+                             let rest = firstSplit.slice(1).join(':').trim();
+                             
+                             // Eğer tab varsa tabdan ayır, yoksa hepsi İngilizce varsay
+                             if (rest.includes('\t') || rest.includes('   ')) {
+                                 let textParts = rest.split(/\t|\s{3,}/);
+                                 textEn = textParts[0];
+                                 textTr = textParts[1] || "";
+                             } else {
+                                 textEn = rest;
+                             }
+                         } 
+                         // Yoksa eski usul tab ile dene
+                         else {
+                             const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
+                             if(cols.length >= 2) {
+                                 speaker = cols[0];
+                                 textEn = cols[1];
+                                 textTr = cols[2] || "";
+                             }
+                         }
+
+                         if(speaker) {
                              const isA = speaker.includes('A');
+                             const cssClass = isA ? 'chat-left' : 'chat-right';
                              const bub = document.createElement('div');
-                             bub.className = `chat-bubble ${isA ? 'chat-left' : 'chat-right'}`;
-                             bub.innerHTML = `<strong>${speaker}</strong><br>${cols[1]}<span class="chat-tr">${cols[2] || ''}</span>`;
+                             bub.className = `chat-bubble ${cssClass}`;
+                             
+                             let html = `<span class="chat-speaker">${speaker.replace(':','')}</span> ${textEn}`;
+                             if(textTr) html += `<span class="chat-tr">${textTr}</span>`;
+                             
+                             bub.innerHTML = html;
                              box.appendChild(bub);
                          }
                     });
                     card.appendChild(box);
                 }
                 
-                // Diğerleri (Standart metin)
+                // Diğerleri
                 else {
                     const div = document.createElement('div');
                     div.style.lineHeight = "1.6";
@@ -454,7 +499,6 @@
         }
 
         function appendPhrase(container, data) {
-            // A ve B Konuşmacılarını Renklendir
             let coloredEx = data.ex
                 .replace(/A:/g, '<b style="color:var(--primary)">A:</b>')
                 .replace(/B:/g, '<b style="color:var(--orange)">B:</b>');
