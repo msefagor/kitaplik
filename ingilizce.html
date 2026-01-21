@@ -8,14 +8,13 @@
     <title>English Day</title>
     <style>
         :root {
-            /* Renk Paleti (Apple Style) */
             --bg-body: #000000;
             --glass-bg: rgba(28, 28, 30, 0.85);
             --glass-border: rgba(255, 255, 255, 0.12);
-            --primary: #0a84ff; /* Mavi */
-            --accent: #32d74b;  /* Yeşil */
-            --purple: #bf5af2;  /* Mor */
-            --orange: #ff9f0a;  /* Turuncu */
+            --primary: #0a84ff;
+            --accent: #32d74b;
+            --purple: #bf5af2;
+            --orange: #ff9f0a;
             --text: #ffffff;
             --text-gray: #8e8e93;
         }
@@ -25,13 +24,10 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: var(--bg-body);
-            color: var(--text);
+            margin: 0; padding: 0;
+            background: var(--bg-body); color: var(--text);
             min-height: 100vh;
-            /* iPhone alt çubuk ve üst çentik için güvenli alanlar */
-            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
             padding-top: env(safe-area-inset-top);
             -webkit-tap-highlight-color: transparent;
         }
@@ -43,9 +39,7 @@
         }
 
         .container {
-            max-width: 100%;
-            padding: 20px;
-            padding-top: 40px;
+            max-width: 100%; padding: 20px; padding-top: 40px;
         }
 
         /* --- BUTONLAR & GİRİŞLER --- */
@@ -101,7 +95,7 @@
         .v-mean { color: var(--accent); font-weight: 600; display: block; margin: 6px 0; }
         .v-ex { font-size: 0.9rem; color: #ddd; opacity: 0.9; line-height: 1.4; }
 
-        /* 2. KALIPLAR (Tek Kart) */
+        /* 2. KALIPLAR */
         .phrase-unit {
             background: rgba(255,255,255,0.05); border-radius: 20px;
             padding: 20px; margin-bottom: 20px;
@@ -138,7 +132,7 @@
         .questions-box { margin-top: 10px; }
         .q-title { color: var(--accent); font-weight: bold; margin-bottom: 8px; display: block; }
 
-        /* 4. DİYALOG (SOHBET BALONCUKLARI - GÜÇLENDİRİLMİŞ STİL) */
+        /* 4. DİYALOG (CHAT STİLİ) - GÜÇLENDİRİLMİŞ */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -154,21 +148,15 @@
             line-height: 1.4;
             position: relative;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex; /* İçerik düzeni için */
+            display: flex;
             flex-direction: column;
         }
 
-        /* Konuşmacı İsimleri */
         .chat-speaker {
-            font-size: 0.75rem;
-            font-weight: 900;
-            margin-bottom: 4px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.7rem; font-weight: 900; margin-bottom: 4px; opacity: 0.9; text-transform: uppercase;
         }
 
-        /* A Kişisi (Sol) */
+        /* Sol Baloncuk (A) */
         .chat-left {
             align-self: flex-start;
             background: rgba(255,255,255,0.18);
@@ -176,7 +164,7 @@
             color: #fff;
         }
 
-        /* B Kişisi (Sağ) */
+        /* Sağ Baloncuk (B) */
         .chat-right {
             align-self: flex-end;
             background: var(--primary);
@@ -186,14 +174,9 @@
         }
         .chat-right .chat-speaker { text-align: right; color: rgba(255,255,255,0.9); }
 
-        /* Türkçe Çeviri Kısmı */
         .chat-tr {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.25);
-            font-weight: 400;
+            font-size: 0.85rem; opacity: 0.7; margin-top: 8px; padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.25); font-weight: 400;
         }
 
         /* 5. ÖDEV */
@@ -294,7 +277,7 @@
             document.getElementById('lesson-screen').classList.add('active');
         }
 
-        // --- PARSER (DİYALOG MODÜLÜ GÜNCELLENDİ) ---
+        // --- AKILLI AYRIŞTIRICI (PARSER V4) ---
         function renderLesson(text, date) {
             const container = document.getElementById('lesson-content');
             container.innerHTML = '';
@@ -410,51 +393,57 @@
                      card.appendChild(div);
                 }
 
-                // 5. DİYALOG (ZORLA ÇALIŞTIRILMIŞ BALONCUK MODU)
+                // 5. DİYALOG (ZORLA BALONCUK MODU)
                 else if (titleLine.toLowerCase().includes('diyalog')) {
                     const box = document.createElement('div');
                     box.className = 'chat-container';
                     
                     contentLines.forEach(line => {
-                         // Gereksiz satırları atla
+                         // GEREKSİZ BAŞLIKLARI TEMİZLE (Filtre)
                          if(line.includes('(') && line.includes('diyalog')) return; 
                          if(line.toLowerCase().includes('kişi') && line.toLowerCase().includes('ingilizce')) return;
 
                          let trimmed = line.trim();
+                         if(trimmed.length < 2) return;
+
                          let speaker = "";
                          let textEn = "";
                          let textTr = "";
 
-                         // Algoritma 1: Satır açıkça "A:" veya "B:" ile başlıyorsa (Boşluk olsa bile)
-                         // Regex: Satır başı, opsiyonel boşluk, A veya B harfi, opsiyonel iki nokta veya nokta
+                         // 1. Durum: Satır açıkça A: veya B: ile başlıyorsa
+                         // Regex: A veya B harfi, opsiyonel iki nokta veya nokta
                          const speakerMatch = trimmed.match(/^([AB])[:.-]?\s+(.*)/i);
 
                          if (speakerMatch) {
-                             speaker = speakerMatch[1].toUpperCase() + ":"; // A: veya B: yap
+                             speaker = speakerMatch[1].toUpperCase() + ":"; 
                              let rest = speakerMatch[2];
 
-                             // Şimdi İngilizce ve Türkçe ayırmaya çalışalım
-                             // Eğer arada TAB varsa veya 3'ten fazla boşluk varsa
-                             if (rest.includes('\t') || rest.match(/\s{3,}/)) {
-                                 const parts = rest.split(/\t|\s{3,}/);
-                                 textEn = parts[0];
-                                 textTr = parts[1] || "";
+                             // "YAPIŞIK METİN" ÇÖZÜMÜ:
+                             // Eğer tab yoksa, ilk nokta/soru işareti/ünlemden sonrasını Türkçe varsay
+                             // Örnek: "Hello. Merhaba." -> "Hello." (EN) "Merhaba." (TR)
+                             
+                             // Regex: Cümle sonu işareti (.?!) + boşluk + Büyük Harf
+                             const splitMatch = rest.match(/(.*?[\.\?\!])\s+([A-ZĞÜŞİÖÇ].*)/);
+                             
+                             if(splitMatch) {
+                                 textEn = splitMatch[1];
+                                 textTr = splitMatch[2];
                              } else {
-                                 // Ayırıcı yoksa tüm metni İngilizce kısmına bas (Baloncuk yine de oluşur)
-                                 textEn = rest; 
+                                 // Ayıramıyorsan hepsini İngilizce kısmına koy (Yine de baloncuk içinde görünsün)
+                                 textEn = rest;
                              }
                          }
-                         // Algoritma 2: Tablo yapısı varsa (Kişi Ayrı Sütundaysa)
+                         // 2. Durum: Tablo yapısı (Kişi | Eng | Tr)
                          else {
                              const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
-                             if(cols.length >= 2 && (cols[0] === 'A' || cols[0] === 'B' || cols[0] === 'A:' || cols[0] === 'B:')) {
+                             if(cols.length >= 2 && (cols[0].startsWith('A') || cols[0].startsWith('B'))) {
                                  speaker = cols[0].replace(':','') + ":";
                                  textEn = cols[1];
                                  textTr = cols[2] || "";
                              }
                          }
 
-                         // Eğer konuşmacı bulunduysa baloncuk oluştur
+                         // Ekrana Bas
                          if(speaker) {
                              const isA = speaker.includes('A');
                              const cssClass = isA ? 'chat-left' : 'chat-right';
