@@ -8,13 +8,14 @@
     <title>English Day</title>
     <style>
         :root {
+            /* Renk Paleti (Apple Style) */
             --bg-body: #000000;
             --glass-bg: rgba(28, 28, 30, 0.85);
             --glass-border: rgba(255, 255, 255, 0.12);
-            --primary: #0a84ff; /* Apple Blue */
-            --accent: #32d74b;  /* Apple Green */
-            --purple: #bf5af2;
-            --orange: #ff9f0a;
+            --primary: #0a84ff; /* Mavi */
+            --accent: #32d74b;  /* Yeşil */
+            --purple: #bf5af2;  /* Mor */
+            --orange: #ff9f0a;  /* Turuncu */
             --text: #ffffff;
             --text-gray: #8e8e93;
         }
@@ -29,7 +30,7 @@
             background: var(--bg-body);
             color: var(--text);
             min-height: 100vh;
-            /* iPhone alt çubuk ve üst çentik ayarları */
+            /* iPhone alt çubuk ve üst çentik için güvenli alanlar */
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             padding-top: env(safe-area-inset-top);
             -webkit-tap-highlight-color: transparent;
@@ -121,7 +122,7 @@
             font-size: 0.95rem; border-left: 3px solid var(--orange); font-style: italic;
         }
 
-        /* 3. OKUMA (Ayrıştırılmış) */
+        /* 3. OKUMA */
         .reading-container { display: flex; flex-direction: column; gap: 15px; }
         .scenario-box {
             background: rgba(10, 132, 255, 0.15); border: 1px solid var(--primary);
@@ -137,57 +138,61 @@
         .questions-box { margin-top: 10px; }
         .q-title { color: var(--accent); font-weight: bold; margin-bottom: 8px; display: block; }
 
-        /* 4. DİYALOG (Sohbet Görünümü - DÜZELTİLDİ) */
+        /* 4. DİYALOG (SOHBET BALONCUKLARI - GÜÇLENDİRİLMİŞ STİL) */
         .chat-container {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* Baloncuklar arası boşluk */
+            gap: 15px;
             padding: 5px;
         }
         
         .chat-bubble {
             padding: 14px 18px;
-            border-radius: 20px;
+            border-radius: 22px;
             max-width: 85%;
             font-size: 1.05rem;
             line-height: 1.4;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex; /* İçerik düzeni için */
+            flex-direction: column;
         }
 
-        /* A Kişisi (Sol - Gri) */
+        /* Konuşmacı İsimleri */
+        .chat-speaker {
+            font-size: 0.75rem;
+            font-weight: 900;
+            margin-bottom: 4px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* A Kişisi (Sol) */
         .chat-left {
             align-self: flex-start;
-            background: rgba(255,255,255,0.15);
-            border-bottom-left-radius: 4px; /* Mesaj kuyruğu efekti */
+            background: rgba(255,255,255,0.18);
+            border-bottom-left-radius: 4px;
             color: #fff;
         }
 
-        /* B Kişisi (Sağ - Mavi) */
+        /* B Kişisi (Sağ) */
         .chat-right {
             align-self: flex-end;
             background: var(--primary);
             color: white;
-            border-bottom-right-radius: 4px; /* Mesaj kuyruğu efekti */
+            border-bottom-right-radius: 4px;
             text-align: right;
         }
+        .chat-right .chat-speaker { text-align: right; color: rgba(255,255,255,0.9); }
 
-        .chat-speaker {
-            font-size: 0.75rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-            display: block;
-            opacity: 0.8;
-            text-transform: uppercase;
-        }
-
+        /* Türkçe Çeviri Kısmı */
         .chat-tr {
             font-size: 0.85rem;
-            opacity: 0.75;
-            display: block;
-            margin-top: 6px;
+            opacity: 0.7;
+            margin-top: 8px;
             padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.3);
+            border-top: 1px solid rgba(255,255,255,0.25);
             font-weight: 400;
         }
 
@@ -196,7 +201,6 @@
         .hw-title { color: var(--orange); font-weight: bold; display: block; margin-bottom: 10px; font-size: 1.1rem; }
         .hw-content { line-height: 1.6; font-size: 1rem; padding-left: 5px; }
 
-        /* NAVİGASYON */
         .nav-btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 25px; }
         
         .screen { display: none; }
@@ -290,7 +294,7 @@
             document.getElementById('lesson-screen').classList.add('active');
         }
 
-        // --- AKILLI AYRIŞTIRICI (PARSER V3 - DİYALOG FIX) ---
+        // --- PARSER (DİYALOG MODÜLÜ GÜNCELLENDİ) ---
         function renderLesson(text, date) {
             const container = document.getElementById('lesson-content');
             container.innerHTML = '';
@@ -338,7 +342,7 @@
                     card.appendChild(grid);
                 }
 
-                // 2. KALIPLAR (Tek Kart)
+                // 2. KALIPLAR
                 else if (titleLine.toLowerCase().includes('kalıplar') || titleLine.toLowerCase().includes('phrases')) {
                     let currentPhrase = null;
                     contentLines.forEach(line => {
@@ -406,50 +410,51 @@
                      card.appendChild(div);
                 }
 
-                // 5. DİYALOG (Mesajlaşma Görünümü - DÜZELTİLDİ)
+                // 5. DİYALOG (ZORLA ÇALIŞTIRILMIŞ BALONCUK MODU)
                 else if (titleLine.toLowerCase().includes('diyalog')) {
                     const box = document.createElement('div');
                     box.className = 'chat-container';
                     
                     contentLines.forEach(line => {
+                         // Gereksiz satırları atla
                          if(line.includes('(') && line.includes('diyalog')) return; 
                          if(line.toLowerCase().includes('kişi') && line.toLowerCase().includes('ingilizce')) return;
 
-                         // Akıllı Ayırma: Tab yoksa bile A: ve B: ile başlarsa yakala
+                         let trimmed = line.trim();
                          let speaker = "";
                          let textEn = "";
                          let textTr = "";
 
-                         const trimmed = line.trim();
-                         
-                         // Eğer satır "A:" veya "B:" ile başlıyorsa
-                         if (trimmed.startsWith('A:') || trimmed.startsWith('B:')) {
-                             // İlk ":" işaretinden böl
-                             let firstSplit = trimmed.split(':'); 
-                             speaker = firstSplit[0] + ":"; // "A:"
-                             
-                             // Geri kalanı İngilizce ve Türkçe olarak ayırmayı dene
-                             let rest = firstSplit.slice(1).join(':').trim();
-                             
-                             // Eğer tab varsa tabdan ayır, yoksa hepsi İngilizce varsay
-                             if (rest.includes('\t') || rest.includes('   ')) {
-                                 let textParts = rest.split(/\t|\s{3,}/);
-                                 textEn = textParts[0];
-                                 textTr = textParts[1] || "";
+                         // Algoritma 1: Satır açıkça "A:" veya "B:" ile başlıyorsa (Boşluk olsa bile)
+                         // Regex: Satır başı, opsiyonel boşluk, A veya B harfi, opsiyonel iki nokta veya nokta
+                         const speakerMatch = trimmed.match(/^([AB])[:.-]?\s+(.*)/i);
+
+                         if (speakerMatch) {
+                             speaker = speakerMatch[1].toUpperCase() + ":"; // A: veya B: yap
+                             let rest = speakerMatch[2];
+
+                             // Şimdi İngilizce ve Türkçe ayırmaya çalışalım
+                             // Eğer arada TAB varsa veya 3'ten fazla boşluk varsa
+                             if (rest.includes('\t') || rest.match(/\s{3,}/)) {
+                                 const parts = rest.split(/\t|\s{3,}/);
+                                 textEn = parts[0];
+                                 textTr = parts[1] || "";
                              } else {
-                                 textEn = rest;
+                                 // Ayırıcı yoksa tüm metni İngilizce kısmına bas (Baloncuk yine de oluşur)
+                                 textEn = rest; 
                              }
-                         } 
-                         // Yoksa eski usul tab ile dene
+                         }
+                         // Algoritma 2: Tablo yapısı varsa (Kişi Ayrı Sütundaysa)
                          else {
                              const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
-                             if(cols.length >= 2) {
-                                 speaker = cols[0];
+                             if(cols.length >= 2 && (cols[0] === 'A' || cols[0] === 'B' || cols[0] === 'A:' || cols[0] === 'B:')) {
+                                 speaker = cols[0].replace(':','') + ":";
                                  textEn = cols[1];
                                  textTr = cols[2] || "";
                              }
                          }
 
+                         // Eğer konuşmacı bulunduysa baloncuk oluştur
                          if(speaker) {
                              const isA = speaker.includes('A');
                              const cssClass = isA ? 'chat-left' : 'chat-right';
