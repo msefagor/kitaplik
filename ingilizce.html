@@ -11,8 +11,8 @@
             --bg-body: #000000;
             --glass-bg: rgba(28, 28, 30, 0.85);
             --glass-border: rgba(255, 255, 255, 0.12);
-            --primary: #0a84ff; /* iMessage Mavisi */
-            --incoming: #3a3a3c; /* iMessage Gri (Gelen) */
+            --primary: #0a84ff;
+            --incoming: #3a3a3c;
             --accent: #32d74b;
             --purple: #bf5af2;
             --orange: #ff9f0a;
@@ -20,15 +20,13 @@
             --text-gray: #8e8e93;
         }
 
-        /* --- SAYFA YAPISI (iPhone 16 Plus Safe Area) --- */
         html { height: -webkit-fill-available; }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
             margin: 0; padding: 0;
             background: var(--bg-body); color: var(--text);
             min-height: 100vh;
-            /* Alt çubuk ve Çentik payları */
             padding-bottom: calc(100px + env(safe-area-inset-bottom));
             padding-top: env(safe-area-inset-top);
             -webkit-tap-highlight-color: transparent;
@@ -40,13 +38,10 @@
             z-index: -2;
         }
 
-        .container {
-            max-width: 100%; padding: 20px; padding-top: 40px;
-        }
+        .container { max-width: 100%; padding: 20px; padding-top: 40px; }
 
-        /* --- BAŞLIKLAR & BUTONLAR --- */
         h1 { font-size: 2.2rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -0.5px; }
-        
+
         button {
             width: 100%; padding: 18px; border-radius: 16px; border: none;
             font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-bottom: 12px;
@@ -69,7 +64,6 @@
             margin-bottom: 20px; box-sizing: border-box;
         }
 
-        /* --- KART YAPISI --- */
         .card {
             background: var(--glass-bg);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -85,7 +79,6 @@
             padding-bottom: 12px; margin-bottom: 20px; color: #fff; font-weight: 700;
         }
 
-        /* 1. KELİMELER */
         .vocab-grid { display: grid; gap: 12px; }
         .vocab-item {
             background: rgba(255,255,255,0.06); border-radius: 16px; padding: 15px;
@@ -97,7 +90,6 @@
         .v-mean { color: var(--accent); font-weight: 600; display: block; margin: 6px 0; }
         .v-ex { font-size: 0.9rem; color: #ddd; opacity: 0.9; line-height: 1.4; }
 
-        /* 2. KALIPLAR (Bütünleşik Kart) */
         .phrase-unit {
             background: rgba(255,255,255,0.05); border-radius: 20px;
             padding: 20px; margin-bottom: 20px;
@@ -118,7 +110,6 @@
             font-size: 0.95rem; border-left: 3px solid var(--orange); font-style: italic;
         }
 
-        /* 3. OKUMA (Ayrıştırılmış Kutular) */
         .reading-container { display: flex; flex-direction: column; gap: 15px; }
         .scenario-box {
             background: rgba(10, 132, 255, 0.15); border: 1px solid var(--primary);
@@ -134,7 +125,7 @@
         .questions-box { margin-top: 10px; }
         .q-title { color: var(--accent); font-weight: bold; margin-bottom: 8px; display: block; }
 
-        /* 4. DİYALOG (WHATSAPP TARZI SOHBET) */
+        /* DİYALOG - WhatsApp/iMessage tarzı */
         .chat-container {
             display: flex; flex-direction: column; gap: 10px; padding: 5px;
         }
@@ -142,13 +133,12 @@
             padding: 12px 16px; border-radius: 20px; max-width: 85%;
             font-size: 1.05rem; line-height: 1.4; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+            word-break: break-word;
         }
-        /* A Kişisi (Sol - Gri) */
         .chat-left {
             align-self: flex-start; background: var(--incoming); color: #fff;
             border-bottom-left-radius: 4px;
         }
-        /* B Kişisi (Sağ - Mavi) */
         .chat-right {
             align-self: flex-end; background: var(--primary); color: white;
             border-bottom-right-radius: 4px; text-align: right;
@@ -158,18 +148,16 @@
             border-top: 1px solid rgba(255,255,255,0.2); font-weight: 400;
         }
 
-        /* 5. ÖDEV (Ayrıştırılmış) */
         .hw-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .hw-title { color: var(--orange); font-weight: bold; display: block; margin-bottom: 10px; font-size: 1.1rem; }
         .hw-content { line-height: 1.6; font-size: 1rem; padding-left: 5px; }
 
-        /* NAVİGASYON */
         .nav-btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 25px; }
-        
+
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
+
         #alert-box {
             position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
             background: #333; color: #fff; padding: 12px 24px; border-radius: 30px;
@@ -178,7 +166,6 @@
     </style>
 </head>
 <body>
-
     <div class="bg-gradient"></div>
     <div id="alert-box"></div>
 
@@ -257,20 +244,92 @@
             document.getElementById('lesson-screen').classList.add('active');
         }
 
-        // --- AKILLI PARSER (DİYALOG VE FORMAT DÜZELTMELERİ) ---
+        /* =========================================================
+           DİYALOG PARSER (TABLO + TAB KAYBOLMUŞ METİN İÇİN SAĞLAM)
+        ========================================================= */
+
+        function normalizeSpaces(s) {
+            return (s || '').replace(/\u00A0/g, ' ').replace(/[ \t]+/g, ' ').trim();
+        }
+
+        // TR başlangıcını yakalamak için: Türkçe karakter veya sık başlayan TR kelimeleri
+        function findTurkishStartIndex(text) {
+            if(!text) return -1;
+
+            // 1) Türkçe karakter görülürse o index TR olabilir
+            const trCharMatch = text.match(/[çğıöşüÇĞİÖŞÜ]/);
+            if(trCharMatch) return trCharMatch.index;
+
+            // 2) Sık TR başlangıç kelimeleri (senin diyaloglarında çok geçiyor)
+            const commonTR = /\b(Merhaba|Tabii|Tamam|Evet|İşte|Harika|Lütfen|Ne kadar\??|Ne zaman\??|İki gün|Bu paket|Bu|Şu|Ben|Sen|Siz)\b/;
+            const m = text.match(commonTR);
+            if(m) return m.index;
+
+            return -1;
+        }
+
+        // Satırdan {speaker, en, tr} çıkarır.
+        function parseDialogueLine(rawLine) {
+            let line = (rawLine || '').replace(/\r/g,'').trim();
+            if(line.length < 2) return null;
+
+            // Başlık satırlarını atla
+            const low = line.toLowerCase();
+            if(low.includes('kişi') && low.includes('ingilizce') && low.includes('türkçe')) return null;
+            if(low.startsWith('(') && low.includes('diyalog')) return null;
+
+            // A:/B: yakala (başta A:, A. vb.)
+            const speakerMatch = line.match(/^([AB])\s*[:.]\s*(.*)$/i);
+            if(!speakerMatch) return null;
+
+            const speaker = speakerMatch[1].toUpperCase();
+            let rest = speakerMatch[2] || '';
+            rest = rest.trim();
+
+            // 1) Önce TAB ile sütun (en doğru senaryonun)
+            if(rest.includes('\t')) {
+                const parts = rest.split('\t').map(p => p.trim()).filter(Boolean);
+                if(parts.length >= 2) {
+                    const en = parts[0];
+                    const tr = parts.slice(1).join(' ');
+                    return { speaker, en, tr };
+                }
+            }
+
+            // 2) Çoklu boşluk (tab kaybolduysa) -> 2+ boşlukla böl
+            const multiSpaceParts = rest.split(/\s{2,}/).map(p => p.trim()).filter(Boolean);
+            if(multiSpaceParts.length >= 2) {
+                const en = multiSpaceParts[0];
+                const tr = multiSpaceParts.slice(1).join(' ');
+                return { speaker, en, tr };
+            }
+
+            // 3) Son çare: TR başlangıcını heuristikle bul
+            // (Bu, "Hello. I'd like... Merhaba. ..." gibi yapışık metinlerde çalışır)
+            const idx = findTurkishStartIndex(rest);
+            if(idx > 0) {
+                const en = normalizeSpaces(rest.slice(0, idx));
+                const tr = normalizeSpaces(rest.slice(idx));
+                return { speaker, en, tr };
+            }
+
+            // 4) Hiç ayıramadıysak sadece EN göster
+            return { speaker, en: rest, tr: "" };
+        }
+
+        // --- AKILLI PARSER ---
         function renderLesson(text, date) {
             const container = document.getElementById('lesson-content');
             container.innerHTML = '';
             document.getElementById('lesson-date').innerText = date.split('-').reverse().join('.');
 
-            // Bölüm Ayırıcı (Çizgi veya 3 tire)
             let sections = text.split(/⸻|---/).filter(s => s.trim().length > 0);
 
             sections.forEach((sectionRaw, index) => {
-                const lines = sectionRaw.trim().split('\n').filter(l => l.trim() !== ""); 
+                const lines = sectionRaw.trim().split('\n').filter(l => l.trim() !== "");
                 if(lines.length === 0) return;
 
-                const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim(); 
+                const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim();
                 const contentLines = lines.slice(1);
 
                 const card = document.createElement('div');
@@ -283,15 +342,14 @@
                 h2.innerText = titleLine;
                 card.appendChild(h2);
 
-                // --- 1. KELİMELER ---
+                // 1) KELİMELER
                 if (titleLine.toLowerCase().includes('kelimeler') || titleLine.toLowerCase().includes('vocabulary')) {
                     const grid = document.createElement('div');
                     grid.className = 'vocab-grid';
                     contentLines.forEach(line => {
-                        if(line.includes('(') && line.includes('kelime')) return; // "(10 kelime)" gibi notları atla
-                        
+                        if(line.includes('(') && line.includes('kelime')) return;
+
                         const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
-                        // Tablo başlıklarını atla
                         if (cols.length >= 2 && (cols[0].toLowerCase().includes('kelime') || cols[0].toLowerCase().includes('okunuşu'))) return;
 
                         if (cols.length >= 3) {
@@ -308,14 +366,13 @@
                     card.appendChild(grid);
                 }
 
-                // --- 2. KALIPLAR (Bütünleşik Kart) ---
+                // 2) KALIPLAR
                 else if (titleLine.toLowerCase().includes('kalıplar') || titleLine.toLowerCase().includes('phrases')) {
                     let currentPhrase = null;
                     contentLines.forEach(line => {
                         let cleanLine = line.replace(/^[•\t\s]+/, '').trim();
-                        // "(5 kalıp)" gibi notları atla
                         if (cleanLine.startsWith('(') || cleanLine.length < 3) return;
-                        
+
                         const isProperty = cleanLine.startsWith('Anlamı:') || cleanLine.startsWith('Kullanımı:') || cleanLine.startsWith('Örnek:');
 
                         if (!isProperty) {
@@ -330,20 +387,18 @@
                     if(currentPhrase) appendPhrase(card, currentPhrase);
                 }
 
-                // --- 3. OKUMA (Ayrıştırılmış) ---
+                // 3) OKUMA
                 else if (titleLine.toLowerCase().includes('okuma') || titleLine.toLowerCase().includes('reading')) {
                     const div = document.createElement('div');
                     div.className = 'reading-container';
                     let fullText = contentLines.join('\n');
-                    
-                    // Senaryo kutusu
+
                     fullText = fullText.replace(/Senaryo:(.*?)(\n|$)/, '<div class="scenario-box">🎬 <b>Senaryo:</b> $1</div>');
-                    
+
                     if(fullText.includes('Tam Türkçe Çevirisi:')) {
                         const parts = fullText.split('Tam Türkçe Çevirisi:');
-                        // İngilizce Metin (Senaryo hariç)
                         let engPart = parts[0].replace(/<div class="scenario-box">.*?<\/div>/s, '');
-                        
+
                         let html = '';
                         const scenarioMatch = fullText.match(/<div class="scenario-box">.*?<\/div>/s);
                         if(scenarioMatch) html += scenarioMatch[0];
@@ -368,7 +423,7 @@
                     card.appendChild(div);
                 }
 
-                // --- 4. ÖDEV (Ayrıştırılmış) ---
+                // 4) ÖDEV
                 else if (titleLine.toLowerCase().includes('ödev') || titleLine.toLowerCase().includes('homework')) {
                      const div = document.createElement('div');
                      let fullText = contentLines.join('\n');
@@ -380,62 +435,41 @@
                      card.appendChild(div);
                 }
 
-                // --- 5. DİYALOG (CRITICAL FIX: Yapışık Metin Ayrıştırıcı) ---
-                else if (titleLine.toLowerCase().includes('diyalog')) {
+                // 5) DİYALOG (✅ TABLO + TAB KAYBI DESTEKLİ WhatsApp Görünüm)
+                else if (titleLine.toLowerCase().includes('diyalog') || titleLine.toLowerCase().includes('dialogue')) {
                     const box = document.createElement('div');
                     box.className = 'chat-container';
-                    
+
                     contentLines.forEach(line => {
-                         // Gereksiz başlıkları atla
-                         if(line.includes('(') && line.includes('diyalog')) return; 
-                         if(line.toLowerCase().includes('kişi') && line.toLowerCase().includes('ingilizce')) return;
+                        const parsed = parseDialogueLine(line);
+                        if(!parsed) return;
 
-                         let trimmed = line.trim();
-                         if(trimmed.length < 2) return;
+                        const isA = (parsed.speaker === 'A');
+                        const cssClass = isA ? 'chat-left' : 'chat-right';
 
-                         // Konuşmacı Tespiti: "A:" veya "B:" (veya A. B.)
-                         // Regex: Satır başı, A veya B, sonra : veya . ve boşluk
-                         const speakerMatch = trimmed.match(/^([AB])[:.]\s*(.*)/i);
+                        const bub = document.createElement('div');
+                        bub.className = `chat-bubble ${cssClass}`;
 
-                         if (speakerMatch) {
-                             let speaker = speakerMatch[1].toUpperCase(); // "A" veya "B"
-                             let rawContent = speakerMatch[2]; // "Hello. Merhaba."
+                        // EN (üst) + TR (alt)
+                        let html = `<div style="font-size:1rem;">${parsed.en}</div>`;
+                        if(parsed.tr && parsed.tr.trim().length > 0) html += `<div class="chat-tr">${parsed.tr}</div>`;
 
-                             let textEn = "";
-                             let textTr = "";
-
-                             // ZEKİ AYRIŞTIRICI:
-                             // Cümle bitişi (.?!) ve ardından gelen Büyük Harf'e bak.
-                             // Örnek: "Hello there. Merhaba." -> "Hello there." | "Merhaba."
-                             // Regex: (En az 1 karakter + Noktalama) + Boşluk + (Türkçe Karakter)
-                             const splitRegex = /(.*?[\.\?\!])\s+([A-ZÇĞİÖŞÜ].*)/;
-                             const splitMatch = rawContent.match(splitRegex);
-
-                             if(splitMatch) {
-                                 textEn = splitMatch[1]; // İngilizce kısım
-                                 textTr = splitMatch[2]; // Türkçe kısım
-                             } else {
-                                 // Ayrışamıyorsa (noktalama yoksa) hepsi İngilizce kutusunda kalsın
-                                 textEn = rawContent;
-                             }
-
-                             // HTML Oluştur
-                             const isA = (speaker === 'A');
-                             const cssClass = isA ? 'chat-left' : 'chat-right';
-                             
-                             const bub = document.createElement('div');
-                             bub.className = `chat-bubble ${cssClass}`;
-                             
-                             let html = `<div style="font-size:1rem;">${textEn}</div>`;
-                             if(textTr) html += `<div class="chat-tr">${textTr}</div>`;
-                             
-                             bub.innerHTML = html;
-                             box.appendChild(bub);
-                         }
+                        bub.innerHTML = html;
+                        box.appendChild(bub);
                     });
+
+                    // Diyalog bulunamazsa kullanıcıyı boş bırakma
+                    if(!box.children.length) {
+                        const warn = document.createElement('div');
+                        warn.style.color = '#aaa';
+                        warn.style.lineHeight = '1.6';
+                        warn.innerHTML = 'Diyalog satırları ayrıştırılamadı. Satırlar "A:" / "B:" ile başlamalı.';
+                        box.appendChild(warn);
+                    }
+
                     card.appendChild(box);
                 }
-                
+
                 // Diğerleri
                 else {
                     const div = document.createElement('div');
@@ -469,7 +503,7 @@
         }
 
         function appendPhrase(container, data) {
-            let coloredEx = data.ex
+            let coloredEx = (data.ex || '')
                 .replace(/A:/g, '<b style="color:var(--primary)">A:</b>')
                 .replace(/B:/g, '<b style="color:var(--orange)">B:</b>');
 
