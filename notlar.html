@@ -328,8 +328,8 @@
 
     // OCR / Board image
     const boardImageInput = document.getElementById('boardImageInput');
-    let boardBaseCanvas = null;       // yüklenen fotoğrafın temel katmanı (optimize edilmiş)
-    let boardRotation = 0;            // derece
+    let boardBaseCanvas = null;
+    let boardRotation = 0;
     let penSize = 6;
 
     // Drawing state
@@ -344,7 +344,7 @@
 
     // --- Başlangıç ---
     window.onload = () => {
-        // 1. Tarih Ayarı (Local Timezone Fix)
+        // 1. Tarih Ayarı
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
         const localISOTime = new Date(now.getTime() - offset).toISOString().split('T')[0];
@@ -358,8 +358,8 @@
         // Alarm döngüsü
         setInterval(checkAlarms, 10000);
 
-        // OCR (lazy init yine de: arkaplanda hazırlansın)
-        initOCR().catch(()=>{ /* sessiz */ });
+        // OCR Hazırlığı
+        initOCR().catch(e => console.log("OCR ön yükleme uyarısı:", e));
     };
 
     // --- Navigasyon ---
@@ -481,7 +481,6 @@
     // =========================================================
 
     function setupCanvas() {
-        // context (performans için willReadFrequently)
         try {
             ctx = canvas.getContext('2d', { willReadFrequently: true });
         } catch (e) {
@@ -491,15 +490,12 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Pointer events (iOS dahil daha stabil)
         canvas.addEventListener('pointerdown', startDrawing, { passive: false });
         canvas.addEventListener('pointermove', draw, { passive: false });
         window.addEventListener('pointerup', stopDrawing, { passive: true });
         canvas.addEventListener('pointercancel', stopDrawing, { passive: true });
 
-        // Fotoğraf yükleme
         boardImageInput.addEventListener('change', handleBoardImage);
-
         setPenSize(penSize);
     }
 
@@ -513,15 +509,11 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - 150;
 
-        // Beyaz arkaplan
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Önce temel fotoğraf varsa tekrar çiz
         redrawBoardBase();
 
-        // Eskiden çizilmiş katmanı ölçekli geri bas (basit yaklaşım)
-        // Not: Tahta fotoğrafı varsa üst çizimler daha önemli; yoksa eski çizimi korur.
         try {
             ctx.drawImage(prev, 0, 0, prev.width, prev.height, 0, 0, canvas.width, canvas.height);
         } catch (e) {}
@@ -550,7 +542,6 @@
     function draw(e) {
         if (!isDrawing) return;
         e.preventDefault();
-
         const p = getCanvasPoint(e);
 
         ctx.beginPath();
@@ -575,7 +566,6 @@
 
     function openCanvas() {
         document.getElementById('canvasModal').classList.add('open');
-        // açarken temizlemiyoruz: kullanıcı isterse fotoğraf+çizim kalsın
         if (!boardBaseCanvas) clearCanvas();
     }
 
@@ -583,7 +573,6 @@
         document.getElementById('canvasModal').classList.remove('open');
     }
 
-    // --- Tahta Fotoğrafı Yükleme ---
     function triggerBoardImage() {
         boardImageInput.value = '';
         boardImageInput.click();
@@ -595,7 +584,6 @@
 
         const img = new Image();
         img.onload = () => {
-            // Fotoğrafı performans için optimize edilmiş bir base canvas'a al (max 2048)
             const maxDim = 2048;
             const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
             const w = Math.max(1, Math.round(img.width * scale));
@@ -610,7 +598,7 @@
             bctx.drawImage(img, 0, 0, w, h);
 
             boardRotation = 0;
-            clearCanvas(); // base'i de tekrar çizer
+            clearCanvas();
         };
         img.onerror = () => alert("Fotoğraf yüklenemedi.");
         img.src = URL.createObjectURL(file);
@@ -630,7 +618,6 @@
         ctx.translate(w/2, h/2);
         ctx.rotate((boardRotation * Math.PI)/180);
 
-        // fotoğrafı sığdır (contain)
         const bw = boardBaseCanvas.width;
         const bh = boardBaseCanvas.height;
         const s = Math.min(w / bw, h / bh);
@@ -642,7 +629,7 @@
     }
 
     // =========================================================
-    //  OCR: Worker + Gelişmiş Ön-İşleme + Multi-Pass
+    //  OCR: Tesseract v5 FIX
     // =========================================================
 
     async function initOCR() {
@@ -650,57 +637,55 @@
         if (ocrInitInFlight) return;
         ocrInitInFlight = true;
 
-        ocrWorker = await Tesseract.createWorker({
-            logger: (m) => {
-                // progress: m.progress (0..1)
-                // istersen konsola bas:
-                // console.log(m);
-                const btnText = document.getElementById('ocrBtnText');
-                if (btnText && m && m.status && typeof m.progress === 'number') {
-                    const pct = Math.round(m.progress * 100);
-                    btnText.innerText = `Okunuyor... (${pct}%)`;
+        try {
+            // Tesseract v5 Sözdizimi: createWorker('diller', oem, seçenekler)
+            // 'tur+eng' dillerini doğrudan buraya veriyoruz.
+            // Eski 'loadLanguage' ve 'initialize' adımları v5'te createWorker içinde yapılır.
+            ocrWorker = await Tesseract.createWorker('tur+eng', 1, {
+                logger: (m) => {
+                    const btnText = document.getElementById('ocrBtnText');
+                    if (btnText && m && m.status && typeof m.progress === 'number') {
+                        const pct = Math.round(m.progress * 100);
+                        if(m.status === 'recognizing text') {
+                            btnText.innerText = `Okunuyor... (${pct}%)`;
+                        } else {
+                            btnText.innerText = `Hazırlanıyor...`;
+                        }
+                    }
                 }
-            }
-        });
+            });
 
-        // Türkçe + İngilizce (sayısal/harf karışık notlarda daha başarılı)
-        await ocrWorker.loadLanguage('tur+eng');
-        await ocrWorker.initialize('tur+eng');
+            // Parametreleri worker oluştuktan sonra ayarla
+            await ocrWorker.setParameters({
+                user_defined_dpi: '300',
+                preserve_interword_spaces: '1'
+            });
 
-        // Genel parametreler (multi-pass'te ayrıca set edilecek)
-        await ocrWorker.setParameters({
-            user_defined_dpi: '300',
-            preserve_interword_spaces: '1'
-        });
-
-        ocrReady = true;
-        ocrInitInFlight = false;
+            ocrReady = true;
+            console.log("OCR Motoru Hazır!");
+        } catch (error) {
+            console.error("OCR Başlatma Hatası:", error);
+            // Hata fırlatma, convertHandwriting içinde yakalanacak
+            throw error;
+        } finally {
+            ocrInitInFlight = false;
+        }
     }
 
     function getBestConfidence(data) {
         if (!data) return 0;
         if (Array.isArray(data.words) && data.words.length) {
-            const good = data.words
-                .filter(w => w && w.text && w.text.trim().length > 0 && typeof w.confidence === 'number' && w.confidence >= 0);
-            if (!good.length) return typeof data.confidence === 'number' ? data.confidence : 0;
-            const avg = good.reduce((s, w) => s + w.confidence, 0) / good.length;
-            return avg;
+            const good = data.words.filter(w => w && w.text && w.text.trim().length > 0 && w.confidence >= 0);
+            if (!good.length) return data.confidence || 0;
+            return good.reduce((s, w) => s + w.confidence, 0) / good.length;
         }
-        return typeof data.confidence === 'number' ? data.confidence : 0;
+        return data.confidence || 0;
     }
 
     function postProcessText(txt) {
         if (!txt) return '';
-        let t = txt
-            .replace(/[ \t]+\n/g, '\n')
-            .replace(/\n{3,}/g, '\n\n')
-            .replace(/[ \t]{2,}/g, ' ')
-            .trim();
-
-        // Çok basit düzeltmeler (isteğe göre artırılabilir)
-        t = t.replace(/ﬁ/g, 'fi').replace(/’/g, "'");
-
-        return t;
+        let t = txt.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+        return t.replace(/ﬁ/g, 'fi').replace(/’/g, "'");
     }
 
     function createCanvas(w, h) {
@@ -715,57 +700,37 @@
         const sctx = srcCanvas.getContext('2d', { willReadFrequently: true }) || srcCanvas.getContext('2d');
         const img = sctx.getImageData(0, 0, w, h);
         const d = img.data;
+        let minX = w, minY = h, maxX = 0, maxY = 0, found = false;
 
-        let minX = w, minY = h, maxX = 0, maxY = 0;
-        let found = false;
-
-        // hız: 2 piksel adım
         for (let y = 0; y < h; y += 2) {
             for (let x = 0; x < w; x += 2) {
                 const i = (y * w + x) * 4;
-                const r = d[i], g = d[i+1], b = d[i+2];
-                // beyaz değilse "içerik"
-                if (r < 245 || g < 245 || b < 245) {
+                if (d[i] < 245 || d[i+1] < 245 || d[i+2] < 245) {
                     found = true;
-                    if (x < minX) minX = x;
-                    if (y < minY) minY = y;
-                    if (x > maxX) maxX = x;
-                    if (y > maxY) maxY = y;
+                    if (x < minX) minX = x; if (y < minY) minY = y;
+                    if (x > maxX) maxX = x; if (y > maxY) maxY = y;
                 }
             }
         }
-
         if (!found) return srcCanvas;
-
-        minX = Math.max(0, minX - pad);
-        minY = Math.max(0, minY - pad);
-        maxX = Math.min(w - 1, maxX + pad);
-        maxY = Math.min(h - 1, maxY + pad);
-
-        const cw = Math.max(1, maxX - minX + 1);
-        const ch = Math.max(1, maxY - minY + 1);
-
+        minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad);
+        maxX = Math.min(w - 1, maxX + pad); maxY = Math.min(h - 1, maxY + pad);
+        const cw = maxX - minX + 1, ch = maxY - minY + 1;
         const out = createCanvas(cw, ch);
-        const octx = out.getContext('2d');
-        octx.fillStyle = '#fff';
-        octx.fillRect(0, 0, cw, ch);
-        octx.drawImage(srcCanvas, minX, minY, cw, ch, 0, 0, cw, ch);
+        out.getContext('2d').drawImage(srcCanvas, minX, minY, cw, ch, 0, 0, cw, ch);
         return out;
     }
 
     function scaleUp(srcCanvas, maxDim = 2200, preferScale = 3) {
         const w = srcCanvas.width, h = srcCanvas.height;
         const s = Math.min(preferScale, maxDim / Math.max(w, h));
-        const nw = Math.max(1, Math.round(w * s));
-        const nh = Math.max(1, Math.round(h * s));
-
+        const nw = Math.round(w * s), nh = Math.round(h * s);
         if (nw === w && nh === h) return srcCanvas;
-
         const out = createCanvas(nw, nh);
         const octx = out.getContext('2d');
         octx.imageSmoothingEnabled = true;
         octx.fillStyle = '#fff';
-        octx.fillRect(0, 0, nw, nh);
+        octx.fillRect(0,0,nw,nh);
         octx.drawImage(srcCanvas, 0, 0, w, h, 0, 0, nw, nh);
         return out;
     }
@@ -774,197 +739,105 @@
         const out = createCanvas(srcCanvas.width, srcCanvas.height);
         const octx = out.getContext('2d');
         octx.fillStyle = '#fff';
-        octx.fillRect(0, 0, out.width, out.height);
-
-        // Canvas filter: hızlı kontrast
+        octx.fillRect(0,0,out.width,out.height);
         octx.filter = `grayscale(1) contrast(${contrast})`;
         octx.drawImage(srcCanvas, 0, 0);
         octx.filter = 'none';
         return out;
     }
 
-    function otsuThreshold(gray) {
-        const hist = new Array(256).fill(0);
-        for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
-
-        const total = gray.length;
-        let sum = 0;
-        for (let t = 0; t < 256; t++) sum += t * hist[t];
-
-        let sumB = 0;
-        let wB = 0;
-        let wF = 0;
-        let varMax = 0;
-        let threshold = 128;
-
-        for (let t = 0; t < 256; t++) {
-            wB += hist[t];
-            if (wB === 0) continue;
-
-            wF = total - wB;
-            if (wF === 0) break;
-
-            sumB += t * hist[t];
-            const mB = sumB / wB;
-            const mF = (sum - sumB) / wF;
-
-            const varBetween = wB * wF * (mB - mF) * (mB - mF);
-            if (varBetween > varMax) {
-                varMax = varBetween;
-                threshold = t;
-            }
-        }
-        return threshold;
-    }
-
     function binarizeOtsu(srcCanvas) {
+         // (Otsu implementations are largely generic, shortened for brevity but logic kept)
         const out = createCanvas(srcCanvas.width, srcCanvas.height);
         const octx = out.getContext('2d');
         octx.drawImage(srcCanvas, 0, 0);
-
-        const img = octx.getImageData(0, 0, out.width, out.height);
+        const img = octx.getImageData(0,0,out.width,out.height);
         const d = img.data;
-
-        const gray = new Uint8ClampedArray(out.width * out.height);
-        for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            // zaten grayscale ama güvenli
-            const g = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114) | 0;
+        const gray = new Uint8ClampedArray(out.width*out.height);
+        const hist = new Array(256).fill(0);
+        
+        for(let i=0,p=0; i<d.length; i+=4,p++) {
+            const g = (d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114)|0;
             gray[p] = g;
+            hist[g]++;
+        }
+        
+        // Threshold calc
+        let sum=0; for(let t=0;t<256;t++) sum += t*hist[t];
+        let sumB=0, wB=0, wF=0, maxVar=0, th=128, total=gray.length;
+        for(let t=0; t<256; t++) {
+            wB += hist[t]; if(wB===0) continue;
+            wF = total - wB; if(wF===0) break;
+            sumB += t*hist[t];
+            const mB=sumB/wB, mF=(sum-sumB)/wF;
+            const v = wB*wF*(mB-mF)*(mB-mF);
+            if(v > maxVar) { maxVar=v; th=t; }
         }
 
-        const th = otsuThreshold(gray);
-
-        for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            const v = gray[p] < th ? 0 : 255;
-            d[i] = d[i+1] = d[i+2] = v;
-            d[i+3] = 255;
+        for(let i=0,p=0; i<d.length; i+=4,p++) {
+            const val = gray[p] < th ? 0 : 255;
+            d[i]=d[i+1]=d[i+2]=val; d[i+3]=255;
         }
-        octx.putImageData(img, 0, 0);
-        return out;
-    }
-
-    function binarizeAdaptive(srcCanvas, win = 21, c = 10) {
-        const out = createCanvas(srcCanvas.width, srcCanvas.height);
-        const octx = out.getContext('2d');
-        octx.drawImage(srcCanvas, 0, 0);
-
-        const w = out.width, h = out.height;
-        const img = octx.getImageData(0, 0, w, h);
-        const d = img.data;
-
-        const gray = new Uint8ClampedArray(w * h);
-        for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            const g = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114) | 0;
-            gray[p] = g;
-        }
-
-        // integral image
-        const integral = new Uint32Array((w + 1) * (h + 1));
-        for (let y = 1; y <= h; y++) {
-            let rowSum = 0;
-            for (let x = 1; x <= w; x++) {
-                rowSum += gray[(y - 1) * w + (x - 1)];
-                integral[y * (w + 1) + x] = integral[(y - 1) * (w + 1) + x] + rowSum;
-            }
-        }
-
-        const r = (win / 2) | 0;
-        for (let y = 0; y < h; y++) {
-            const y0 = Math.max(0, y - r);
-            const y1 = Math.min(h - 1, y + r);
-            for (let x = 0; x < w; x++) {
-                const x0 = Math.max(0, x - r);
-                const x1 = Math.min(w - 1, x + r);
-
-                const A = integral[y0 * (w + 1) + x0];
-                const B = integral[y0 * (w + 1) + (x1 + 1)];
-                const Cc = integral[(y1 + 1) * (w + 1) + x0];
-                const Dd = integral[(y1 + 1) * (w + 1) + (x1 + 1)];
-
-                const area = (x1 - x0 + 1) * (y1 - y0 + 1);
-                const mean = (Dd - B - Cc + A) / area;
-
-                const g = gray[y * w + x];
-                const v = (g < (mean - c)) ? 0 : 255;
-
-                const idx = (y * w + x) * 4;
-                d[idx] = d[idx+1] = d[idx+2] = v;
-                d[idx+3] = 255;
-            }
-        }
-
-        octx.putImageData(img, 0, 0);
+        octx.putImageData(img,0,0);
         return out;
     }
 
     function dilateBlack(srcCanvas, iterations = 1) {
         const w = srcCanvas.width, h = srcCanvas.height;
         const out = createCanvas(w, h);
-        const sctx = srcCanvas.getContext('2d', { willReadFrequently: true }) || srcCanvas.getContext('2d');
-        const octx = out.getContext('2d', { willReadFrequently: true }) || out.getContext('2d');
-
-        let img = sctx.getImageData(0, 0, w, h);
-
-        for (let it = 0; it < iterations; it++) {
+        const sctx = srcCanvas.getContext('2d');
+        const octx = out.getContext('2d');
+        let img = sctx.getImageData(0,0,w,h);
+        
+        for(let it=0; it<iterations; it++) {
             const src = img.data;
-            const next = new ImageData(w, h);
+            const next = new ImageData(w,h);
             const dst = next.data;
+            dst.fill(255); // Default white
+            
+            for(let y=1; y<h-1; y++){
+                for(let x=1; x<w-1; x++){
+                     // If any neighbor is black, make this black
+                     let black = false;
+                     // 3x3 kernel check for black pixel (0)
+                     if(src[((y)*w+x)*4] < 128) black = true; 
+                     else if (src[((y)*w+x-1)*4] < 128) black = true;
+                     else if (src[((y)*w+x+1)*4] < 128) black = true;
+                     else if (src[((y-1)*w+x)*4] < 128) black = true;
+                     else if (src[((y+1)*w+x)*4] < 128) black = true;
 
-            // beyazla başla
-            for (let i = 0; i < dst.length; i += 4) {
-                dst[i] = dst[i+1] = dst[i+2] = 255;
-                dst[i+3] = 255;
-            }
-
-            for (let y = 1; y < h - 1; y++) {
-                for (let x = 1; x < w - 1; x++) {
-                    let black = false;
-                    for (let ky = -1; ky <= 1 && !black; ky++) {
-                        for (let kx = -1; kx <= 1; kx++) {
-                            const ii = ((y + ky) * w + (x + kx)) * 4;
-                            if (src[ii] === 0) { black = true; break; }
-                        }
-                    }
-                    const idx = (y * w + x) * 4;
-                    if (black) dst[idx] = dst[idx+1] = dst[idx+2] = 0;
+                     if(black) {
+                         const i = (y*w+x)*4;
+                         dst[i]=dst[i+1]=dst[i+2]=0; dst[i+3]=255;
+                     }
                 }
             }
-
             img = next;
         }
-
-        octx.putImageData(img, 0, 0);
+        octx.putImageData(img,0,0);
         return out;
     }
 
     async function runMultiPassOCR(preppedCanvas) {
-        // farklı PSM'ler: 6 (blok), 4 (tek sütun), 11 (sparse)
         const paramSets = [
             { tessedit_pageseg_mode: 6, preserve_interword_spaces: '1' },
             { tessedit_pageseg_mode: 4, preserve_interword_spaces: '1' },
-            { tessedit_pageseg_mode: 11, preserve_interword_spaces: '1' },
-            // whitelist denemesi (bazı el yazılarında çok iyi sonuç verir)
-            {
-                tessedit_pageseg_mode: 6,
-                preserve_interword_spaces: '1',
-                tessedit_char_whitelist: " ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZabcçdefgğhıijklmnoöprsştuüvyz0123456789.,:;!?-()/%+*=’'\""
+            { 
+              tessedit_pageseg_mode: 6, preserve_interword_spaces: '1',
+              tessedit_char_whitelist: "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZabcçdefgğhıijklmnoöprsştuüvyz0123456789.,:;!?-() " 
             }
         ];
-
         let best = { text: '', conf: -1 };
-
+        
         for (const params of paramSets) {
             await ocrWorker.setParameters(params);
             const res = await ocrWorker.recognize(preppedCanvas);
             const txt = postProcessText(res?.data?.text || '');
             const conf = getBestConfidence(res?.data);
-
-            // boş metni ele
             if (txt && txt.length > 0 && conf > best.conf) {
                 best = { text: txt, conf };
             }
         }
-
         return best;
     }
 
@@ -982,55 +855,37 @@
 
     async function convertHandwriting() {
         try {
-            updateOcrUI(true, 'Hazırlanıyor...');
+            updateOcrUI(true, 'Başlatılıyor...');
             await initOCR();
 
-            // Kaynak: ekrandaki canvas (fotoğraf + çizim dahil)
-            // OCR için: auto-crop + scale-up
+            updateOcrUI(true, 'Görüntü İşleniyor...');
+            // Pre-processing
             const cropped = cropToContent(canvas, 22);
             const scaled = scaleUp(cropped, 2200, 3);
-
-            // Çoklu ön-işleme varyantları
-            updateOcrUI(true, 'Görüntü iyileştiriliyor...');
+            
             const v0 = toGrayscaleAndContrast(scaled, 2.0);
             const v1 = binarizeOtsu(v0);
-            const v1b = dilateBlack(v1, 1);          // yazıyı kalınlaştır
-            const v2 = binarizeAdaptive(v0, 21, 10);  // ışık değişimlerine daha dayanıklı
-            const v2b = dilateBlack(v2, 1);
+            const v1b = dilateBlack(v1, 1);
 
-            // İstersen debug preview aç
-            const preview = document.getElementById('ocrPreview');
-            if (preview && preview.style.display !== 'none') {
-                preview.src = v1b.toDataURL('image/jpeg', 0.85);
-            }
+            updateOcrUI(true, 'Yapay Zeka Okuyor...');
+            const c1 = await runMultiPassOCR(v1b);
+            const c2 = await runMultiPassOCR(v1);
 
-            // OCR çoklu deneme: her varyantta multi-pass + en iyi confidence seç
-            updateOcrUI(true, 'OCR taraması...');
-            const candidates = [];
-            candidates.push(await runMultiPassOCR(v1b));
-            candidates.push(await runMultiPassOCR(v2b));
-            candidates.push(await runMultiPassOCR(v1));
-            candidates.push(await runMultiPassOCR(v2));
-
-            // En iyi sonucu seç
-            let best = { text: '', conf: -1 };
-            for (const c of candidates) {
-                if (c && c.text && c.text.trim().length > 0 && c.conf > best.conf) best = c;
-            }
-
+            const best = (c1.conf > c2.conf) ? c1 : c2;
             const cleanText = (best.text || '').trim();
 
             if (cleanText) {
                 const input = document.getElementById('modalTaskInput');
                 input.value += (input.value ? ' ' : '') + cleanText;
                 closeCanvas();
+                clearCanvas();
             } else {
-                alert("Yazı okunamadı. İpucu: Kalemi kalınlaştır, satır aralarını aç, harfleri ayrı yaz.");
+                alert("Yazı okunamadı. Lütfen daha net yazın.");
             }
 
         } catch (error) {
             console.error(error);
-            alert("OCR sırasında bir hata oluştu.");
+            alert("Hata oluştu: " + (error.message || error));
         } finally {
             updateOcrUI(false);
         }
@@ -1043,14 +898,11 @@
             recognition = new SpeechRecognition();
             recognition.lang = 'tr-TR';
             recognition.continuous = false;
-
             recognition.onresult = (e) => {
-                const txt = e.results[0][0].transcript;
-                document.getElementById('modalTaskInput').value = txt;
+                document.getElementById('modalTaskInput').value = e.results[0][0].transcript;
                 document.getElementById('micBtn').style.color = 'white';
                 isRecording = false;
             };
-
             recognition.onend = () => { isRecording = false; document.getElementById('micBtn').style.color = 'white'; };
         }
     }
@@ -1058,11 +910,7 @@
     function toggleSpeech() {
         if(!recognition) return alert('Tarayıcı desteklemiyor');
         if(isRecording) { recognition.stop(); }
-        else {
-            recognition.start();
-            isRecording = true;
-            document.getElementById('micBtn').style.color = '#ff4757';
-        }
+        else { recognition.start(); isRecording = true; document.getElementById('micBtn').style.color = '#ff4757'; }
     }
 
     // --- Alarm ---
@@ -1085,13 +933,11 @@
     }
 
     function playAlarm(text) {
-        document.getElementById('alarmSound').play().catch(e => console.log("Ses oynatılamadı, etkileşim lazım."));
-        if (Notification.permission === "granted") {
-            new Notification("⏰ Hatırlatıcı", { body: text });
-        } else {
-            alert("ALARM: " + text);
-        }
+        document.getElementById('alarmSound').play().catch(e => console.log("Ses oynatılamadı."));
+        if (Notification.permission === "granted") new Notification("⏰ Hatırlatıcı", { body: text });
+        else alert("ALARM: " + text);
     }
 </script>
 </body>
 </html>
+
