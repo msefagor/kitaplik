@@ -5,20 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Liquid Library</title>
+    <meta name="theme-color" content="#0f172a">
+    <title>Liquid Library Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(20, 20, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.6);
             --accent: #00d2ff;
             --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
             --danger: #ff5f6d;
             --success: #00b09b;
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
@@ -29,135 +31,127 @@
             min-height: 100vh;
             overflow-x: hidden;
             padding-top: env(safe-area-inset-top);
-            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+            padding-bottom: calc(90px + var(--safe-bottom));
         }
 
-        /* Animated Liquid Background */
-        .liquid-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: #0f0c29;
-            overflow: hidden;
-        }
-        .blob {
-            position: absolute; filter: blur(80px); opacity: 0.6;
-            animation: move 20s infinite alternate;
-        }
-        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #3a1c71; border-radius: 40% 60% 70% 30%; animation-duration: 25s; }
-        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #d76d77; border-radius: 60% 40% 30% 70%; animation-duration: 30s; }
-        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #ffaf7b; border-radius: 30% 70% 70% 30%; animation-duration: 22s; }
+        /* Arkaplan Animasyonu */
+        .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #0f0c29; overflow: hidden; }
+        .blob { position: absolute; filter: blur(90px); opacity: 0.5; animation: move 20s infinite alternate; }
+        .blob-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: #3a1c71; border-radius: 40% 60% 70% 30%; animation-duration: 25s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 70vw; height: 70vw; background: #d76d77; border-radius: 60% 40% 30% 70%; animation-duration: 30s; }
+        .blob-3 { top: 40%; left: 30%; width: 50vw; height: 50vw; background: #23a6d5; border-radius: 30% 70% 70% 30%; animation-duration: 22s; }
+        @keyframes move { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(30px, 50px) rotate(20deg); } }
 
-        @keyframes move { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(20px, 40px) rotate(20deg); } }
-
-        /* Glass Components */
+        /* Cam Paneller */
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            box-shadow: var(--glass-shadow);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
-        /* Date Header */
-        header {
-            padding: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .date-picker-wrapper {
-            position: relative; width: 100%; max-width: 300px;
-        }
-        .date-display {
-            font-size: 18px; font-weight: 600; text-align: center; padding: 12px;
-            color: var(--text-primary); cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        input[type="date"] {
-            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
-        }
-
-        /* Container */
         .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
 
-        /* Daily View - Question State */
-        .question-card {
-            text-align: center; padding: 40px 20px; margin-top: 20px;
+        /* Başlık & Tarih */
+        header { padding: 20px 0; display: flex; justify-content: center; position: sticky; top: 0; z-index: 50; }
+        .date-badge {
+            padding: 10px 24px; border-radius: 30px; font-weight: 600; font-size: 15px;
+            background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px); display: flex; align-items: center; gap: 8px;
         }
-        .question-title { font-size: 24px; font-weight: 700; margin-bottom: 30px; line-height: 1.3; }
+
+        /* Kartlar & Listeler */
+        .card { padding: 20px; margin-bottom: 20px; }
+        .section-title { font-size: 18px; margin-bottom: 15px; font-weight: 600; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;}
         
-        .action-buttons { display: flex; gap: 15px; justify-content: center; }
-        .btn-lg {
-            flex: 1; padding: 18px; border-radius: 20px; border: none; font-size: 18px; font-weight: 600; cursor: pointer;
-            transition: transform 0.2s; color: white;
+        /* Kitap Listesi Öğeleri */
+        .book-item {
+            display: flex; gap: 15px; padding: 15px; background: var(--glass-highlight);
+            border-radius: 16px; margin-bottom: 12px; align-items: center; border: 1px solid transparent;
+            transition: border-color 0.3s;
         }
-        .btn-lg:active { transform: scale(0.95); }
-        .btn-yes { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4); }
-        .btn-no { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: var(--text-secondary); }
+        .book-item:active { border-color: var(--accent); }
+        
+        .book-cover-thumb {
+            width: 50px; height: 75px; border-radius: 8px; background: #222; object-fit: cover; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .book-info { flex: 1; min-width: 0; }
+        .book-title { font-weight: 600; font-size: 16px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-author { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+        .book-meta { font-size: 11px; color: var(--accent); display: flex; gap: 10px; }
+        
+        /* Arama */
+        .search-box {
+            width: 100%; padding: 14px 20px; border-radius: 16px; border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.2); color: white; margin-bottom: 20px; font-size: 16px;
+        }
 
-        /* Form State */
-        .entry-form { margin-top: 20px; display: none; }
+        /* İstatistik Halkaları */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { text-align: center; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .ring-container { width: 80px; height: 80px; position: relative; margin-bottom: 10px; }
+        .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+        .ring-val { fill: none; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1s ease; }
+        
+        /* Form Elemanları */
         .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; margin-left: 4px; }
-        .glass-input, .glass-select {
-            width: 100%; padding: 16px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
-            border-radius: 16px; color: white; font-size: 16px; appearance: none; outline: none;
+        .form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;}
+        .glass-input, select {
+            width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            border-radius: 14px; color: white; font-size: 16px; outline: none; appearance: none;
         }
-        .glass-select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 15px center; background-size: 20px;
+        
+        /* Kamera / Resim Yükleme */
+        .cover-upload {
+            width: 120px; height: 180px; border: 2px dashed var(--glass-border); border-radius: 12px;
+            margin: 0 auto 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-size: cover; background-position: center; cursor: pointer; position: relative; overflow: hidden;
         }
-        .btn-save {
-            width: 100%; background: var(--accent-gradient); padding: 18px; border-radius: 16px;
-            color: white; font-weight: 700; font-size: 16px; border: none; margin-top: 10px;
+        .cover-upload.has-img::after { content: ''; position: absolute; inset: 0; background: transparent; }
+        .cover-upload svg { margin-bottom: 10px; color: var(--text-secondary); }
+        .cover-upload span { font-size: 12px; color: var(--text-secondary); text-align: center; padding: 0 10px;}
+
+        /* Butonlar */
+        .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .btn-primary { background: var(--accent-gradient); color: white; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: white; }
+        .fab {
+            position: fixed; bottom: calc(90px + var(--safe-bottom)); right: 20px;
+            width: 60px; height: 60px; border-radius: 50%; background: var(--accent-gradient);
+            border: none; color: white; font-size: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center; z-index: 90;
         }
 
-        /* Summary State (Result) */
-        .daily-summary { margin-top: 20px; display: none; }
-        .summary-card { padding: 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .book-cover {
-            width: 50px; height: 75px; background: rgba(0,0,0,0.3); border-radius: 8px; 
-            display: flex; align-items: center; justify-content: center; font-size: 24px;
-        }
-        .summary-info h3 { font-size: 16px; margin-bottom: 4px; }
-        .summary-info p { font-size: 14px; color: var(--accent); }
-        .add-more-btn {
-            background: none; border: 1px dashed var(--glass-border); color: var(--text-secondary);
-            width: 100%; padding: 15px; border-radius: 16px; cursor: pointer;
-        }
-
-        /* Bottom Nav */
+        /* Navigasyon */
         nav {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            height: 70px; display: flex; justify-content: space-around; align-items: center;
-            z-index: 100;
+            position: fixed; bottom: 0; left: 0; right: 0; height: calc(80px + var(--safe-bottom));
+            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border);
+            display: flex; justify-content: space-around; padding-top: 15px; padding-bottom: var(--safe-bottom); z-index: 100;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: var(--text-secondary); background: none; border: none; font-size: 10px; opacity: 0.7;
-            transition: all 0.3s;
-        }
-        .nav-item.active { opacity: 1; color: var(--accent); transform: translateY(-5px); }
+        .nav-item { background: none; border: none; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; opacity: 0.6; transition: 0.3s; }
+        .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-5px); }
         .nav-item svg { width: 24px; height: 24px; }
 
-        /* Modals */
+        /* Modal */
         .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-            z-index: 200; display: flex; align-items: flex-end;
-            visibility: hidden; opacity: 0; transition: all 0.3s;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200;
+            display: flex; align-items: flex-end; opacity: 0; visibility: hidden; transition: 0.3s;
         }
-        .modal.active { visibility: visible; opacity: 1; }
+        .modal.active { opacity: 1; visibility: visible; }
         .modal-content {
-            background: #1e293b; width: 100%; padding: 30px 20px 50px;
-            border-radius: 30px 30px 0 0; border-top: 1px solid var(--glass-border);
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            width: 100%; background: #1a1f35; border-radius: 30px 30px 0 0; padding: 25px;
+            max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-top: 1px solid var(--glass-border);
         }
         .modal.active .modal-content { transform: translateY(0); }
 
         .hidden { display: none !important; }
-
-        /* Animation Classes */
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .text-muted { color: var(--text-secondary); font-size: 12px; }
+        .missed-day-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border); color: var(--danger); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -170,336 +164,516 @@
 
     <div id="view-daily">
         <header>
-            <div class="glass-panel date-picker-wrapper">
-                <div class="date-display" id="dateDisplayLabel">
-                    📅 <span id="currentDateText">Bugün</span>
-                </div>
-                <input type="date" id="datePicker">
+            <div class="date-badge" onclick="document.getElementById('datePicker').showPicker()">
+                📅 <span id="currentDateText">Bugün</span>
+                <input type="date" id="datePicker" style="position:absolute; opacity:0; pointer-events:none;">
             </div>
         </header>
 
         <div class="container">
-            <div id="state-question" class="glass-panel question-card fade-in">
-                <h2 class="question-title">Bugün kitap okudun mu?</h2>
-                <div class="action-buttons">
-                    <button class="btn-lg btn-yes" onclick="showEntryForm()">Evet 📚</button>
-                    <button class="btn-lg btn-no" onclick="markAsRestDay()">Hayır 💤</button>
+            <div id="state-question" class="glass-panel card" style="text-align:center; padding:40px 20px;">
+                <h2 style="font-size:22px; margin-bottom:30px;">Bugün kitap okudun mu?</h2>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn btn-primary" onclick="openReadingModal()">Evet 📚</button>
+                    <button class="btn btn-secondary" onclick="markRestDay()">Hayır 💤</button>
                 </div>
             </div>
 
-            <div id="state-form" class="glass-panel question-card entry-form fade-in">
-                <h3 style="margin-bottom:20px;">Okuma Kaydı</h3>
-                
-                <div class="form-group">
-                    <label class="form-label">Hangi Kitap?</label>
-                    <select id="bookSelect" class="glass-select" onchange="checkNewBook(this)">
-                        </select>
-                </div>
-
-                <div id="newBookFields" class="hidden">
-                    <div class="form-group">
-                        <label class="form-label">Yeni Kitap Adı</label>
-                        <input type="text" id="newTitle" class="glass-input" placeholder="Kitap adını girin...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Toplam Sayfa</label>
-                        <input type="number" id="newTotalPages" class="glass-input" placeholder="Örn: 300">
+            <div id="state-summary" class="hidden">
+                <div id="dailyList"></div>
+                <div class="glass-panel card" style="text-align:center; margin-top:15px;">
+                    <span class="text-muted">Bugün Toplam</span>
+                    <div style="font-size:32px; font-weight:700; color:var(--accent); margin-top:5px;">
+                        <span id="dailyTotalPages">0</span> <span style="font-size:16px;">Sayfa</span>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Bugün Okunan Sayfa Sayısı</label>
-                    <input type="number" id="pagesRead" class="glass-input" placeholder="Örn: 20">
-                </div>
-
-                <button class="btn-save" onclick="saveEntry()">Kaydet</button>
-                <button onclick="resetState()" style="background:none; border:none; color:var(--text-secondary); margin-top:15px; font-size:14px;">İptal</button>
-            </div>
-
-            <div id="state-summary" class="daily-summary fade-in">
-                <div id="summaryList"></div>
-                <button class="add-more-btn" onclick="showEntryForm()">+ Başka kitap ekle</button>
-            </div>
-            
-            <div id="state-rest" class="glass-panel question-card hidden fade-in">
-                <div style="font-size: 40px; margin-bottom:10px;">😌</div>
-                <h3>Bugün dinlenme günü.</h3>
-                <p style="color:var(--text-secondary); margin-top:5px; font-size:14px;">Yarın telafi ederiz!</p>
-                <button onclick="showEntryForm()" style="margin-top:20px; background:none; border:1px solid var(--glass-border); color:white; padding:8px 16px; border-radius:12px;">Fikrimi Değiştirdim</button>
             </div>
         </div>
     </div>
 
     <div id="view-library" class="hidden">
-        <header><h2 style="font-size:20px;">Kitaplığım</h2></header>
-        <div class="container" id="libraryList" style="padding-top:20px; padding-bottom:100px;">
-            </div>
+        <header><h2 style="font-size:20px;">Kitaplık</h2></header>
+        <div class="container">
+            <input type="text" id="searchBar" class="search-box" placeholder="Kitap veya yazar ara..." oninput="renderLibrary()">
+            <div id="libraryList" style="padding-bottom:100px;"></div>
+        </div>
     </div>
 
-    <nav class="glass-panel">
+    <div id="view-stats" class="hidden">
+        <header>
+            <h2 style="font-size:20px;">Analiz</h2>
+            <button onclick="openSettings()" style="position:absolute; right:20px; background:none; border:none; color:white;">⚙️</button>
+        </header>
+        <div class="container" style="padding-bottom:100px;">
+            <div class="stats-grid">
+                <div class="glass-panel stat-card">
+                    <div class="ring-container">
+                        <svg class="ring-svg" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
+                            <circle id="ringDaily" class="ring-val" cx="40" cy="40" r="35" style="stroke:#00d2ff"></circle>
+                        </svg>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">GÜNLÜK HEDEF</div>
+                    <div style="font-size:18px; font-weight:700;"><span id="statDailyVal">0</span> / <span id="statDailyGoal">50</span></div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <div class="ring-container">
+                        <svg class="ring-svg" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
+                            <circle id="ringYearly" class="ring-val" cx="40" cy="40" r="35" style="stroke:#ff5f6d"></circle>
+                        </svg>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">YILLIK KİTAP</div>
+                    <div style="font-size:18px; font-weight:700;"><span id="statYearlyVal">0</span> / <span id="statYearlyGoal">60</span></div>
+                </div>
+            </div>
+
+            <div class="glass-panel card">
+                <div class="section-title">⚠️ Okunmayan Günler</div>
+                <div id="missedDaysList" style="max-height: 200px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="fab" onclick="openNewBookModal()">+</button>
+
+    <nav>
         <button class="nav-item active" onclick="switchTab('daily', this)">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            Günlük
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Günlük
         </button>
         <button class="nav-item" onclick="switchTab('library', this)">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            Kitaplık
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Kitaplık
+        </button>
+        <button class="nav-item" onclick="switchTab('stats', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Analiz
         </button>
     </nav>
 
-    <script>
-        // --- Data Management ---
-        const DB_KEY = 'liquid_lib_v1';
-        let books = [];
-        let readingHistory = []; // { date: 'YYYY-MM-DD', bookId: 1, pages: 20 }
-        let currentDate = new Date().toISOString().split('T')[0];
+    <div id="modal-new-book" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;">Yeni Kitap Ekle</h3>
+            
+            <div class="cover-upload" id="coverDropZone" onclick="document.getElementById('coverInput').click()">
+                <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Kapak Çek/Yükle</span>
+                <input type="file" id="coverInput" accept="image/*" hidden onchange="handleImage(this)">
+            </div>
 
-        function loadData() {
-            const data = JSON.parse(localStorage.getItem(DB_KEY));
-            if (data) {
-                books = data.books || [];
-                readingHistory = data.readingHistory || [];
-            }
+            <div class="form-group">
+                <label class="form-label">Kitap Adı</label>
+                <input type="text" id="newTitle" class="glass-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Yazar</label>
+                <input type="text" id="newAuthor" class="glass-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Toplam Sayfa</label>
+                <input type="number" id="newPages" class="glass-input">
+            </div>
+            <button class="btn btn-primary" onclick="saveNewBook()">Kaydet</button>
+            <button class="btn btn-secondary" onclick="closeModal('modal-new-book')">İptal</button>
+        </div>
+    </div>
+
+    <div id="modal-reading" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;">Okuma Girişi</h3>
+            <div class="form-group">
+                <label class="form-label">Hangi Kitap?</label>
+                <select id="readingBookSelect" class="glass-input"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bugün Okunan Sayfa</label>
+                <input type="number" id="readingPages" class="glass-input">
+            </div>
+            <button class="btn btn-primary" onclick="saveReading()">Kaydet</button>
+            <button class="btn btn-secondary" onclick="closeModal('modal-reading')">İptal</button>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;">Ayarlar</h3>
+            <div class="form-group">
+                <label class="form-label">Günlük Sayfa Hedefi</label>
+                <input type="number" id="setDailyGoal" class="glass-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Yıllık Kitap Hedefi</label>
+                <input type="number" id="setYearlyGoal" class="glass-input">
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">Ayarları Kaydet</button>
+            <button class="btn btn-secondary" onclick="closeModal('modal-settings')">Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const DB_KEY = 'liquid_lib_pro_v1';
+        let data = {
+            books: [],
+            history: [],
+            settings: { dailyGoal: 50, yearlyGoal: 60 }
+        };
+        let currentDate = new Date().toISOString().split('T')[0];
+        let tempCoverImg = null;
+
+        // --- INIT ---
+        function init() {
+            const stored = localStorage.getItem(DB_KEY);
+            if(stored) data = JSON.parse(stored);
+            
+            // Migration check
+            if(!data.settings) data.settings = { dailyGoal: 50, yearlyGoal: 60 };
+            
+            // Tarih seçiciyi bugün yap
+            document.getElementById('datePicker').value = currentDate;
+            document.getElementById('datePicker').addEventListener('change', (e) => {
+                currentDate = e.target.value;
+                updateUI();
+            });
+
+            updateUI();
         }
 
         function saveData() {
-            localStorage.setItem(DB_KEY, JSON.stringify({ books, readingHistory }));
+            localStorage.setItem(DB_KEY, JSON.stringify(data));
+            updateUI();
         }
 
-        // --- Date Handling ---
-        const datePicker = document.getElementById('datePicker');
-        const dateText = document.getElementById('currentDateText');
-
-        datePicker.value = currentDate;
-        updateDateLabel(currentDate);
-
-        datePicker.addEventListener('change', (e) => {
-            currentDate = e.target.value;
-            updateDateLabel(currentDate);
-            renderDailyView(); // Re-render logic based on new date
-        });
-
-        function updateDateLabel(dateStr) {
-            const d = new Date(dateStr);
+        // --- UI UPDATES ---
+        function updateUI() {
+            renderDaily();
+            renderLibrary();
+            renderStats();
+            
+            // Tarih etiketi
+            const d = new Date(currentDate);
             const today = new Date().toISOString().split('T')[0];
+            document.getElementById('currentDateText').innerText = (currentDate === today) ? "Bugün" : d.toLocaleDateString('tr-TR', { day:'numeric', month:'long' });
+        }
+
+        function renderDaily() {
+            // Bugünün kayıtlarını bul
+            const entries = data.history.filter(h => h.date === currentDate);
+            const isRest = entries.some(h => h.bookId === -1);
             
-            if (dateStr === today) {
-                dateText.innerText = "Bugün";
+            const qState = document.getElementById('state-question');
+            const sState = document.getElementById('state-summary');
+
+            if(entries.length === 0) {
+                qState.classList.remove('hidden');
+                sState.classList.add('hidden');
+            } else if (isRest) {
+                qState.classList.add('hidden');
+                sState.innerHTML = '<div class="glass-panel card" style="text-align:center; padding:40px;"><h3>💤 Dinlenme Günü</h3><button class="btn btn-secondary" onclick="undoRest()">Değiştir</button></div>';
+                sState.classList.remove('hidden');
             } else {
-                dateText.innerText = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
-            }
-        }
-
-        // --- Core Logic: Daily View Renderer ---
-        function renderDailyView() {
-            // 1. Reset all states
-            document.getElementById('state-question').classList.add('hidden');
-            document.getElementById('state-form').classList.add('hidden');
-            document.getElementById('state-summary').classList.add('hidden');
-            document.getElementById('state-rest').classList.add('hidden');
-
-            // 2. Find history for this specific date
-            const dayEntries = readingHistory.filter(h => h.date === currentDate);
-            
-            // Check if user explicitly marked as "No Read" (we can store this as a special entry bookId: -1)
-            const restEntry = dayEntries.find(h => h.bookId === -1);
-
-            if (restEntry) {
-                document.getElementById('state-rest').classList.remove('hidden');
-            } else if (dayEntries.length > 0) {
-                // We have readings
-                renderSummaryList(dayEntries);
-                document.getElementById('state-summary').classList.remove('hidden');
-                document.getElementById('state-summary').style.display = 'block'; // Ensure block for flex contents
-            } else {
-                // No data for this day
-                document.getElementById('state-question').classList.remove('hidden');
-            }
-        }
-
-        // --- Interaction Functions ---
-        function showEntryForm() {
-            document.getElementById('state-question').classList.add('hidden');
-            document.getElementById('state-summary').classList.add('hidden');
-            document.getElementById('state-rest').classList.add('hidden');
-            document.getElementById('state-form').classList.remove('hidden');
-            document.getElementById('state-form').style.display = 'block';
-
-            populateBookSelect();
-            // Reset fields
-            document.getElementById('pagesRead').value = '';
-            document.getElementById('newTitle').value = '';
-            document.getElementById('newTotalPages').value = '';
-            document.getElementById('newBookFields').classList.add('hidden');
-        }
-
-        function resetState() {
-            renderDailyView();
-        }
-
-        function markAsRestDay() {
-            // Save a "rest" entry
-            readingHistory = readingHistory.filter(h => h.date !== currentDate); // Clear existing just in case
-            readingHistory.push({
-                id: Date.now(),
-                date: currentDate,
-                bookId: -1,
-                pages: 0
-            });
-            saveData();
-            renderDailyView();
-        }
-
-        function populateBookSelect() {
-            const select = document.getElementById('bookSelect');
-            select.innerHTML = '<option value="" disabled selected>Kitap Seçin</option>';
-            
-            // Filter books that are not completed or recently active
-            const activeBooks = books.filter(b => b.status !== 'completed');
-            
-            activeBooks.forEach(b => {
-                select.innerHTML += `<option value="${b.id}">${b.title}</option>`;
-            });
-            
-            select.innerHTML += '<option value="new">+ Yeni Kitap Ekle...</option>';
-        }
-
-        function checkNewBook(select) {
-            const newVal = document.getElementById('newBookFields');
-            if (select.value === 'new') {
-                newVal.classList.remove('hidden');
-            } else {
-                newVal.classList.add('hidden');
-            }
-        }
-
-        function saveEntry() {
-            const select = document.getElementById('bookSelect');
-            const pagesInput = document.getElementById('pagesRead');
-            let bookId = select.value;
-            const pages = parseInt(pagesInput.value);
-
-            if (!bookId || !pages) { alert('Lütfen bilgileri doldurun.'); return; }
-
-            // Handle New Book
-            if (bookId === 'new') {
-                const title = document.getElementById('newTitle').value;
-                const total = parseInt(document.getElementById('newTotalPages').value);
-                if (!title || !total) { alert('Yeni kitap bilgilerini girin.'); return; }
+                qState.classList.add('hidden');
+                sState.classList.remove('hidden');
                 
-                const newBook = {
-                    id: Date.now(),
-                    title: title,
-                    totalPages: total,
-                    currentPage: 0,
-                    status: 'reading',
-                    cover: null
-                };
-                books.push(newBook);
-                bookId = newBook.id;
+                let total = 0;
+                let html = '';
+                entries.forEach(e => {
+                    const book = data.books.find(b => b.id === e.bookId);
+                    if(book) {
+                        total += e.pages;
+                        html += `
+                        <div class="book-item">
+                            <img src="${book.cover || ''}" class="book-cover-thumb" style="background:#333">
+                            <div class="book-info">
+                                <div class="book-title">${book.title}</div>
+                                <div class="book-meta">+${e.pages} Sayfa</div>
+                            </div>
+                        </div>`;
+                    }
+                });
+                document.getElementById('dailyList').innerHTML = html;
+                document.getElementById('dailyTotalPages').innerText = total;
+                // Ekleme butonu
+                document.getElementById('dailyList').innerHTML += '<button class="btn btn-secondary" onclick="openReadingModal()">+ Ekle</button>';
             }
-
-            // Update Book Progress
-            const bookIndex = books.findIndex(b => b.id == bookId);
-            if (bookIndex > -1) {
-                books[bookIndex].currentPage += pages;
-                if(books[bookIndex].currentPage >= books[bookIndex].totalPages) {
-                    books[bookIndex].currentPage = books[bookIndex].totalPages;
-                    books[bookIndex].status = 'completed';
-                    alert('Tebrikler! Kitabı bitirdin. 🎉');
-                }
-            }
-
-            // Save History Entry
-            readingHistory.push({
-                id: Date.now(),
-                date: currentDate,
-                bookId: parseInt(bookId),
-                pages: pages
-            });
-
-            // If there was a "rest" entry for this day, remove it
-            readingHistory = readingHistory.filter(h => !(h.date === currentDate && h.bookId === -1));
-
-            saveData();
-            renderDailyView();
-            renderLibrary(); // Update library tab in background
         }
 
-        function renderSummaryList(entries) {
-            const list = document.getElementById('summaryList');
-            let html = '';
-            
-            entries.forEach(entry => {
-                const book = books.find(b => b.id === entry.bookId);
-                if (!book) return;
-                
-                html += `
-                <div class="glass-panel summary-card">
-                    <div class="book-cover">📖</div>
-                    <div class="summary-info">
-                        <h3>${book.title}</h3>
-                        <p>+${entry.pages} Sayfa okundu</p>
-                    </div>
-                </div>`;
-            });
-
-            // Calculate daily total
-            const total = entries.reduce((acc, curr) => acc + curr.pages, 0);
-            html = `<div style="text-align:center; margin-bottom:20px; color:var(--text-secondary); font-size:14px;">
-                ${currentDate === new Date().toISOString().split('T')[0] ? 'Bugün' : 'Bu tarihte'} toplam <strong style="color:white">${total}</strong> sayfa okudun.
-            </div>` + html;
-
-            list.innerHTML = html;
-        }
-
-        // --- Library Tab Logic ---
         function renderLibrary() {
-            const container = document.getElementById('libraryList');
-            if (books.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary)">Henüz kitap yok.</div>';
+            const search = document.getElementById('searchBar').value.toLowerCase();
+            const list = document.getElementById('libraryList');
+            
+            // Filtreleme
+            const filtered = data.books.filter(b => 
+                b.title.toLowerCase().includes(search) || 
+                (b.author && b.author.toLowerCase().includes(search))
+            );
+
+            // Sıralama: Okunanlar en üstte
+            filtered.sort((a,b) => {
+                if(a.status === 'reading' && b.status !== 'reading') return -1;
+                return 0;
+            });
+
+            if(filtered.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:var(--text-secondary); margin-top:30px;">Kitap bulunamadı.</div>';
                 return;
             }
 
-            container.innerHTML = books.map(b => {
-                const progress = Math.min(100, Math.round((b.currentPage / b.totalPages) * 100));
+            list.innerHTML = filtered.map(b => {
+                const pct = Math.round((b.currentPage / b.totalPages) * 100);
+                
+                // Tarih Aralığı
+                let dateInfo = '';
+                if(b.status === 'completed' && b.startDate && b.endDate) {
+                    const d1 = new Date(b.startDate).toLocaleDateString('tr-TR');
+                    const d2 = new Date(b.endDate).toLocaleDateString('tr-TR');
+                    dateInfo = `<div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">📅 ${d1} - ${d2}</div>`;
+                }
+
                 return `
-                <div class="glass-panel summary-card" style="margin-bottom:15px; display:block;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="font-size:18px;">${b.title}</h3>
-                        <span style="font-size:12px; padding:4px 8px; background:rgba(255,255,255,0.1); border-radius:8px;">%${progress}</span>
-                    </div>
-                    <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                        <div style="height:100%; width:${progress}%; background:var(--accent-gradient);"></div>
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-top:8px; display:flex; justify-content:space-between;">
-                        <span>${b.currentPage} / ${b.totalPages} syf</span>
-                        <span>${b.status === 'completed' ? 'Tamamlandı ✅' : 'Okunuyor'}</span>
+                <div class="book-item">
+                    <img src="${b.cover || ''}" class="book-cover-thumb">
+                    <div class="book-info">
+                        <div class="book-title">${b.title}</div>
+                        <div class="book-author">${b.author || 'Yazar Yok'}</div>
+                        <div class="book-meta">
+                            <span>${b.status === 'completed' ? 'Tamamlandı ✅' : '%'+pct}</span>
+                            <span>${b.currentPage}/${b.totalPages}</span>
+                        </div>
+                        ${dateInfo}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        function switchTab(tab, btn) {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        function renderStats() {
+            // Günlük Hedef
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayEntries = data.history.filter(h => h.date === todayStr && h.bookId !== -1);
+            const todayTotal = todayEntries.reduce((acc, curr) => acc + curr.pages, 0);
+            
+            updateRing('ringDaily', todayTotal, data.settings.dailyGoal);
+            document.getElementById('statDailyVal').innerText = todayTotal;
+            document.getElementById('statDailyGoal').innerText = data.settings.dailyGoal;
 
-            if (tab === 'daily') {
-                document.getElementById('view-daily').classList.remove('hidden');
-                document.getElementById('view-library').classList.add('hidden');
-                renderDailyView();
-            } else {
-                document.getElementById('view-daily').classList.add('hidden');
-                document.getElementById('view-library').classList.remove('hidden');
-                renderLibrary();
+            // Yıllık Hedef
+            const thisYear = new Date().getFullYear();
+            const finishedBooks = data.books.filter(b => b.status === 'completed' && b.endDate && b.endDate.startsWith(thisYear)).length;
+            
+            updateRing('ringYearly', finishedBooks, data.settings.yearlyGoal);
+            document.getElementById('statYearlyVal').innerText = finishedBooks;
+            document.getElementById('statYearlyGoal').innerText = data.settings.yearlyGoal;
+
+            // Okunmayan Günler (Geriye doğru 30 gün)
+            const missedDiv = document.getElementById('missedDaysList');
+            let missedHtml = '';
+            let checkDate = new Date();
+            checkDate.setDate(checkDate.getDate() - 1); // Dünden başla
+
+            for(let i=0; i<30; i++) {
+                const dStr = checkDate.toISOString().split('T')[0];
+                const hasEntry = data.history.some(h => h.date === dStr);
+                
+                if(!hasEntry) {
+                    const formatted = checkDate.toLocaleDateString('tr-TR', {day:'numeric', month:'long', weekday:'long'});
+                    missedHtml += `<div class="missed-day-item"><span>${formatted}</span><span>Okunmadı</span></div>`;
+                }
+                checkDate.setDate(checkDate.getDate() - 1);
             }
+            if(missedHtml === '') missedHtml = '<div style="padding:10px; text-align:center; color:var(--success)">Harika! Son 30 gündür boş günün yok.</div>';
+            missedDiv.innerHTML = missedHtml;
         }
 
-        // --- Init ---
-        loadData();
-        renderDailyView();
-        renderLibrary();
+        function updateRing(id, val, max) {
+            const circle = document.getElementById(id);
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const pct = Math.min(100, (val / max) * 100);
+            const offset = circumference - (pct / 100) * circumference;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = offset;
+        }
 
+        // --- ACTIONS ---
+
+        // Resim İşleme ve Kırpma Simülasyonu
+        function handleImage(input) {
+            const file = input.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Canvas oluştur (Kırpma ve Boyutlandırma için)
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Hedef Boyut (Mobil için optimize)
+                    const TARGET_W = 300;
+                    const TARGET_H = 450; // 2:3 Oran
+                    canvas.width = TARGET_W;
+                    canvas.height = TARGET_H;
+
+                    // "Center Crop" Mantığı
+                    // Resmin en kısa kenarına göre oranla
+                    let sWidth = img.width;
+                    let sHeight = img.height;
+                    let sx = 0;
+                    let sy = 0;
+
+                    // Eğer resim yataysa veya kareyse ortasını al
+                    const aspect = sWidth / sHeight;
+                    const targetAspect = TARGET_W / TARGET_H;
+
+                    if (aspect > targetAspect) {
+                        // Resim daha geniş, yanlardan kırp
+                        const newWidth = sHeight * targetAspect;
+                        sx = (sWidth - newWidth) / 2;
+                        sWidth = newWidth;
+                    } else {
+                        // Resim daha uzun, üst/alttan kırp
+                        const newHeight = sWidth / targetAspect;
+                        sy = (sHeight - newHeight) / 2;
+                        sHeight = newHeight;
+                    }
+
+                    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, TARGET_W, TARGET_H);
+                    
+                    // Kaliteyi düşürerek (0.7) Base64 al
+                    tempCoverImg = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    const drop = document.getElementById('coverDropZone');
+                    drop.style.backgroundImage = `url(${tempCoverImg})`;
+                    drop.classList.add('has-img');
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function openNewBookModal() {
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newAuthor').value = '';
+            document.getElementById('newPages').value = '';
+            tempCoverImg = null;
+            const drop = document.getElementById('coverDropZone');
+            drop.style.backgroundImage = '';
+            drop.classList.remove('has-img');
+            openModal('modal-new-book');
+        }
+
+        function saveNewBook() {
+            const title = document.getElementById('newTitle').value;
+            const author = document.getElementById('newAuthor').value;
+            const pages = document.getElementById('newPages').value;
+
+            if(!title || !pages) { alert('Lütfen kitap adı ve sayfa sayısını girin.'); return; }
+
+            const newBook = {
+                id: Date.now(),
+                title: title,
+                author: author,
+                totalPages: parseInt(pages),
+                currentPage: 0,
+                status: 'reading',
+                cover: tempCoverImg,
+                startDate: new Date().toISOString().split('T')[0],
+                endDate: null
+            };
+            
+            data.books.push(newBook);
+            saveData();
+            closeModal('modal-new-book');
+        }
+
+        function openReadingModal() {
+            const select = document.getElementById('readingBookSelect');
+            select.innerHTML = '';
+            
+            const activeBooks = data.books.filter(b => b.status === 'reading');
+            if(activeBooks.length === 0) {
+                if(confirm('Şu an okuduğun bir kitap yok. Yeni kitap eklemek ister misin?')) {
+                    openNewBookModal();
+                }
+                return;
+            }
+
+            activeBooks.forEach(b => {
+                select.innerHTML += `<option value="${b.id}">${b.title}</option>`;
+            });
+            document.getElementById('readingPages').value = '';
+            openModal('modal-reading');
+        }
+
+        function saveReading() {
+            const bookId = parseInt(document.getElementById('readingBookSelect').value);
+            const pages = parseInt(document.getElementById('readingPages').value);
+            
+            if(!bookId || !pages) return;
+
+            // Kitabı Güncelle
+            const book = data.books.find(b => b.id === bookId);
+            if(book) {
+                book.currentPage += pages;
+                if(book.currentPage >= book.totalPages) {
+                    book.currentPage = book.totalPages;
+                    book.status = 'completed';
+                    book.endDate = currentDate;
+                    alert('Tebrikler! Kitabı bitirdin. 🎉');
+                }
+            }
+
+            // Tarihçeye Ekle
+            data.history.push({
+                date: currentDate,
+                bookId: bookId,
+                pages: pages
+            });
+
+            saveData();
+            closeModal('modal-reading');
+        }
+
+        function markRestDay() {
+            data.history = data.history.filter(h => h.date !== currentDate);
+            data.history.push({ date: currentDate, bookId: -1, pages: 0 });
+            saveData();
+        }
+
+        function undoRest() {
+            data.history = data.history.filter(h => !(h.date === currentDate && h.bookId === -1));
+            saveData();
+        }
+
+        // Settings
+        function openSettings() {
+            document.getElementById('setDailyGoal').value = data.settings.dailyGoal;
+            document.getElementById('setYearlyGoal').value = data.settings.yearlyGoal;
+            openModal('modal-settings');
+        }
+
+        function saveSettings() {
+            data.settings.dailyGoal = parseInt(document.getElementById('setDailyGoal').value);
+            data.settings.yearlyGoal = parseInt(document.getElementById('setYearlyGoal').value);
+            saveData();
+            closeModal('modal-settings');
+        }
+
+        // Helpers
+        function switchTab(id, btn) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.getElementById('view-daily').classList.add('hidden');
+            document.getElementById('view-library').classList.add('hidden');
+            document.getElementById('view-stats').classList.add('hidden');
+            
+            document.getElementById('view-'+id).classList.remove('hidden');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        init();
     </script>
 </body>
 </html>
