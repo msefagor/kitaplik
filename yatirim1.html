@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <title>Liquid Trader Pro</title>
+    <title>MSEFAGOR Plan</title>
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/bullish.png">
 
     <style>
@@ -124,7 +124,7 @@
 
         /* --- Flash Card --- */
         .flash-card {
-            flex: 1; /* Esnek yükseklik */
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -133,19 +133,42 @@
             padding: 20px;
             min-height: 300px;
         }
-        .big-balance { font-size: 42px; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Bakiye Gösterim Alanı (İkonlu) */
+        .balance-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .balance-icon {
+            width: 36px; height: 36px;
+            fill: var(--accent);
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+        }
+        .big-balance { 
+            font-size: 42px; 
+            font-weight: 800; 
+            background: linear-gradient(to right, #fff, #cbd5e1); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
         .big-tl { font-size: 20px; color: var(--text-muted); font-weight: 500; }
 
         /* --- Projection Card --- */
         .projection-card {
-            padding: 15px 20px;
+            padding: 15px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .proj-item { display: flex; flex-direction: column; gap: 4px; }
-        .proj-val { font-size: 18px; font-weight: 700; color: var(--accent); }
-        .proj-lbl { font-size: 12px; color: var(--text-muted); }
+        .proj-item { 
+            display: flex; flex-direction: column; gap: 4px; 
+            flex: 1; text-align: center;
+        }
+        .proj-val { font-size: 16px; font-weight: 700; color: white; }
+        .proj-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .proj-sep { width: 1px; height: 30px; background: var(--glass-border); }
 
         /* --- Stats --- */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -209,13 +232,10 @@
         <div id="page-home" class="page active">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <div style="font-size:14px; color:var(--text-muted);">Liquid Planlayıcı</div>
+                    <div style="font-size:14px; color:var(--text-muted);">MSEFAGOR Bütçe Planı</div>
                     <div style="font-size:20px; font-weight:700;">Bugünün Durumu</div>
                 </div>
-                <div class="glass-panel" style="padding: 5px 12px; border-radius:12px; font-size:13px;">
-                    <span id="display-date">...</span>
                 </div>
-            </div>
 
             <div class="glass-panel flash-card">
                 <div id="step-date" style="width:100%;">
@@ -223,7 +243,14 @@
                     <input type="date" id="input-date" style="text-align:center; font-weight:bold;">
                     <div class="mt-4">
                         <div class="label">Son Bakiye</div>
-                        <div class="big-balance" id="last-balance-display">$0.00</div>
+                        
+                        <div class="balance-container">
+                            <svg class="balance-icon" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.69 1.64 1.83 1.64.93 0 1.68-.48 1.68-1.31 0-.78-.63-1.23-2.11-1.61-1.55-.4-3.15-1.15-3.15-3.37 0-1.77 1.36-2.96 3.06-3.29V4h2.67v1.9c1.47.33 2.74 1.36 3.01 3.1h-1.92c-.17-.89-.7-1.38-1.63-1.38-.88 0-1.54.43-1.54 1.25 0 .86.86 1.23 2.25 1.64 1.61.47 3.01 1.28 3.01 3.32 0 1.9-1.5 3.1-3.18 3.26z"/>
+                            </svg>
+                            <div class="big-balance" id="last-balance-val">0.00</div>
+                        </div>
+                        
                         <div class="big-tl" id="last-balance-tl">₺0.00</div>
                     </div>
                     <div class="mt-4" style="width:100%">
@@ -262,15 +289,25 @@
 
             <div id="projection-card" class="glass-panel projection-card">
                 <div class="proj-item">
-                    <span class="proj-lbl">Bir Sonraki Hedef</span>
-                    <span class="proj-val" id="proj-next-target">--</span>
+                    <span class="proj-lbl">Sonraki Hedef</span>
+                    <span class="proj-val" id="proj-next-target" style="color:var(--accent)">--</span>
                 </div>
-                <div style="height:30px; width:1px; background:var(--glass-border);"></div>
-                <div class="proj-item" style="text-align:right;">
-                    <span class="proj-lbl">Ana Hedefe Kalan</span>
-                    <span class="proj-val" id="proj-steps-left" style="color:var(--text-main);">--</span>
+                
+                <div class="proj-sep"></div>
+                
+                <div class="proj-item">
+                    <span class="proj-lbl">Gereken Fark</span>
+                    <span class="proj-val" id="proj-diff" style="color:var(--text-main)">--</span>
+                </div>
+                
+                <div class="proj-sep"></div>
+                
+                <div class="proj-item">
+                    <span class="proj-lbl">Kalan İşlem</span>
+                    <span class="proj-val" id="proj-steps-left" style="color:var(--text-muted);">--</span>
                 </div>
             </div>
+            
             <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:-10px;">
                 *Her işlemde <span id="proj-percent-display">%7</span> kâr varsayımıyla.
             </div>
@@ -362,7 +399,7 @@
         let settings = {
             fxRate: 34.00,
             targetTL: 500000,
-            targetPercent: 7.0, // Varsayılan %7
+            targetPercent: 7.0, 
             initialBalance: 0
         };
 
@@ -374,26 +411,24 @@
             const savedSettings = localStorage.getItem(SETTINGS_KEY);
             if(savedSettings) settings = JSON.parse(savedSettings);
 
-            // Ayarlar Inputlarını doldur
+            // Ayarlar
             document.getElementById('set-fx').value = settings.fxRate;
             document.getElementById('set-target').value = settings.targetTL;
             document.getElementById('set-percent').value = settings.targetPercent;
             
-            // Tarihi bugün yap
+            // Tarih
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('input-date').value = today;
-            updateDateDisplay();
 
             // Ekranları güncelle
             updateBalanceDisplay();
-            calculateProjections(); // Yeni fonksiyon
+            calculateProjections();
             
             // Event Listeners
-            document.getElementById('input-date').addEventListener('change', updateDateDisplay);
             document.getElementById('input-new-balance').addEventListener('input', previewProfit);
         }
 
-        // --- Navigasyon ve UI ---
+        // --- Navigasyon ---
         function switchTab(tabName) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -411,12 +446,6 @@
             }
         }
 
-        function updateDateDisplay() {
-            const d = new Date(document.getElementById('input-date').value);
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('display-date').innerText = d.toLocaleDateString('tr-TR', options);
-        }
-
         function getLatestBalance() {
             if (transactions.length === 0) return settings.initialBalance || 0;
             return transactions[transactions.length - 1].balance;
@@ -425,59 +454,56 @@
         function updateBalanceDisplay() {
             const bal = getLatestBalance();
             const tl = bal * settings.fxRate;
-            document.getElementById('last-balance-display').innerText = formatUSD(bal);
+            
+            // Sadece sayıyı al (Sembol yok, ikon var)
+            document.getElementById('last-balance-val').innerText = formatNumber(bal);
             document.getElementById('last-balance-tl').innerText = formatTL(tl);
-            // Referans alanını da güncelle
             document.getElementById('ref-prev-balance').innerText = formatUSD(bal);
         }
 
-        // --- PROJEKSİYON HESAPLAMA (YENİ) ---
+        // --- PROJEKSİYON ---
         function calculateProjections() {
             const currentUSD = getLatestBalance();
             const targetUSD = settings.targetTL / settings.fxRate;
             const rate = settings.targetPercent / 100;
 
-            // Ekrandaki yüzde metnini güncelle
             document.getElementById('proj-percent-display').innerText = `%${settings.targetPercent}`;
 
-            // 1. Bir sonraki hedef
+            // 1. Sonraki Hedef
             const nextTarget = currentUSD * (1 + rate);
             document.getElementById('proj-next-target').innerText = formatUSD(nextTarget);
 
-            // 2. Kaç adım kaldı?
+            // 2. Gereken Fark (Next - Current)
+            const diff = nextTarget - currentUSD;
+            const diffEl = document.getElementById('proj-diff');
+            diffEl.innerText = "+" + formatNumber(diff);
+
+            // 3. Kaç adım kaldı?
             const stepsEl = document.getElementById('proj-steps-left');
-            
             if (currentUSD >= targetUSD) {
-                stepsEl.innerText = "Hedefe Ulaşıldı! 🎉";
+                stepsEl.innerText = "Bitti! 🎉";
                 stepsEl.style.color = "var(--success)";
             } else if (currentUSD <= 0) {
-                stepsEl.innerText = "Bakiye Bekleniyor";
-                stepsEl.style.color = "var(--text-muted)";
+                stepsEl.innerText = "--";
             } else {
-                // Bileşik faiz formülü: N = ln(Target/Current) / ln(1+rate)
                 const steps = Math.ceil(Math.log(targetUSD / currentUSD) / Math.log(1 + rate));
                 stepsEl.innerText = `${steps} İşlem`;
                 stepsEl.style.color = "var(--text-main)";
             }
         }
 
-        // --- Flash Kart Akışı ---
+        // --- Akış Kontrol ---
         function goToStep2() {
             document.getElementById('step-date').classList.add('hidden');
-            document.getElementById('projection-card').classList.add('hidden'); // Projeksiyonu gizle
+            document.getElementById('projection-card').classList.add('hidden'); 
             document.getElementById('step-question').classList.remove('hidden');
         }
 
         function goToStep3() {
             document.getElementById('step-question').classList.add('hidden');
             document.getElementById('step-input').classList.remove('hidden');
-            
-            // Input'u hazırla
             const el = document.getElementById('input-new-balance');
-            el.value = ''; 
-            el.focus();
-            
-            // Referans bakiyeyi güncelle
+            el.value = ''; el.focus();
             document.getElementById('ref-prev-balance').innerText = formatUSD(getLatestBalance());
             document.getElementById('profit-preview').innerText = '';
         }
@@ -486,7 +512,7 @@
             document.getElementById('step-input').classList.add('hidden');
             document.getElementById('step-question').classList.add('hidden');
             document.getElementById('step-date').classList.remove('hidden');
-            document.getElementById('projection-card').classList.remove('hidden'); // Projeksiyonu geri getir
+            document.getElementById('projection-card').classList.remove('hidden');
             updateBalanceDisplay();
             calculateProjections();
         }
@@ -538,12 +564,10 @@
             resetFlow();
         }
 
-        // --- İstatistik Mantığı ---
+        // --- İstatistik ---
         function calculateStats() {
             const today = new Date();
             const currentYear = today.getFullYear();
-
-            // Liste Temizle
             const listContainer = document.getElementById('history-container');
             listContainer.innerHTML = '';
             
@@ -565,24 +589,20 @@
                 listContainer.appendChild(item);
             });
 
-            // Zaman Filtreleme
             const thisYearTx = transactions.filter(t => new Date(t.date).getFullYear() === currentYear);
 
-            // 1. Dün
             const yesterdayDate = new Date();
             yesterdayDate.setDate(yesterdayDate.getDate() - 1);
             const yStr = yesterdayDate.toISOString().split('T')[0];
             const yesterdayTx = thisYearTx.filter(t => t.date === yStr);
             const yesterdayProfit = yesterdayTx.reduce((sum, t) => sum + t.profit, 0);
 
-            // 2. Bu Hafta
             const weekStart = new Date();
             weekStart.setDate(weekStart.getDate() - 7);
             const weekProfit = thisYearTx
                 .filter(t => new Date(t.date) >= weekStart)
                 .reduce((sum, t) => sum + t.profit, 0);
 
-            // 3. Bu Ay
             const thisMonth = today.getMonth();
             const monthProfit = thisYearTx
                 .filter(t => new Date(t.date).getMonth() === thisMonth)
@@ -592,7 +612,6 @@
             renderStat('stat-week', weekProfit);
             renderStat('stat-month', monthProfit);
 
-            // Hedef Barı ve Yüzdelik İfade
             const currentBal = getLatestBalance();
             const currentTL = currentBal * settings.fxRate;
             
@@ -602,7 +621,6 @@
             const pct = Math.min(100, (currentTL / settings.targetTL) * 100);
             
             document.getElementById('target-progress').style.width = `${pct}%`;
-            // Yüzdelik metni güncelle (Yeni özellik)
             document.getElementById('stat-percent-text').innerText = `%${pct.toFixed(1)} Tamamlandı`;
         }
 
@@ -613,24 +631,19 @@
         }
 
         // --- Ayarlar ---
-        function openSettings() {
-            document.getElementById('settings-modal').classList.add('open');
-        }
-        function closeSettings() {
-            document.getElementById('settings-modal').classList.remove('open');
-        }
+        function openSettings() { document.getElementById('settings-modal').classList.add('open'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
         function saveSettings() {
             settings.fxRate = parseFloat(document.getElementById('set-fx').value) || 34.00;
             settings.targetTL = parseFloat(document.getElementById('set-target').value) || 500000;
-            settings.targetPercent = parseFloat(document.getElementById('set-percent').value) || 7.0; // Yeni ayar
+            settings.targetPercent = parseFloat(document.getElementById('set-percent').value) || 7.0;
             
             const startBal = parseFloat(document.getElementById('set-start-bal').value);
             if(!isNaN(startBal)) settings.initialBalance = startBal;
 
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-            
             updateBalanceDisplay();
-            calculateProjections(); // Hesaplamayı güncelle
+            calculateProjections();
             closeSettings();
         }
         function clearAllData() {
@@ -645,6 +658,7 @@
 
         // --- Formatlayıcılar ---
         const formatUSD = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        const formatNumber = (num) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
         const formatTL = (num) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(num);
 
         window.addEventListener('DOMContentLoaded', init);
