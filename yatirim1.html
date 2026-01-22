@@ -21,7 +21,6 @@
             --accent: #3b82f6; /* Mavi */
             --success: #10b981; /* Yeşil */
             --danger: #ef4444; /* Kırmızı */
-            --gold: #f59e0b;
             --card-radius: 24px;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -40,7 +39,7 @@
             flex-direction: column;
         }
 
-        /* --- Arkaplan Efektleri (Blobs) --- */
+        /* --- Arkaplan Efektleri --- */
         .background-fx {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
             overflow: hidden;
@@ -93,6 +92,8 @@
             width: 100%;
         }
         .btn:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.2); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         .btn-primary { background: var(--accent); border-color: var(--accent); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
         .btn-success { background: var(--success); border-color: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
         .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
@@ -110,6 +111,15 @@
             font-family: var(--font-family);
         }
         input:focus { border-color: var(--accent); }
+        
+        /* Tarih inputu için özel ayar (iPhone fix) */
+        input[type="date"] {
+            -webkit-appearance: none;
+            display: block;
+            width: 100%;
+            min-width: 0;
+            text-align: center;
+        }
 
         h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.5px; }
         .label { color: var(--text-muted); font-size: 13px; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -134,7 +144,6 @@
             min-height: 300px;
         }
         
-        /* Bakiye Gösterim Alanı (İkonlu) */
         .balance-container {
             display: flex;
             align-items: center;
@@ -166,6 +175,10 @@
             display: flex; flex-direction: column; gap: 4px; 
             flex: 1; text-align: center;
         }
+        /* Kalan işlem kısmı tıklanabilir */
+        .proj-item.clickable { cursor: pointer; position: relative; }
+        .proj-item.clickable:active { transform: scale(0.95); opacity: 0.8; }
+        
         .proj-val { font-size: 16px; font-weight: 700; color: white; }
         .proj-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .proj-sep { width: 1px; height: 30px; background: var(--glass-border); }
@@ -181,6 +194,13 @@
         .history-list { flex: 1; overflow-y: auto; padding-bottom: 20px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .history-item:last-child { border-bottom: none; }
+        .h-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        /* --- Table in Modal --- */
+        .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .detail-table th { text-align: left; color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--glass-border); font-size: 12px; }
+        .detail-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: white; }
+        .detail-table tr:last-child td { border-bottom: none; }
 
         /* --- Bottom Nav --- */
         .nav-bar {
@@ -214,7 +234,10 @@
             width: 100%; padding: 30px 20px 50px 20px;
             border-top: 1px solid var(--glass-highlight);
             animation: slideUp 0.3s ease;
+            max-height: 85vh; /* Çok uzun listeler için */
+            display: flex; flex-direction: column;
         }
+        .modal-body-scroll { overflow-y: auto; flex: 1; padding-bottom: 20px; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
     </style>
@@ -235,26 +258,28 @@
                     <div style="font-size:14px; color:var(--text-muted);">MSEFAGOR Bütçe Planı</div>
                     <div style="font-size:20px; font-weight:700;">Bugünün Durumu</div>
                 </div>
-                </div>
+            </div>
 
             <div class="glass-panel flash-card">
                 <div id="step-date" style="width:100%;">
                     <div class="label">İşlem Tarihi</div>
-                    <input type="date" id="input-date" style="text-align:center; font-weight:bold;">
+                    <div style="width: 100%; padding: 0 10px;">
+                        <input type="date" id="input-date" style="font-weight:bold;">
+                    </div>
+
                     <div class="mt-4">
                         <div class="label">Son Bakiye</div>
-                        
                         <div class="balance-container">
                             <svg class="balance-icon" viewBox="0 0 24 24">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.69 1.64 1.83 1.64.93 0 1.68-.48 1.68-1.31 0-.78-.63-1.23-2.11-1.61-1.55-.4-3.15-1.15-3.15-3.37 0-1.77 1.36-2.96 3.06-3.29V4h2.67v1.9c1.47.33 2.74 1.36 3.01 3.1h-1.92c-.17-.89-.7-1.38-1.63-1.38-.88 0-1.54.43-1.54 1.25 0 .86.86 1.23 2.25 1.64 1.61.47 3.01 1.28 3.01 3.32 0 1.9-1.5 3.1-3.18 3.26z"/>
                             </svg>
                             <div class="big-balance" id="last-balance-val">0.00</div>
                         </div>
-                        
                         <div class="big-tl" id="last-balance-tl">₺0.00</div>
                     </div>
+                    
                     <div class="mt-4" style="width:100%">
-                        <button class="btn btn-primary" onclick="goToStep2()">İşleme Başla</button>
+                        <button id="btn-start" class="btn btn-primary" onclick="goToStep2()">İşleme Başla</button>
                     </div>
                 </div>
 
@@ -302,8 +327,8 @@
                 
                 <div class="proj-sep"></div>
                 
-                <div class="proj-item">
-                    <span class="proj-lbl">Kalan İşlem</span>
+                <div class="proj-item clickable" onclick="openProjectionDetails()">
+                    <span class="proj-lbl">Kalan İşlem ⓘ</span>
                     <span class="proj-val" id="proj-steps-left" style="color:var(--text-muted);">--</span>
                 </div>
             </div>
@@ -386,14 +411,41 @@
 
             <button class="btn btn-primary mb-2" onclick="saveSettings()">Ayarları Kaydet</button>
             <button class="btn btn-danger" onclick="clearAllData()">Tüm Verileri Sıfırla</button>
-            <button class="btn mt-4" onclick="closeSettings()">Kapat</button>
+            <button class="btn mt-4" onclick="closeModal('settings-modal')">Kapat</button>
+        </div>
+    </div>
+
+    <div id="projection-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="font-size:20px;">Hedef Planı</h2>
+                <button class="btn" style="width:auto; padding:8px 15px;" onclick="closeModal('projection-modal')">✕</button>
+            </div>
+            
+            <div class="modal-body-scroll">
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">
+                    Mevcut bakiyen üzerinden, her işlemde <b id="detail-percent"></b> büyüme ile hedefe ulaşma tablosu:
+                </p>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>Adım</th>
+                            <th>Bakiye (USD)</th>
+                            <th>Kâr</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projection-table-body">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         // --- Veri Yönetimi ---
-        const DB_KEY = 'liquid_trader_db_v2';
-        const SETTINGS_KEY = 'liquid_trader_settings_v2';
+        const DB_KEY = 'liquid_trader_db_v3';
+        const SETTINGS_KEY = 'liquid_trader_settings_v3';
 
         let transactions = [];
         let settings = {
@@ -416,16 +468,40 @@
             document.getElementById('set-target').value = settings.targetTL;
             document.getElementById('set-percent').value = settings.targetPercent;
             
-            // Tarih
+            // Tarih (Bugünü ayarla)
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('input-date').value = today;
+            const dateInput = document.getElementById('input-date');
+            dateInput.value = today;
 
             // Ekranları güncelle
             updateBalanceDisplay();
             calculateProjections();
+            checkDateAllowed(); // İlk açılış kontrolü
             
             // Event Listeners
             document.getElementById('input-new-balance').addEventListener('input', previewProfit);
+            document.getElementById('input-date').addEventListener('change', checkDateAllowed);
+        }
+
+        // --- Tarih Kontrolü (Geçmişe işlem yok) ---
+        function checkDateAllowed() {
+            const inputDate = new Date(document.getElementById('input-date').value);
+            const today = new Date();
+            // Saatleri sıfırla ki sadece gün kıyaslansın
+            inputDate.setHours(0,0,0,0);
+            today.setHours(0,0,0,0);
+
+            const btn = document.getElementById('btn-start');
+            
+            if (inputDate < today) {
+                btn.disabled = true;
+                btn.innerText = "Geçmiş - İşlem Kapalı";
+                btn.classList.remove('btn-primary');
+            } else {
+                btn.disabled = false;
+                btn.innerText = "İşleme Başla";
+                btn.classList.add('btn-primary');
+            }
         }
 
         // --- Navigasyon ---
@@ -455,7 +531,6 @@
             const bal = getLatestBalance();
             const tl = bal * settings.fxRate;
             
-            // Sadece sayıyı al (Sembol yok, ikon var)
             document.getElementById('last-balance-val').innerText = formatNumber(bal);
             document.getElementById('last-balance-tl').innerText = formatTL(tl);
             document.getElementById('ref-prev-balance').innerText = formatUSD(bal);
@@ -473,23 +548,56 @@
             const nextTarget = currentUSD * (1 + rate);
             document.getElementById('proj-next-target').innerText = formatUSD(nextTarget);
 
-            // 2. Gereken Fark (Next - Current)
+            // 2. Gereken Fark
             const diff = nextTarget - currentUSD;
             const diffEl = document.getElementById('proj-diff');
             diffEl.innerText = "+" + formatNumber(diff);
 
-            // 3. Kaç adım kaldı?
+            // 3. Kalan İşlem
             const stepsEl = document.getElementById('proj-steps-left');
             if (currentUSD >= targetUSD) {
-                stepsEl.innerText = "Bitti! 🎉";
+                stepsEl.innerText = "Tamamlandı!";
                 stepsEl.style.color = "var(--success)";
             } else if (currentUSD <= 0) {
                 stepsEl.innerText = "--";
             } else {
                 const steps = Math.ceil(Math.log(targetUSD / currentUSD) / Math.log(1 + rate));
-                stepsEl.innerText = `${steps} İşlem`;
+                stepsEl.innerText = `${steps} İşlem >`;
                 stepsEl.style.color = "var(--text-main)";
             }
+        }
+
+        function openProjectionDetails() {
+            const currentUSD = getLatestBalance();
+            const targetUSD = settings.targetTL / settings.fxRate;
+            const rate = settings.targetPercent / 100;
+
+            if(currentUSD <= 0 || currentUSD >= targetUSD) return;
+
+            const tbody = document.getElementById('projection-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('detail-percent').innerText = `%${settings.targetPercent}`;
+
+            let tempBal = currentUSD;
+            let step = 1;
+            // Max 1000 işlem sınırı koyalım tarayıcı donmasın
+            while(tempBal < targetUSD && step <= 1000) {
+                let nextBal = tempBal * (1 + rate);
+                let profit = nextBal - tempBal;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${step}. İşlem</td>
+                    <td>${formatNumber(nextBal)}</td>
+                    <td style="color:var(--success)">+${formatNumber(profit)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                tempBal = nextBal;
+                step++;
+            }
+
+            document.getElementById('projection-modal').classList.add('open');
         }
 
         // --- Akış Kontrol ---
@@ -515,6 +623,7 @@
             document.getElementById('projection-card').classList.remove('hidden');
             updateBalanceDisplay();
             calculateProjections();
+            checkDateAllowed(); // Tarihe göre buton durumu tekrar kontrol
         }
 
         function previewProfit() {
@@ -574,12 +683,19 @@
             const reversedTx = [...transactions].reverse();
 
             reversedTx.forEach(tx => {
+                // Saati id (timestamp)'den çekiyoruz
+                const dateObj = new Date(tx.id);
+                const timeStr = dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+                
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 const isProfit = tx.profit >= 0;
                 item.innerHTML = `
                     <div>
-                        <div class="h-date">${new Date(tx.date).toLocaleDateString('tr-TR')}</div>
+                        <div class="h-date">
+                            ${new Date(tx.date).toLocaleDateString('tr-TR')} 
+                            <span style="opacity:0.6; margin-left:4px;">${timeStr}</span>
+                        </div>
                         <div style="font-size:12px; color:var(--text-muted)">Bakiye: ${formatUSD(tx.balance)}</div>
                     </div>
                     <div class="h-amount" style="color:${isProfit ? 'var(--success)' : 'var(--danger)'}">
@@ -589,14 +705,17 @@
                 listContainer.appendChild(item);
             });
 
+            // Basit istatistik hesaplamaları
             const thisYearTx = transactions.filter(t => new Date(t.date).getFullYear() === currentYear);
-
+            
+            // Dün
             const yesterdayDate = new Date();
             yesterdayDate.setDate(yesterdayDate.getDate() - 1);
             const yStr = yesterdayDate.toISOString().split('T')[0];
             const yesterdayTx = thisYearTx.filter(t => t.date === yStr);
             const yesterdayProfit = yesterdayTx.reduce((sum, t) => sum + t.profit, 0);
 
+            // Hafta ve Ay
             const weekStart = new Date();
             weekStart.setDate(weekStart.getDate() - 7);
             const weekProfit = thisYearTx
@@ -630,9 +749,10 @@
             el.className = 'stat-val ' + (val > 0 ? 'up' : (val < 0 ? 'down' : 'neutral'));
         }
 
-        // --- Ayarlar ---
+        // --- Ortak Modal Kapatma ---
         function openSettings() { document.getElementById('settings-modal').classList.add('open'); }
-        function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        
         function saveSettings() {
             settings.fxRate = parseFloat(document.getElementById('set-fx').value) || 34.00;
             settings.targetTL = parseFloat(document.getElementById('set-target').value) || 500000;
@@ -644,14 +764,14 @@
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
             updateBalanceDisplay();
             calculateProjections();
-            closeSettings();
+            closeModal('settings-modal');
         }
         function clearAllData() {
             if(confirm('Tüm kayıtlar silinecek. Emin misin?')) {
                 transactions = [];
                 localStorage.removeItem(DB_KEY);
                 updateBalanceDisplay();
-                closeSettings();
+                closeModal('settings-modal');
                 resetFlow();
             }
         }
