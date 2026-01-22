@@ -60,6 +60,7 @@
             padding: 10px 24px; border-radius: 30px; font-weight: 600; font-size: 15px;
             background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px); display: flex; align-items: center; gap: 8px;
+            position: relative;
         }
 
         /* Kartlar & Listeler */
@@ -92,10 +93,15 @@
         /* İstatistik Halkaları */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-card { text-align: center; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .ring-container { width: 80px; height: 80px; position: relative; margin-bottom: 10px; }
+        .ring-container { width: 90px; height: 90px; position: relative; margin-bottom: 10px; }
         .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
         .ring-val { fill: none; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1s ease; }
+        .ring-text { 
+            fill: white; font-size: 14px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; 
+            transform: rotate(90deg); /* SVG döndüğü için yazıyı düzelt */
+            transform-origin: center;
+        }
         
         /* Form Elemanları */
         .form-group { margin-bottom: 20px; }
@@ -166,7 +172,7 @@
         <header>
             <div class="date-badge" onclick="document.getElementById('datePicker').showPicker()">
                 📅 <span id="currentDateText">Bugün</span>
-                <input type="date" id="datePicker" style="position:absolute; opacity:0; pointer-events:none;">
+                <input type="date" id="datePicker" style="position:absolute; inset:0; opacity:0;">
             </div>
         </header>
 
@@ -211,6 +217,7 @@
                         <svg class="ring-svg" viewBox="0 0 80 80">
                             <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
                             <circle id="ringDaily" class="ring-val" cx="40" cy="40" r="35" style="stroke:#00d2ff"></circle>
+                            <text id="textDailyPct" x="40" y="40" class="ring-text">%0</text>
                         </svg>
                     </div>
                     <div style="font-size:12px; color:var(--text-secondary);">GÜNLÜK HEDEF</div>
@@ -221,6 +228,7 @@
                         <svg class="ring-svg" viewBox="0 0 80 80">
                             <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
                             <circle id="ringYearly" class="ring-val" cx="40" cy="40" r="35" style="stroke:#ff5f6d"></circle>
+                            <text id="textYearlyPct" x="40" y="40" class="ring-text">%0</text>
                         </svg>
                     </div>
                     <div style="font-size:12px; color:var(--text-secondary);">YILLIK KİTAP</div>
@@ -229,8 +237,11 @@
             </div>
 
             <div class="glass-panel card">
-                <div class="section-title">⚠️ Okunmayan Günler</div>
-                <div id="missedDaysList" style="max-height: 200px; overflow-y:auto;"></div>
+                <div class="section-title">
+                    <span>⚠️ Okunmayan Günler</span>
+                    <span style="font-size:12px; opacity:0.6; font-weight:400;">(Bu Yıl)</span>
+                </div>
+                <div id="missedDaysList" style="max-height: 250px; overflow-y:auto;"></div>
             </div>
         </div>
     </div>
@@ -261,11 +272,11 @@
 
             <div class="form-group">
                 <label class="form-label">Kitap Adı</label>
-                <input type="text" id="newTitle" class="glass-input">
+                <input type="text" id="newTitle" class="glass-input" onblur="this.value = formatTitle(this.value)">
             </div>
             <div class="form-group">
                 <label class="form-label">Yazar</label>
-                <input type="text" id="newAuthor" class="glass-input">
+                <input type="text" id="newAuthor" class="glass-input" onblur="this.value = formatTitle(this.value)">
             </div>
             <div class="form-group">
                 <label class="form-label">Toplam Sayfa</label>
@@ -316,7 +327,15 @@
             history: [],
             settings: { dailyGoal: 50, yearlyGoal: 60 }
         };
-        let currentDate = new Date().toISOString().split('T')[0];
+        
+        // Yerel Saat Dilimine Göre Doğru Tarihi Al
+        const getLocalDateStr = () => {
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            return new Date(now - offset).toISOString().split('T')[0];
+        };
+
+        let currentDate = getLocalDateStr();
         let tempCoverImg = null;
 
         // --- INIT ---
@@ -324,12 +343,12 @@
             const stored = localStorage.getItem(DB_KEY);
             if(stored) data = JSON.parse(stored);
             
-            // Migration check
             if(!data.settings) data.settings = { dailyGoal: 50, yearlyGoal: 60 };
             
             // Tarih seçiciyi bugün yap
-            document.getElementById('datePicker').value = currentDate;
-            document.getElementById('datePicker').addEventListener('change', (e) => {
+            const datePicker = document.getElementById('datePicker');
+            datePicker.value = currentDate;
+            datePicker.addEventListener('change', (e) => {
                 currentDate = e.target.value;
                 updateUI();
             });
@@ -342,6 +361,27 @@
             updateUI();
         }
 
+        // --- FORMATTING LOGIC ---
+        function formatTitle(str) {
+            if (!str) return '';
+            
+            // Küçük kalacak bağlaçlar listesi (genişletilebilir)
+            const lowers = ['ve', 'ile', 'veya', 'ki', 'de', 'da', 'ama', 'fakat', 'lakin', 'ancak', 'için', 'üzere'];
+            
+            const words = str.split(/\s+/);
+            
+            return words.map((word, index) => {
+                let lower = word.toLowerCase();
+                
+                // İlk kelime değilse ve bağlaç listesinde varsa küçük bırak
+                if (index > 0 && lowers.includes(lower)) {
+                    return lower;
+                }
+                // Diğer durumlarda Baş Harf Büyük
+                return lower.charAt(0).toUpperCase() + lower.slice(1);
+            }).join(' ');
+        }
+
         // --- UI UPDATES ---
         function updateUI() {
             renderDaily();
@@ -350,12 +390,12 @@
             
             // Tarih etiketi
             const d = new Date(currentDate);
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateStr();
+            
             document.getElementById('currentDateText').innerText = (currentDate === today) ? "Bugün" : d.toLocaleDateString('tr-TR', { day:'numeric', month:'long' });
         }
 
         function renderDaily() {
-            // Bugünün kayıtlarını bul
             const entries = data.history.filter(h => h.date === currentDate);
             const isRest = entries.some(h => h.bookId === -1);
             
@@ -391,7 +431,6 @@
                 });
                 document.getElementById('dailyList').innerHTML = html;
                 document.getElementById('dailyTotalPages').innerText = total;
-                // Ekleme butonu
                 document.getElementById('dailyList').innerHTML += '<button class="btn btn-secondary" onclick="openReadingModal()">+ Ekle</button>';
             }
         }
@@ -400,13 +439,11 @@
             const search = document.getElementById('searchBar').value.toLowerCase();
             const list = document.getElementById('libraryList');
             
-            // Filtreleme
             const filtered = data.books.filter(b => 
                 b.title.toLowerCase().includes(search) || 
                 (b.author && b.author.toLowerCase().includes(search))
             );
 
-            // Sıralama: Okunanlar en üstte
             filtered.sort((a,b) => {
                 if(a.status === 'reading' && b.status !== 'reading') return -1;
                 return 0;
@@ -419,8 +456,6 @@
 
             list.innerHTML = filtered.map(b => {
                 const pct = Math.round((b.currentPage / b.totalPages) * 100);
-                
-                // Tarih Aralığı
                 let dateInfo = '';
                 if(b.status === 'completed' && b.startDate && b.endDate) {
                     const d1 = new Date(b.startDate).toLocaleDateString('tr-TR');
@@ -446,11 +481,11 @@
 
         function renderStats() {
             // Günlük Hedef
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateStr();
             const todayEntries = data.history.filter(h => h.date === todayStr && h.bookId !== -1);
             const todayTotal = todayEntries.reduce((acc, curr) => acc + curr.pages, 0);
             
-            updateRing('ringDaily', todayTotal, data.settings.dailyGoal);
+            updateRing('ringDaily', 'textDailyPct', todayTotal, data.settings.dailyGoal);
             document.getElementById('statDailyVal').innerText = todayTotal;
             document.getElementById('statDailyGoal').innerText = data.settings.dailyGoal;
 
@@ -458,43 +493,58 @@
             const thisYear = new Date().getFullYear();
             const finishedBooks = data.books.filter(b => b.status === 'completed' && b.endDate && b.endDate.startsWith(thisYear)).length;
             
-            updateRing('ringYearly', finishedBooks, data.settings.yearlyGoal);
+            updateRing('ringYearly', 'textYearlyPct', finishedBooks, data.settings.yearlyGoal);
             document.getElementById('statYearlyVal').innerText = finishedBooks;
             document.getElementById('statYearlyGoal').innerText = data.settings.yearlyGoal;
 
-            // Okunmayan Günler (Geriye doğru 30 gün)
+            // Okunmayan Günler (Sadece BU YIL)
             const missedDiv = document.getElementById('missedDaysList');
             let missedHtml = '';
-            let checkDate = new Date();
-            checkDate.setDate(checkDate.getDate() - 1); // Dünden başla
+            
+            // Yılın başından bugüne kadar döngü
+            const startOfYear = new Date(thisYear, 0, 1);
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1); // Düne kadar
 
-            for(let i=0; i<30; i++) {
-                const dStr = checkDate.toISOString().split('T')[0];
+            // Eğer yılın ilk günüyse veya henüz geçmiş yoksa
+            if (yesterday < startOfYear) {
+                 missedDiv.innerHTML = '<div style="padding:10px; text-align:center; color:var(--success)">Henüz yılın başındayız!</div>';
+                 return;
+            }
+
+            let loopDate = new Date(yesterday);
+            
+            while(loopDate >= startOfYear) {
+                const dStr = new Date(loopDate.getTime() - (loopDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                 const hasEntry = data.history.some(h => h.date === dStr);
                 
                 if(!hasEntry) {
-                    const formatted = checkDate.toLocaleDateString('tr-TR', {day:'numeric', month:'long', weekday:'long'});
+                    const formatted = loopDate.toLocaleDateString('tr-TR', {day:'numeric', month:'long', weekday:'long'});
                     missedHtml += `<div class="missed-day-item"><span>${formatted}</span><span>Okunmadı</span></div>`;
                 }
-                checkDate.setDate(checkDate.getDate() - 1);
+                
+                loopDate.setDate(loopDate.getDate() - 1); // Geriye git
             }
-            if(missedHtml === '') missedHtml = '<div style="padding:10px; text-align:center; color:var(--success)">Harika! Son 30 gündür boş günün yok.</div>';
+
+            if(missedHtml === '') missedHtml = '<div style="padding:10px; text-align:center; color:var(--success)">Harika! Bu yıl hiç boş günün yok.</div>';
             missedDiv.innerHTML = missedHtml;
         }
 
-        function updateRing(id, val, max) {
-            const circle = document.getElementById(id);
+        function updateRing(ringId, textId, val, max) {
+            const circle = document.getElementById(ringId);
+            const textEl = document.getElementById(textId);
             const radius = circle.r.baseVal.value;
             const circumference = radius * 2 * Math.PI;
-            const pct = Math.min(100, (val / max) * 100);
+            const pct = Math.min(100, Math.round((val / max) * 100));
             const offset = circumference - (pct / 100) * circumference;
+            
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
             circle.style.strokeDashoffset = offset;
+            
+            textEl.textContent = `%${pct}`;
         }
 
         // --- ACTIONS ---
-
-        // Resim İşleme ve Kırpma Simülasyonu
         function handleImage(input) {
             const file = input.files[0];
             if(!file) return;
@@ -503,42 +553,32 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // Canvas oluştur (Kırpma ve Boyutlandırma için)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    // Hedef Boyut (Mobil için optimize)
                     const TARGET_W = 300;
-                    const TARGET_H = 450; // 2:3 Oran
+                    const TARGET_H = 450; 
                     canvas.width = TARGET_W;
                     canvas.height = TARGET_H;
 
-                    // "Center Crop" Mantığı
-                    // Resmin en kısa kenarına göre oranla
                     let sWidth = img.width;
                     let sHeight = img.height;
-                    let sx = 0;
-                    let sy = 0;
+                    let sx = 0; let sy = 0;
 
-                    // Eğer resim yataysa veya kareyse ortasını al
                     const aspect = sWidth / sHeight;
                     const targetAspect = TARGET_W / TARGET_H;
 
                     if (aspect > targetAspect) {
-                        // Resim daha geniş, yanlardan kırp
                         const newWidth = sHeight * targetAspect;
                         sx = (sWidth - newWidth) / 2;
                         sWidth = newWidth;
                     } else {
-                        // Resim daha uzun, üst/alttan kırp
                         const newHeight = sWidth / targetAspect;
                         sy = (sHeight - newHeight) / 2;
                         sHeight = newHeight;
                     }
 
                     ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, TARGET_W, TARGET_H);
-                    
-                    // Kaliteyi düşürerek (0.7) Base64 al
                     tempCoverImg = canvas.toDataURL('image/jpeg', 0.7);
                     
                     const drop = document.getElementById('coverDropZone');
@@ -562,8 +602,12 @@
         }
 
         function saveNewBook() {
-            const title = document.getElementById('newTitle').value;
-            const author = document.getElementById('newAuthor').value;
+            // Kaydederken de format fonksiyonunu çağırıyoruz ki inputtan direkt butona basıldıysa düzelsin
+            const titleRaw = document.getElementById('newTitle').value;
+            const authorRaw = document.getElementById('newAuthor').value;
+            
+            const title = formatTitle(titleRaw);
+            const author = formatTitle(authorRaw);
             const pages = document.getElementById('newPages').value;
 
             if(!title || !pages) { alert('Lütfen kitap adı ve sayfa sayısını girin.'); return; }
@@ -576,7 +620,7 @@
                 currentPage: 0,
                 status: 'reading',
                 cover: tempCoverImg,
-                startDate: new Date().toISOString().split('T')[0],
+                startDate: getLocalDateStr(),
                 endDate: null
             };
             
@@ -610,7 +654,6 @@
             
             if(!bookId || !pages) return;
 
-            // Kitabı Güncelle
             const book = data.books.find(b => b.id === bookId);
             if(book) {
                 book.currentPage += pages;
@@ -622,7 +665,6 @@
                 }
             }
 
-            // Tarihçeye Ekle
             data.history.push({
                 date: currentDate,
                 bookId: bookId,
@@ -644,7 +686,6 @@
             saveData();
         }
 
-        // Settings
         function openSettings() {
             document.getElementById('setDailyGoal').value = data.settings.dailyGoal;
             document.getElementById('setYearlyGoal').value = data.settings.yearlyGoal;
@@ -658,7 +699,6 @@
             closeModal('modal-settings');
         }
 
-        // Helpers
         function switchTab(id, btn) {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
