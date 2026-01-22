@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <title>Liquid Trader</title>
+    <title>Liquid Trader Pro</title>
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/bullish.png">
 
     <style>
@@ -21,6 +21,7 @@
             --accent: #3b82f6; /* Mavi */
             --success: #10b981; /* Yeşil */
             --danger: #ef4444; /* Kırmızı */
+            --gold: #f59e0b;
             --card-radius: 24px;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -34,7 +35,7 @@
             color: var(--text-main);
             font-family: var(--font-family);
             height: 100vh;
-            overflow: hidden; /* Scroll engelle, SPA hissi */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -57,12 +58,12 @@
             50% { transform: translate(20px, -20px); }
         }
 
-        /* --- Genel Bileşenler --- */
+        /* --- Layout --- */
         .app-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: max(env(safe-area-inset-top), 20px) 20px max(env(safe-area-inset-bottom), 80px) 20px;
+            padding: max(env(safe-area-inset-top), 20px) 20px max(env(safe-area-inset-bottom), 90px) 20px;
             overflow-y: auto;
             position: relative;
         }
@@ -77,6 +78,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
+        /* --- Buttons & Inputs --- */
         .btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -95,7 +97,7 @@
         .btn-success { background: var(--success); border-color: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
         .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
 
-        input, select {
+        input {
             width: 100%;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
@@ -110,32 +112,42 @@
         input:focus { border-color: var(--accent); }
 
         h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.5px; }
-        .text-center { text-align: center; }
-        .mb-2 { margin-bottom: 10px; }
-        .mb-4 { margin-bottom: 20px; }
-        .mt-4 { margin-top: 20px; }
         .label { color: var(--text-muted); font-size: 13px; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hidden { display: none !important; }
+        .mt-4 { margin-top: 20px; }
+        .mb-4 { margin-bottom: 20px; }
 
-        /* --- Sayfalar (Tabs) --- */
+        /* --- Pages --- */
         .page { display: none; animation: fadeIn 0.3s ease; height: 100%; }
         .page.active { display: flex; flex-direction: column; gap: 20px; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Flash Kart Yapısı --- */
+        /* --- Flash Card --- */
         .flash-card {
-            flex: 1;
+            flex: 1; /* Esnek yükseklik */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 20px;
+            min-height: 300px;
         }
         .big-balance { font-size: 42px; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .big-tl { font-size: 20px; color: var(--text-muted); font-weight: 500; }
 
-        /* --- İstatistikler --- */
+        /* --- Projection Card --- */
+        .projection-card {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .proj-item { display: flex; flex-direction: column; gap: 4px; }
+        .proj-val { font-size: 18px; font-weight: 700; color: var(--accent); }
+        .proj-lbl { font-size: 12px; color: var(--text-muted); }
+
+        /* --- Stats --- */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .stat-box { padding: 15px; display: flex; flex-direction: column; gap: 5px; }
         .stat-val { font-size: 22px; font-weight: 700; }
@@ -143,19 +155,11 @@
         .stat-val.down { color: var(--danger); }
         .stat-val.neutral { color: var(--text-muted); }
         
-        .history-list {
-            flex: 1; overflow-y: auto; 
-            padding-bottom: 20px;
-        }
-        .history-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        .history-list { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .history-item:last-child { border-bottom: none; }
-        .h-date { font-size: 14px; color: var(--text-muted); }
-        .h-amount { font-weight: 600; font-size: 16px; }
 
-        /* --- Bottom Navigation --- */
+        /* --- Bottom Nav --- */
         .nav-bar {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 400px;
@@ -169,18 +173,17 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         .nav-item {
-            color: var(--text-muted);
-            font-size: 12px; font-weight: 600;
+            color: var(--text-muted); font-size: 12px; font-weight: 600;
             display: flex; flex-direction: column; align-items: center; gap: 4px;
             background: none; border: none; padding: 10px; width: 100%;
         }
         .nav-item.active { color: white; }
         .nav-icon { width: 24px; height: 24px; fill: currentColor; }
 
-        /* --- Modal (Settings & Updates) --- */
+        /* --- Modal --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            z-index: 200; display: none; align-items: flex-end; /* iPhone style bottom sheet */
+            z-index: 200; display: none; align-items: flex-end;
         }
         .modal-overlay.open { display: flex; }
         .modal-content {
@@ -191,8 +194,6 @@
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* --- Helper --- */
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -241,12 +242,16 @@
 
                 <div id="step-input" class="hidden" style="width:100%;">
                     <h2 class="mb-2">Güncel Bakiye</h2>
-                    <p class="label mb-4">Hesabındaki yeni toplam tutarı gir (USD)</p>
                     
-                    <input type="number" id="input-new-balance" placeholder="Örn: 520.50" step="0.01" inputmode="decimal">
+                    <div style="font-size:13px; color:var(--text-muted); margin-bottom:10px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:8px; display:inline-block;">
+                        Önceki Bakiye: <span id="ref-prev-balance" style="color:white; font-weight:bold;">$0.00</span>
+                    </div>
+
+                    <p class="label mb-4" style="margin-top:10px;">Hesabındaki yeni toplam tutarı gir (USD)</p>
                     
-                    <div id="profit-preview" style="margin-bottom:20px; font-size:15px; color:var(--success);">
-                        </div>
+                    <input type="number" id="input-new-balance" placeholder="Yeni toplam tutar..." step="0.01" inputmode="decimal">
+                    
+                    <div id="profit-preview" style="margin-bottom:20px; font-size:15px; color:var(--success);"></div>
 
                     <div style="display:flex; gap:10px;">
                         <button class="btn" style="width:30%" onclick="resetFlow()">İptal</button>
@@ -254,13 +259,33 @@
                     </div>
                 </div>
             </div>
+
+            <div id="projection-card" class="glass-panel projection-card">
+                <div class="proj-item">
+                    <span class="proj-lbl">Bir Sonraki Hedef</span>
+                    <span class="proj-val" id="proj-next-target">--</span>
+                </div>
+                <div style="height:30px; width:1px; background:var(--glass-border);"></div>
+                <div class="proj-item" style="text-align:right;">
+                    <span class="proj-lbl">Ana Hedefe Kalan</span>
+                    <span class="proj-val" id="proj-steps-left" style="color:var(--text-main);">--</span>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:-10px;">
+                *Her işlemde <span id="proj-percent-display">%7</span> kâr varsayımıyla.
+            </div>
+
         </div>
 
         <div id="page-stats" class="page">
             <h2 class="mb-4">Performans Analizi</h2>
             
             <div class="glass-panel mb-4" style="padding:20px;">
-                <div class="label">Toplam Hedef Durumu</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="label">Toplam Hedef Durumu</div>
+                    <div id="stat-percent-text" style="font-size:14px; color:var(--success); font-weight:700;">%0</div>
+                </div>
+                
                 <div style="display:flex; justify-content:space-between; align-items:end; margin-top:5px;">
                     <div style="font-size:24px; font-weight:bold;" id="stat-current-tl">₺0</div>
                     <div style="color:var(--text-muted); font-size:14px;" id="stat-target-tl">/ ₺0</div>
@@ -287,8 +312,7 @@
             </div>
 
             <h3 class="mb-2">Son İşlemler</h3>
-            <div class="glass-panel history-list" id="history-container">
-                </div>
+            <div class="glass-panel history-list" id="history-container"></div>
         </div>
     </div>
 
@@ -311,6 +335,9 @@
         <div class="modal-content">
             <h2 class="mb-4">Ayarlar</h2>
             
+            <div class="label">Hedef Kâr Yüzdesi (%)</div>
+            <input type="number" id="set-percent" placeholder="Örn: 7" step="0.1">
+
             <div class="label">Dolar Kuru (TL)</div>
             <input type="number" id="set-fx" placeholder="Örn: 32.50" step="0.01">
 
@@ -328,19 +355,19 @@
 
     <script>
         // --- Veri Yönetimi ---
-        const DB_KEY = 'liquid_trader_db';
-        const SETTINGS_KEY = 'liquid_trader_settings';
+        const DB_KEY = 'liquid_trader_db_v2';
+        const SETTINGS_KEY = 'liquid_trader_settings_v2';
 
         let transactions = [];
         let settings = {
             fxRate: 34.00,
             targetTL: 500000,
+            targetPercent: 7.0, // Varsayılan %7
             initialBalance: 0
         };
 
         // --- Başlangıç ---
         function init() {
-            // Verileri yükle
             const savedData = localStorage.getItem(DB_KEY);
             if(savedData) transactions = JSON.parse(savedData);
             
@@ -350,19 +377,19 @@
             // Ayarlar Inputlarını doldur
             document.getElementById('set-fx').value = settings.fxRate;
             document.getElementById('set-target').value = settings.targetTL;
+            document.getElementById('set-percent').value = settings.targetPercent;
             
             // Tarihi bugün yap
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('input-date').value = today;
             updateDateDisplay();
 
-            // İlk ekranı güncelle
+            // Ekranları güncelle
             updateBalanceDisplay();
+            calculateProjections(); // Yeni fonksiyon
             
-            // Event Listener: Tarih değişince
+            // Event Listeners
             document.getElementById('input-date').addEventListener('change', updateDateDisplay);
-            
-            // Event Listener: Yeni bakiye girilirken önizleme yap
             document.getElementById('input-new-balance').addEventListener('input', previewProfit);
         }
 
@@ -373,12 +400,12 @@
             
             document.getElementById(`page-${tabName}`).classList.add('active');
             
-            // Aktif buton styling
             const index = tabName === 'home' ? 0 : 1;
             document.querySelectorAll('.nav-item')[index].classList.add('active');
 
             if(tabName === 'home') {
                 resetFlow();
+                calculateProjections();
             } else if (tabName === 'stats') {
                 calculateStats();
             }
@@ -392,7 +419,6 @@
 
         function getLatestBalance() {
             if (transactions.length === 0) return settings.initialBalance || 0;
-            // Tarihe ve eklenme sırasına göre son işlemi bul
             return transactions[transactions.length - 1].balance;
         }
 
@@ -401,19 +427,58 @@
             const tl = bal * settings.fxRate;
             document.getElementById('last-balance-display').innerText = formatUSD(bal);
             document.getElementById('last-balance-tl').innerText = formatTL(tl);
+            // Referans alanını da güncelle
+            document.getElementById('ref-prev-balance').innerText = formatUSD(bal);
+        }
+
+        // --- PROJEKSİYON HESAPLAMA (YENİ) ---
+        function calculateProjections() {
+            const currentUSD = getLatestBalance();
+            const targetUSD = settings.targetTL / settings.fxRate;
+            const rate = settings.targetPercent / 100;
+
+            // Ekrandaki yüzde metnini güncelle
+            document.getElementById('proj-percent-display').innerText = `%${settings.targetPercent}`;
+
+            // 1. Bir sonraki hedef
+            const nextTarget = currentUSD * (1 + rate);
+            document.getElementById('proj-next-target').innerText = formatUSD(nextTarget);
+
+            // 2. Kaç adım kaldı?
+            const stepsEl = document.getElementById('proj-steps-left');
+            
+            if (currentUSD >= targetUSD) {
+                stepsEl.innerText = "Hedefe Ulaşıldı! 🎉";
+                stepsEl.style.color = "var(--success)";
+            } else if (currentUSD <= 0) {
+                stepsEl.innerText = "Bakiye Bekleniyor";
+                stepsEl.style.color = "var(--text-muted)";
+            } else {
+                // Bileşik faiz formülü: N = ln(Target/Current) / ln(1+rate)
+                const steps = Math.ceil(Math.log(targetUSD / currentUSD) / Math.log(1 + rate));
+                stepsEl.innerText = `${steps} İşlem`;
+                stepsEl.style.color = "var(--text-main)";
+            }
         }
 
         // --- Flash Kart Akışı ---
         function goToStep2() {
             document.getElementById('step-date').classList.add('hidden');
+            document.getElementById('projection-card').classList.add('hidden'); // Projeksiyonu gizle
             document.getElementById('step-question').classList.remove('hidden');
         }
 
         function goToStep3() {
             document.getElementById('step-question').classList.add('hidden');
             document.getElementById('step-input').classList.remove('hidden');
-            document.getElementById('input-new-balance').focus();
-            document.getElementById('input-new-balance').value = ''; // Temizle
+            
+            // Input'u hazırla
+            const el = document.getElementById('input-new-balance');
+            el.value = ''; 
+            el.focus();
+            
+            // Referans bakiyeyi güncelle
+            document.getElementById('ref-prev-balance').innerText = formatUSD(getLatestBalance());
             document.getElementById('profit-preview').innerText = '';
         }
 
@@ -421,7 +486,9 @@
             document.getElementById('step-input').classList.add('hidden');
             document.getElementById('step-question').classList.add('hidden');
             document.getElementById('step-date').classList.remove('hidden');
+            document.getElementById('projection-card').classList.remove('hidden'); // Projeksiyonu geri getir
             updateBalanceDisplay();
+            calculateProjections();
         }
 
         function previewProfit() {
@@ -476,7 +543,7 @@
             const today = new Date();
             const currentYear = today.getFullYear();
 
-            // Geçmiş listesi oluştur (Ters sıra)
+            // Liste Temizle
             const listContainer = document.getElementById('history-container');
             listContainer.innerHTML = '';
             
@@ -499,7 +566,6 @@
             });
 
             // Zaman Filtreleme
-            // Sadece bu yılın verileri
             const thisYearTx = transactions.filter(t => new Date(t.date).getFullYear() === currentYear);
 
             // 1. Dün
@@ -509,7 +575,7 @@
             const yesterdayTx = thisYearTx.filter(t => t.date === yStr);
             const yesterdayProfit = yesterdayTx.reduce((sum, t) => sum + t.profit, 0);
 
-            // 2. Bu Hafta (Basit mantık: son 7 gün)
+            // 2. Bu Hafta
             const weekStart = new Date();
             weekStart.setDate(weekStart.getDate() - 7);
             const weekProfit = thisYearTx
@@ -522,19 +588,22 @@
                 .filter(t => new Date(t.date).getMonth() === thisMonth)
                 .reduce((sum, t) => sum + t.profit, 0);
 
-            // UI Güncelle
             renderStat('stat-yesterday', yesterdayProfit);
             renderStat('stat-week', weekProfit);
             renderStat('stat-month', monthProfit);
 
-            // Hedef Barı
+            // Hedef Barı ve Yüzdelik İfade
             const currentBal = getLatestBalance();
             const currentTL = currentBal * settings.fxRate;
+            
             document.getElementById('stat-current-tl').innerText = formatTL(currentTL);
             document.getElementById('stat-target-tl').innerText = "/ " + formatTL(settings.targetTL);
             
             const pct = Math.min(100, (currentTL / settings.targetTL) * 100);
+            
             document.getElementById('target-progress').style.width = `${pct}%`;
+            // Yüzdelik metni güncelle (Yeni özellik)
+            document.getElementById('stat-percent-text').innerText = `%${pct.toFixed(1)} Tamamlandı`;
         }
 
         function renderStat(elementId, val) {
@@ -553,14 +622,15 @@
         function saveSettings() {
             settings.fxRate = parseFloat(document.getElementById('set-fx').value) || 34.00;
             settings.targetTL = parseFloat(document.getElementById('set-target').value) || 500000;
+            settings.targetPercent = parseFloat(document.getElementById('set-percent').value) || 7.0; // Yeni ayar
             
-            // Eğer hiç veri yoksa, başlangıç bakiyesini ayarla (opsiyonel)
             const startBal = parseFloat(document.getElementById('set-start-bal').value);
             if(!isNaN(startBal)) settings.initialBalance = startBal;
 
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
             
             updateBalanceDisplay();
+            calculateProjections(); // Hesaplamayı güncelle
             closeSettings();
         }
         function clearAllData() {
@@ -577,7 +647,6 @@
         const formatUSD = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
         const formatTL = (num) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(num);
 
-        // Başlat
         window.addEventListener('DOMContentLoaded', init);
 
     </script>
