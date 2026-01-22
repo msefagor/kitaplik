@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Yatırım Pro X</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-highlight: rgba(255, 255, 255, 0.2);
+            --neon-primary: #a855f7; /* Mor */
+            --neon-secondary: #06b6d4; /* Turkuaz */
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden; /* App hissi için scroll'u kontrollü yapacağız */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ARKA PLAN (Liquid Blobs) --- */
+        .background-blobs {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #000;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: moveBlob 20s infinite alternate;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #4f46e5; animation-duration: 25s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #c026d3; animation-duration: 18s; }
+        .blob-3 { top: 40%; left: 30%; width: 300px; height: 300px; background: #0891b2; animation-duration: 30s; }
+
+        @keyframes moveBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* --- UYGULAMA İSKELETİ --- */
+        .app-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: calc(env(safe-area-inset-top) + 20px) 20px 100px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Sekmeler (Tab Content) */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 20px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- GLASS KART TASARIMI --- */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Parlama Efekti */
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+
+        /* --- ANA EKRAN BİLEŞENLERİ --- */
+        .date-picker-area {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .date-display {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+        }
+
+        .balance-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .balance-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+        .balance-value { font-size: 3.5rem; font-weight: 700; margin: 10px 0; letter-spacing: -1px; text-shadow: 0 0 40px rgba(168, 85, 247, 0.4); }
+        .usd-value { font-size: 1.1rem; color: var(--text-muted); background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 12px; display: inline-block; }
+
+        /* Soru / Aksiyon Kartı */
+        .action-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+        .action-question { font-size: 1.2rem; font-weight: 600; }
+        
+        .btn-main {
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-main:active { transform: scale(0.97); }
+
+        /* İstatistik Kartları */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+        .stat-val { font-size: 1.3rem; font-weight: 700; }
+        .val-up { color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+        .val-down { color: var(--danger); text-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+
+        /* --- ALT NAVİGASYON --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 35px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
+        }
+        .nav-item {
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .nav-item.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        /* --- MODAL (SETTINGS & INPUT) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: flex-end; /* Bottom sheet mantığı */
+        }
+        .modal-overlay.open { display: flex; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-content {
+            background: #1e1b4b; /* Koyu lacivert */
+            width: 100%;
+            border-radius: 30px 30px 0 0;
+            padding: 30px 24px calc(env(safe-area-inset-bottom) + 30px) 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 700; }
+        .close-btn { background: rgba(255,255,255,0.1); border:none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;}
+
+        /* Form Elemanları */
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); }
+        .glass-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+        }
+        .glass-input:focus { border-color: var(--neon-primary); }
+
+        /* Grafik Konteyner */
+        .chart-wrapper { height: 250px; width: 100%; margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="date-display">
+                <i class="fa-regular fa-calendar"></i> <span id="currentDateDisplay">...</span>
+            </div>
+            <div class="nav-item" onclick="openModal('settingsModal')" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer;">
+                <i class="fa-solid fa-gear" style="font-size: 1.2rem;"></i>
+            </div>
+        </div>
+
+        <div id="homeTab" class="tab-content active">
+            
+            <div class="glass-card balance-container">
+                <div class="balance-label">Toplam Varlık</div>
+                <div class="balance-value" id="displayBalance">0.00 ₺</div>
+                <div class="usd-value"><i class="fa-solid fa-dollar-sign"></i> <span id="displayUsd">0.00</span></div>
+            </div>
+
+            <div class="glass-card action-card">
+                <i class="fa-solid fa-sack-dollar" style="font-size: 3rem; color: var(--neon-secondary); margin-bottom:10px;"></i>
+                <div class="action-question">Bugün kar elde ettin mi?</div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: -10px;">Günün tarihine işlem ekle.</p>
+                
+                <button class="btn-main" onclick="openTransactionModal()">
+                    <i class="fa-solid fa-plus"></i> İşlem Gir
+                </button>
+            </div>
+
+            <div class="glass-card" style="padding: 15px;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Son İşlem</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="lastTxTitle">Henüz işlem yok</span>
+                    <span id="lastTxAmount" style="font-weight: 600;">--</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="statsTab" class="tab-content">
+            <h2 style="margin: 0;">Performans</h2>
+            
+            <div class="stats-grid">
+                <div class="glass-card stat-item">
+                    <span class="stat-label">Dün</span>
+                    <span class="stat-val" id="statYesterday">0.00 ₺</span>
+                </div>
+                <div class="glass-card stat-item">
+                    <span class="stat-label">Bu Hafta</span>
+                    <span class="stat-val" id="statWeek">0.00 ₺</span>
+                </div>
+            </div>
+            
+            <div class="glass-card stat-item">
+                <span class="stat-label">Bu Ay (Toplam P/L)</span>
+                <span class="stat-val" id="statMonth" style="font-size: 2rem;">0.00 ₺</span>
+            </div>
+
+            <div class="glass-card">
+                <span class="stat-label">Yıllık Büyüme (2026)</span>
+                <div class="chart-wrapper">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('homeTab', this)">
+            <i class="fa-solid fa-house"></i>
+        </div>
+        <div class="nav-item" onclick="switchTab('statsTab', this)">
+            <i class="fa-solid fa-chart-pie"></i>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transactionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">İşlem Ekle</span>
+                <button class="close-btn" onclick="closeModal('transactionModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">İşlem Tipi</label>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="setTxType('profit')" id="btnTypeProfit" class="btn-main" style="flex:1; background: var(--glass-highlight); font-size: 0.9rem; padding: 12px;">Kar Ekle</button>
+                    <button onclick="setTxType('loss')" id="btnTypeLoss" class="btn-main" style="flex:1; background: transparent; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem; padding: 12px;">Zarar/Gider</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Tutar (TL)</label>
+                <input type="number" id="txAmount" class="glass-input" placeholder="0.00">
+            </div>
+
+            <button class="btn-main" onclick="submitTransaction()">
+                <i class="fa-solid fa-check"></i> Bakiyeyi Güncelle
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Ayarlar</span>
+                <button class="close-btn" onclick="closeModal('settingsModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Dolar Kuru</label>
+                <input type="number" id="settingUsd" class="glass-input" value="34.50">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Bakiye Düzeltme (Manuel)</label>
+                <input type="number" id="settingManual" class="glass-input" placeholder="Yeni net bakiye...">
+            </div>
+
+            <button class="btn-main" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="saveSettings()">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+            
+            <br>
+            <button class="btn-main" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.5); color: #ef4444; padding: 12px;" onclick="resetData()">
+                Verileri Sıfırla
+            </button>
+        </div>
+    </div>
+
+<script>
+    // --- VERİ YAPISI VE BAŞLANGIÇ ---
+    let appData = {
+        balance: 0.0,
+        usdRate: 34.50,
+        history: [] // { id, date, type (profit, loss, fix), amount, balanceAfter }
+    };
+
+    let currentTxType = 'profit';
+    let myChart = null;
+
+    window.onload = function() {
+        // Otomatik Tarih Seçimi (Görsel olarak)
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDateDisplay').innerText = today.toLocaleDateString('tr-TR', options);
+
+        loadData();
+        updateUI();
+        initChart();
+    };
+
+    // --- TEMEL FONKSİYONLAR ---
+    function loadData() {
+        const saved = localStorage.getItem('yatirimProX_v1');
+        if (saved) {
+            appData = JSON.parse(saved);
+        }
+        document.getElementById('settingUsd').value = appData.usdRate;
+    }
+
+    function saveData() {
+        localStorage.setItem('yatirimProX_v1', JSON.stringify(appData));
+        updateUI();
+    }
+
+    function formatMoney(amount) {
+        return amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // --- ARAYÜZ GÜNCELLEME ---
+    function updateUI() {
+        // Ana Bakiye
+        document.getElementById('displayBalance').innerText = formatMoney(appData.balance) + " ₺";
+        const usdVal = appData.balance / (appData.usdRate > 0 ? appData.usdRate : 1);
+        document.getElementById('displayUsd').innerText = formatMoney(usdVal);
+
+        // Son İşlem
+        if(appData.history.length > 0) {
+            const last = appData.history[appData.history.length - 1];
+            document.getElementById('lastTxTitle').innerText = last.type === 'profit' ? 'Kar Ekleme' : (last.type === 'loss' ? 'Zarar/Gider' : 'Düzeltme');
+            document.getElementById('lastTxAmount').innerText = (last.amount >= 0 ? '+' : '') + formatMoney(last.amount) + " ₺";
+            document.getElementById('lastTxAmount').className = last.amount >= 0 ? 'val-up' : 'val-down';
+        }
+
+        // İstatistikleri Hesapla
+        calculateStats();
+    }
+
+    // --- İŞLEM MANTIĞI ---
+    function openTransactionModal() {
+        document.getElementById('txAmount').value = '';
+        setTxType('profit');
+        openModal('transactionModal');
+    }
+
+    function setTxType(type) {
+        currentTxType = type;
+        const btnP = document.getElementById('btnTypeProfit');
+        const btnL = document.getElementById('btnTypeLoss');
+        
+        if (type === 'profit') {
+            btnP.style.background = 'var(--glass-highlight)';
+            btnL.style.background = 'transparent';
+        } else {
+            btnL.style.background = 'var(--glass-highlight)';
+            btnP.style.background = 'transparent';
+        }
+    }
+
+    function submitTransaction() {
+        const amountIn = parseFloat(document.getElementById('txAmount').value);
+        if (isNaN(amountIn) || amountIn === 0) return;
+
+        let finalAmount = amountIn;
+        if (currentTxType === 'loss') finalAmount = -Math.abs(amountIn);
+        else finalAmount = Math.abs(amountIn);
+
+        // Bakiyeyi güncelle
+        appData.balance += finalAmount;
+
+        // Geçmişe ekle
+        appData.history.push({
+            id: Date.now(),
+            date: new Date().toISOString(),
+            type: currentTxType,
+            amount: finalAmount,
+            balanceAfter: appData.balance
+        });
+
+        saveData();
+        closeModal('transactionModal');
+        updateChartData(); // Grafiği güncelle
+    }
+
+    // --- AYARLAR ---
+    function saveSettings() {
+        const newUsd = parseFloat(document.getElementById('settingUsd').value);
+        const newManual = parseFloat(document.getElementById('settingManual').value);
+
+        if (!isNaN(newUsd)) appData.usdRate = newUsd;
+        
+        if (!isNaN(newManual)) {
+            const diff = newManual - appData.balance;
+            appData.balance = newManual;
+            appData.history.push({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                type: 'fix',
+                amount: diff,
+                balanceAfter: newManual
+            });
+            document.getElementById('settingManual').value = '';
+        }
+
+        saveData();
+        closeModal('settingsModal');
+    }
+
+    function resetData() {
+        if(confirm('Tüm veriler silinecek?')) {
+            appData = { balance: 0.0, usdRate: 34.50, history: [] };
+            saveData();
+            closeModal('settingsModal');
+            location.reload();
+        }
+    }
+
+    // --- İSTATİSTİK MANTIĞI ---
+    function calculateStats() {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
+        
+        // Haftanın başı (Pazartesi)
+        const day = now.getDay() || 7; 
+        if(day !== 1) now.setHours(-24 * (day - 1)); 
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+        const currentYear = new Date().getFullYear();
+
+        let sumYesterday = 0;
+        let sumWeek = 0;
+        let sumMonth = 0;
+
+        appData.history.forEach(h => {
+            const hDate = new Date(h.date);
+            const hTime = hDate.getTime();
+            
+            // Sadece bu yıl
+            if (hDate.getFullYear() !== currentYear) return;
+
+            // Dün
+            if (hTime >= startOfYesterday && hTime < startOfDay) {
+                sumYesterday += h.amount;
+            }
+
+            // Bu Hafta
+            if (hTime >= startOfWeek) {
+                sumWeek += h.amount;
+            }
+
+            // Bu Ay
+            if (hTime >= startOfMonth) {
+                sumMonth += h.amount;
+            }
+        });
+
+        updateStatDisplay('statYesterday', sumYesterday);
+        updateStatDisplay('statWeek', sumWeek);
+        updateStatDisplay('statMonth', sumMonth);
+    }
+
+    function updateStatDisplay(id, val) {
+        const el = document.getElementById(id);
+        el.innerText = (val > 0 ? '+' : '') + formatMoney(val) + " ₺";
+        el.className = 'stat-val ' + (val >= 0 ? 'val-up' : 'val-down');
+    }
+
+    // --- NAVİGASYON ---
+    function switchTab(tabId, navEl) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        navEl.classList.add('active');
+        
+        if(tabId === 'statsTab') {
+            updateChartData(); // Sekme açılınca grafik yenilensin
+        }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    // --- GRAFİK (Chart.js) ---
+    function initChart() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        
+        // Gradient
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(168, 85, 247, 0.5)');
+        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = '-apple-system';
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Portföy',
+                    data: [],
+                    borderColor: '#a855f7',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointRadius: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 27, 75, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) { return formatMoney(context.parsed.y) + ' ₺'; }
+                        }
+                    }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { 
+                        display: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChartData() {
+        if (!myChart) return;
+
+        // Geçerli yıl verilerini filtrele
+        const currentYear = new Date().getFullYear();
+        const yearData = appData.history.filter(h => new Date(h.date).getFullYear() === currentYear);
+
+        // Etiket ve Veri
+        let labels = yearData.map(h => new Date(h.date).toLocaleDateString('tr-TR', {month:'short', day:'numeric'}));
+        let values = yearData.map(h => h.balanceAfter);
+
+        // Boşsa başlangıç noktası
+        if (values.length === 0) {
+            labels = ['Ocak 1'];
+            values = [appData.balance];
+        }
+
+        myChart.data.labels = labels;
+        myChart.data.datasets[0].data = values;
+        myChart.update();
+    }
+
+</script>
+</body>
+</html>
