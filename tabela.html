@@ -12,10 +12,11 @@
             --glass-border: rgba(255, 255, 255, 0.2);
             --text-color: #ffffff;
             --accent-color: #ffd700;
-            --danger-color: #ff6b6b;
+            --danger-color: #ff4757; /* Parlak Kırmızı */
+            --blue-color: #2e86de;   /* Parlak Mavi */
             --siler-color: #50e3c2;
-            --tile-bg: #fdfdfd; /* Taş Arka Planı */
-            --tile-ink: #2d3436; /* Taş Yazı Rengi */
+            --tile-bg: #fdfdfd; 
+            --tile-ink: #2d3436;
         }
 
         body {
@@ -56,20 +57,21 @@
             align-items: center;
             z-index: 50;
         }
-        h1 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+        h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
         .settings-btn {
             background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
-            color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;
+            color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px;
         }
 
         /* Table Structure */
-        .game-container { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        .game-container { flex: 1; overflow-y: auto; padding-bottom: 120px; }
         
         .grid-header {
             display: grid;
             grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
-            padding: 12px 2px;
-            font-size: 10px; font-weight: 800; text-align: center;
+            padding: 14px 2px;
+            font-size: 12px; /* Punto Büyütüldü */
+            font-weight: 800; text-align: center;
             background: rgba(0,0,0,0.3);
             position: sticky; top: 0; z-index: 40;
             text-transform: uppercase; letter-spacing: 0.5px;
@@ -79,7 +81,7 @@
             display: grid;
             grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            min-height: 55px;
+            min-height: 60px; /* Satır Yüksekliği Arttı */
         }
         .game-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
 
@@ -87,52 +89,95 @@
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             padding: 4px; position: relative;
-            font-size: 14px; font-weight: 600;
+            font-size: 17px; /* Punto Büyütüldü */
+            font-weight: 600;
             text-align: center;
             overflow: hidden;
         }
 
         /* Score & Siler Styling */
-        .score-val { font-size: 15px; }
+        .score-val { font-size: 18px; font-weight: 700; }
         
-        /* GÜNCELLEME 1: Silerler Alt Alta */
         .siler-icons { 
             color: var(--siler-color); 
-            font-size: 20px; 
-            line-height: 14px; /* Sıkı aralık */
+            font-size: 22px; 
+            line-height: 14px;
             display: flex;
-            flex-direction: column; /* Alt alta dizme */
+            flex-direction: column;
             align-items: center;
             margin-top: 2px;
         }
         
         /* Penalty Tags */
         .penalty-tag {
-            background: rgba(255, 107, 107, 0.3);
-            font-size: 9px; padding: 1px 4px;
+            font-size: 11px; padding: 2px 5px;
             border-radius: 4px; margin: 1px;
             display: inline-block;
+            font-weight: bold;
+            min-width: 18px;
         }
+        /* Yeni Renkler */
+        .penalty-tag.tek { background: var(--blue-color); color: white; }
+        .penalty-tag.cift { background: var(--danger-color); color: white; }
 
         /* Diff & Dealer */
-        .dealer-name { font-size: 10px; color: #ccc; opacity: 0.8; }
-        .diff-cell { font-size: 10px; font-weight: 800; line-height: 1.2; }
+        .dealer-name { font-size: 12px; color: #ccc; opacity: 0.8; }
+        .diff-cell { font-size: 12px; font-weight: 800; line-height: 1.2; }
         .diff-biz { color: #81ecec; text-shadow: 0 0 10px rgba(129, 236, 236, 0.3); }
         .diff-siz { color: #fab1a0; text-shadow: 0 0 10px rgba(250, 177, 160, 0.3); }
+
+        /* Remaining Games Info */
+        .games-remaining {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-weight: 600;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
 
         /* Footer */
         .footer-totals {
             position: fixed; bottom: 0; left: 0; right: 0;
-            height: 80px;
-            background: rgba(20, 20, 35, 0.95);
+            height: 90px;
+            background: rgba(20, 20, 35, 0.98);
             backdrop-filter: blur(20px);
             display: flex; justify-content: space-around; align-items: center;
             border-top: 1px solid var(--glass-border);
-            padding-bottom: 15px; z-index: 60;
+            padding-bottom: 20px; z-index: 60;
         }
-        .total-box { text-align: center; }
-        .total-label { font-size: 9px; opacity: 0.6; margin-bottom: 2px; }
-        .total-score { font-size: 24px; font-weight: 800; }
+        .total-box { text-align: center; position: relative; }
+        .total-label { font-size: 10px; opacity: 0.6; margin-bottom: 4px; }
+        .total-score { font-size: 28px; font-weight: 800; }
+
+        /* Scratchcard Effect */
+        .scratch-wrapper {
+            position: relative;
+            display: inline-block;
+            min-width: 80px;
+            min-height: 40px;
+            cursor: pointer;
+        }
+        .scratch-overlay {
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            background: #b2bec3; /* Gri Kazı Kazan Rengi */
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2395a5a6' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+            border-radius: 8px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #2d3436;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .scratch-overlay::after {
+            content: "KAZI";
+            opacity: 0.5;
+        }
 
         /* MODALS */
         .modal-overlay {
@@ -143,7 +188,7 @@
         }
         .modal-content {
             background: #252a34; width: 90%; max-width: 400px;
-            border-radius: 20px; padding: 20px;
+            border-radius: 20px; padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             max-height: 90vh; overflow-y: auto;
@@ -153,23 +198,36 @@
         .score-controls { display: flex; gap: 10px; margin: 15px 0; }
         .control-btn { 
             flex: 1; padding: 15px; border-radius: 12px; border: none;
-            font-weight: bold; font-size: 14px; cursor: pointer; color: #fff;
+            font-weight: bold; font-size: 15px; cursor: pointer; color: #fff;
         }
         .btn-add-siler { background: var(--siler-color); color: #000; }
         .btn-rem-siler { background: rgba(255,255,255,0.1); }
         
         /* Penalty Modal Specifics */
         .toggle-container {
-            display: flex; background: rgba(0,0,0,0.3);
-            border-radius: 10px; padding: 4px; margin-bottom: 15px;
+            display: flex; gap: 10px;
+            margin-bottom: 15px;
         }
         .toggle-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 8px;
-            background: transparent; color: #aaa; font-weight: bold; transition: 0.2s;
+            flex: 1; padding: 12px; border: none; border-radius: 10px;
+            background: rgba(255,255,255,0.1); color: #aaa; 
+            font-weight: bold; font-size: 16px;
+            transition: 0.2s; border: 2px solid transparent;
         }
-        .toggle-btn.active { background: var(--accent-color); color: #000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* TEK Butonu Mavi */
+        .toggle-btn.btn-tek-style.active { 
+            background: var(--blue-color); color: white; 
+            box-shadow: 0 4px 12px rgba(46, 134, 222, 0.4);
+            border-color: rgba(255,255,255,0.2);
+        }
+        /* ÇİFT Butonu Kırmızı */
+        .toggle-btn.btn-cift-style.active { 
+            background: var(--danger-color); color: white;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+            border-color: rgba(255,255,255,0.2);
+        }
 
-        /* GÜNCELLEME 2: Okey Taşı Grid Tasarımı */
+        /* Okey Taşı Grid Tasarımı */
         .num-grid {
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
@@ -181,7 +239,7 @@
             background: var(--tile-bg);
             color: var(--tile-ink);
             border: 2px solid var(--tile-ink);
-            border-radius: 12px; /* Köşe yuvarlaklığı */
+            border-radius: 12px;
             height: 65px;
             display: flex;
             flex-direction: column;
@@ -199,7 +257,7 @@
         }
 
         .tile-number {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 800;
             line-height: 1;
         }
@@ -216,27 +274,26 @@
             max-height: 100px; overflow-y: auto;
         }
         .penalty-chip {
-            background: var(--danger-color); color: white;
-            padding: 5px 10px; border-radius: 15px; font-size: 12px;
+            padding: 6px 12px; border-radius: 15px; font-size: 12px;
             display: flex; align-items: center; gap: 5px; cursor: pointer;
+            font-weight: bold; color: white;
         }
 
         /* Common Modal Elements */
         input[type="number"] {
             width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-            color: white; font-size: 32px; text-align: center; padding: 15px; border-radius: 12px;
+            color: white; font-size: 36px; text-align: center; padding: 15px; border-radius: 12px;
             margin-bottom: 10px; box-sizing: border-box;
         }
         .close-btn {
-            width: 100%; padding: 15px; background: rgba(255,255,255,0.1);
-            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold;
+            width: 100%; padding: 16px; background: rgba(255,255,255,0.1);
+            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold; font-size: 16px;
         }
         .save-btn {
-            width: 100%; padding: 15px; background: #00b894;
-            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold;
+            width: 100%; padding: 16px; background: #00b894;
+            border: none; color: white; border-radius: 12px; margin-top: 10px; font-weight: bold; font-size: 16px;
         }
 
-        /* Players Setup */
         #players-modal { display: none; }
     </style>
 </head>
@@ -258,6 +315,10 @@
 
     <div class="game-container" id="game-rows">
         </div>
+    
+    <div class="games-remaining" id="games-remaining-display">
+        Kalan Oyun: 11
+    </div>
 
     <div class="footer-totals">
         <div class="total-box">
@@ -266,7 +327,10 @@
         </div>
         <div class="total-box">
             <div class="total-label">DURUM</div>
-            <div class="total-score" id="status-diff" style="font-size:16px; color:#aaa">-</div>
+            <div class="scratch-wrapper" onclick="revealScratch()">
+                <div id="scratch-layer" class="scratch-overlay"></div>
+                <div class="total-score" id="status-diff" style="font-size:18px; color:#aaa">-</div>
+            </div>
         </div>
         <div class="total-box">
             <div class="total-label">SİZ TOPLAM</div>
@@ -301,8 +365,8 @@
             <h3 style="text-align:center; margin-top:0;">Ceza Ekle</h3>
             
             <div class="toggle-container">
-                <button class="toggle-btn active" id="btn-tek" onclick="setPenaltyMode('tek')">TEK (x10)</button>
-                <button class="toggle-btn" id="btn-cift" onclick="setPenaltyMode('cift')">ÇİFT (x20)</button>
+                <button class="toggle-btn btn-tek-style active" id="btn-tek" onclick="setPenaltyMode('tek')">TEK (x10)</button>
+                <button class="toggle-btn btn-cift-style" id="btn-cift" onclick="setPenaltyMode('cift')">ÇİFT (x20)</button>
             </div>
 
             <div class="num-grid">
@@ -310,7 +374,7 @@
 
             <div style="font-size:12px; opacity:0.6; margin-top:10px;">Eklenen Cezalar (Silmek için tıklayın):</div>
             <div class="penalty-list" id="penalty-list-container">
-                </div>
+            </div>
 
             <button class="close-btn" onclick="closeModals()">Kapat</button>
         </div>
@@ -353,7 +417,7 @@
                 gameData.push({
                     bizScore: { val: 0, siler: 0 },
                     sizScore: { val: 0, siler: 0 },
-                    bizCeza: [],
+                    bizCeza: [], // Yeni yapı: { val: 100, mode: 'tek' } objeleri tutacak
                     sizCeza: []
                 });
             }
@@ -366,6 +430,7 @@
             
             let bizTotal = 0;
             let sizTotal = 0;
+            let gamesPlayed = 0;
 
             gameData.forEach((row, i) => {
                 const dealer = players[i % 4];
@@ -373,14 +438,23 @@
                 // Hesaplamalar
                 const bizSilerVal = row.bizScore.siler * -100;
                 const sizSilerVal = row.sizScore.siler * -100;
-                const bizPenaltySum = row.bizCeza.reduce((a,b)=>a+b, 0);
-                const sizPenaltySum = row.sizCeza.reduce((a,b)=>a+b, 0);
+                
+                // GÜNCELLEME 3: Ceza veri yapısını işleme (Nesne veya sayı olabilir)
+                const bizPenaltySum = row.bizCeza.reduce((acc, item) => acc + (typeof item === 'object' ? item.val : item), 0);
+                const sizPenaltySum = row.sizCeza.reduce((acc, item) => acc + (typeof item === 'object' ? item.val : item), 0);
 
                 const rowBizTotal = Number(row.bizScore.val) + bizSilerVal + bizPenaltySum;
                 const rowSizTotal = Number(row.sizScore.val) + sizSilerVal + sizPenaltySum;
                 
                 bizTotal += rowBizTotal;
                 sizTotal += rowSizTotal;
+
+                // Oyun oynandı mı kontrolü (Sayaca için)
+                if(row.bizScore.val !== 0 || row.sizScore.val !== 0 || 
+                   row.bizScore.siler !== 0 || row.sizScore.siler !== 0 ||
+                   row.bizCeza.length > 0 || row.sizCeza.length > 0) {
+                    gamesPlayed++;
+                }
 
                 // Fark Gösterimi
                 const absDiff = Math.abs(rowBizTotal - rowSizTotal);
@@ -395,14 +469,21 @@
                     }
                 }
 
-                // Siler string - Alt alta gösterim için her birini ayrı span yapabiliriz veya container flex-col olduğu için karakterleri basmamız yeterli
-                // CSS'de .siler-icons flex-direction:column olduğu için "∞" karakterleri alt alta gelecek.
-                // Ancak tek string "∞∞" yan yana görünebilir, bu yüzden harf harf ayıralım.
                 const bizSilerItems = Array(row.bizScore.siler).fill("∞").map(s => `<span>${s}</span>`).join('');
                 const sizSilerItems = Array(row.sizScore.siler).fill("∞").map(s => `<span>${s}</span>`).join('');
 
-                const bizCezaHtml = row.bizCeza.map(c => `<span class="penalty-tag">${c}</span>`).join('');
-                const sizCezaHtml = row.sizCeza.map(c => `<span class="penalty-tag">${c}</span>`).join('');
+                // GÜNCELLEME 3: Cezaları renklendirerek listeleme
+                const bizCezaHtml = row.bizCeza.map(c => {
+                    let val = typeof c === 'object' ? c.val : c;
+                    let mode = typeof c === 'object' ? c.mode : 'tek'; // Varsayılan mavi
+                    return `<span class="penalty-tag ${mode}">${val}</span>`;
+                }).join('');
+
+                const sizCezaHtml = row.sizCeza.map(c => {
+                    let val = typeof c === 'object' ? c.val : c;
+                    let mode = typeof c === 'object' ? c.mode : 'tek';
+                    return `<span class="penalty-tag ${mode}">${val}</span>`;
+                }).join('');
 
                 const html = `
                     <div class="game-row">
@@ -415,10 +496,10 @@
                             <div class="siler-icons">${sizSilerItems}</div>
                         </div>
                         <div class="cell" onclick="openPenaltyModal(${i}, 'bizCeza')" style="background:rgba(255,100,100,0.05)">
-                            ${bizCezaHtml || '<span style="opacity:0.2">-</span>'}
+                            <div style="display:flex; flex-wrap:wrap; justify-content:center;">${bizCezaHtml || '<span style="opacity:0.2">-</span>'}</div>
                         </div>
                         <div class="cell" onclick="openPenaltyModal(${i}, 'sizCeza')" style="background:rgba(255,100,100,0.05)">
-                            ${sizCezaHtml || '<span style="opacity:0.2">-</span>'}
+                             <div style="display:flex; flex-wrap:wrap; justify-content:center;">${sizCezaHtml || '<span style="opacity:0.2">-</span>'}</div>
                         </div>
                         <div class="cell dealer-name">${dealer}</div>
                         <div class="cell diff-cell">${diffHtml}</div>
@@ -430,6 +511,11 @@
             document.getElementById('total-biz').innerText = bizTotal;
             document.getElementById('total-siz').innerText = sizTotal;
 
+            // GÜNCELLEME 2: Kalan Oyun Sayısı
+            const remaining = 11 - gamesPlayed;
+            document.getElementById('games-remaining-display').innerText = `Kalan Oyun: ${remaining < 0 ? 0 : remaining}`;
+
+            // Toplam Durum
             const grandDiff = Math.abs(bizTotal - sizTotal);
             const statusEl = document.getElementById('status-diff');
             
@@ -441,7 +527,18 @@
                 statusEl.innerHTML = "EŞİT";
             }
 
+            // GÜNCELLEME 1: Her güncellemede kazı kazan kapatılır
+            resetScratch();
             saveToStorage();
+        }
+
+        // --- SCRATCHCARD LOGIC ---
+        function revealScratch() {
+            document.getElementById('scratch-layer').style.display = 'none';
+        }
+
+        function resetScratch() {
+            document.getElementById('scratch-layer').style.display = 'flex';
         }
 
         // --- SCORE MODAL LOGIC ---
@@ -464,7 +561,6 @@
         }
 
         function updateSilerDisplay() {
-            // Modal içindeki önizleme de alt alta olsun
             const items = Array(tempScoreSiler).fill("<span>∞</span>").join('');
             document.getElementById('current-siler-display').innerHTML = items;
         }
@@ -481,9 +577,8 @@
         // --- PENALTY MODAL LOGIC ---
         function createNumGrid() {
             const grid = document.querySelector('.num-grid');
-            grid.innerHTML = ''; // Temizle
+            grid.innerHTML = '';
             for(let i=1; i<=13; i++) {
-                // OKEY TAŞI GÖRÜNÜMÜ OLUŞTURMA
                 const btn = document.createElement('div');
                 btn.className = 'okey-tile';
                 btn.innerHTML = `
@@ -505,16 +600,30 @@
 
         function setPenaltyMode(mode) {
             tempPenaltyMode = mode;
-            document.getElementById('btn-tek').className = mode === 'tek' ? 'toggle-btn active' : 'toggle-btn';
-            document.getElementById('btn-cift').className = mode === 'cift' ? 'toggle-btn active' : 'toggle-btn';
+            // GÜNCELLEME 5: Buton aktiflik sınıfları
+            const btnTek = document.getElementById('btn-tek');
+            const btnCift = document.getElementById('btn-cift');
+            
+            if (mode === 'tek') {
+                btnTek.classList.add('active');
+                btnCift.classList.remove('active');
+            } else {
+                btnTek.classList.remove('active');
+                btnCift.classList.add('active');
+            }
         }
 
         function addPenaltyValue(num) {
-            let penalty = 0;
-            if (tempPenaltyMode === 'tek') penalty = num * 10;
-            else penalty = num * 20;
+            let penaltyVal = 0;
+            if (tempPenaltyMode === 'tek') penaltyVal = num * 10;
+            else penaltyVal = num * 20;
 
-            gameData[activeRow][activeColType].push(penalty);
+            // GÜNCELLEME 3: Cezayı nesne olarak kaydet {val, mode}
+            gameData[activeRow][activeColType].push({
+                val: penaltyVal,
+                mode: tempPenaltyMode
+            });
+            
             renderPenaltyList();
             renderTable();
         }
@@ -531,9 +640,15 @@
             const penalties = gameData[activeRow][activeColType];
             
             penalties.forEach((p, index) => {
+                const val = typeof p === 'object' ? p.val : p;
+                const mode = typeof p === 'object' ? p.mode : 'tek'; // Eski veri uyumluluğu
+
                 const chip = document.createElement('div');
-                chip.className = 'penalty-chip';
-                chip.innerHTML = `${p} <span>✕</span>`;
+                chip.className = `penalty-chip ${mode === 'tek' ? 'tek' : 'cift'}`; // Renk sınıfı
+                // GÜNCELLEME 5: Renkli chipler
+                chip.style.backgroundColor = mode === 'tek' ? 'var(--blue-color)' : 'var(--danger-color)';
+
+                chip.innerHTML = `${val} <span>✕</span>`;
                 chip.onclick = () => removePenalty(index);
                 list.appendChild(chip);
             });
@@ -574,12 +689,13 @@
 
         // --- STORAGE ---
         function saveToStorage() {
-            localStorage.setItem('101_msefagor_data', JSON.stringify(gameData));
+            localStorage.setItem('101_msefagor_data_v2', JSON.stringify(gameData));
             localStorage.setItem('101_msefagor_players', JSON.stringify(players));
         }
 
         function loadFromStorage() {
-            const d = localStorage.getItem('101_msefagor_data');
+            // v2 key kullandık çünkü veri yapısı değişti
+            const d = localStorage.getItem('101_msefagor_data_v2'); 
             const p = localStorage.getItem('101_msefagor_players');
             if(d) gameData = JSON.parse(d);
             if(p) players = JSON.parse(p);
