@@ -16,29 +16,26 @@
             
             --text-color: #ffffff;
             --accent-color: #f1c40f;
-            --danger-color: #ff6b81; /* Soft Red */
-            --blue-color: #1e90ff;   /* Soft Blue */
+            --danger-color: #ff6b81;
+            --blue-color: #1e90ff;
             --siler-color: #7bed9f;
             
-            /* Durum Renkleri */
-            --biz-color: #00cec9; /* Parlak Turkuaz */
-            --siz-color: #fab1a0; /* Parlak Somon */
+            --biz-color: #00cec9;
+            --siz-color: #fab1a0;
 
             --tile-bg: linear-gradient(145deg, #ffffff, #e6e6e6);
             --tile-ink: #2d3436;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-            background: linear-gradient(135deg, #093028, #237a57, #093028); /* Derin Yeşil/Siyah */
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background: linear-gradient(135deg, #093028, #237a57, #093028);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             color: var(--text-color);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
@@ -49,7 +46,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* LIQUID GLASS UTILITY CLASS */
         .glass-panel {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
@@ -58,19 +54,23 @@
             box-shadow: var(--glass-shadow);
         }
 
-        /* Header */
         header {
-            padding: 15px;
-            padding-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 50;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
+            padding: 40px 15px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 50; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
             margin-bottom: 10px;
         }
-        h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        
+        h1 { margin: 0; font-size: 18px; font-weight: 800; }
+        
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+
+        .timer-badge {
+            background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 20px;
+            font-family: monospace; font-weight: bold; color: var(--accent-color);
+            border: 1px solid var(--glass-border);
+        }
+
         .settings-btn {
             background: rgba(255,255,255,0.15); 
             border: 1px solid rgba(255,255,255,0.3);
@@ -81,241 +81,94 @@
         .game-container { flex: 1; overflow-y: auto; padding-bottom: 140px; }
         
         .grid-header {
-            display: grid;
-            grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
-            padding: 15px 5px;
-            font-size: 11px;
-            font-weight: 900; text-align: center;
-            background: rgba(0,0,0,0.25);
-            margin: 0 10px;
-            border-radius: 15px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            border: 1px solid var(--glass-border);
+            display: grid; grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
+            padding: 15px 5px; font-size: 11px; font-weight: 900; text-align: center;
+            background: rgba(0,0,0,0.25); margin: 0 10px; border-radius: 15px;
+            text-transform: uppercase; border: 1px solid var(--glass-border);
         }
 
         .game-row {
-            display: grid;
-            grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
+            display: grid; grid-template-columns: 1.3fr 1.3fr 1fr 1fr 1.4fr 1.2fr;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            min-height: 65px;
-            margin: 5px 10px;
-            border-radius: 12px;
-            transition: background 0.2s;
+            min-height: 65px; margin: 5px 10px; border-radius: 12px;
         }
-        .game-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
-        .game-row:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
 
         .cell {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 4px; position: relative;
-            font-size: 17px;
-            font-weight: 600;
-            text-align: center;
-            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 4px; font-size: 17px; font-weight: 600; text-align: center;
         }
 
-        /* Score Styling */
-        .score-val { font-size: 19px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .score-val { font-size: 19px; font-weight: 700; }
+        .siler-icons { color: var(--siler-color); font-size: 18px; line-height: 10px; display: flex; flex-direction: column; }
         
-        .siler-icons { 
-            color: var(--siler-color); 
-            font-size: 20px; 
-            line-height: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 2px;
-            text-shadow: 0 0 5px rgba(123, 237, 159, 0.4);
-        }
-        
-        /* Penalty Tags */
-        .penalty-tag {
-            font-size: 10px; padding: 3px 6px;
-            border-radius: 8px; margin: 2px;
-            display: inline-block;
-            font-weight: 800;
-            min-width: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .penalty-tag.tek { background: var(--blue-color); color: white; border: 1px solid rgba(255,255,255,0.3); }
-        .penalty-tag.cift { background: var(--danger-color); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .penalty-tag { font-size: 10px; padding: 3px 6px; border-radius: 8px; margin: 2px; font-weight: 800; }
+        .penalty-tag.tek { background: var(--blue-color); }
+        .penalty-tag.cift { background: var(--danger-color); }
 
-        /* Diff & Dealer */
-        .dealer-name { font-size: 11px; color: #ccc; opacity: 0.8; font-style: italic; }
-        .diff-cell { font-size: 12px; font-weight: 800; line-height: 1.2; }
-        .diff-biz { color: var(--biz-color); }
-        .diff-siz { color: var(--siz-color); }
-
-        /* Remaining Games */
-        .games-remaining {
-            text-align: center;
-            padding: 12px;
-            margin: 10px 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            border: 1px solid var(--glass-border);
-            color: rgba(255,255,255,0.7);
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* --- FOOTER & SCRATCH AREA --- */
+        /* Footer */
         .footer-totals {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: 110px; /* Biraz daha yüksek */
-            background: rgba(15, 20, 25, 0.85);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            position: fixed; bottom: 0; left: 0; right: 0; height: 110px;
+            background: rgba(15, 20, 25, 0.85); backdrop-filter: blur(25px);
             display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.15);
-            padding-bottom: 20px; z-index: 60;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            padding-bottom: 20px; z-index: 60; border-top: 1px solid rgba(255,255,255,0.15);
         }
         
-        .total-box { 
-            text-align: center; 
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        .total-label { font-size: 10px; opacity: 0.6; margin-bottom: 4px; letter-spacing: 1px; }
         .total-score { font-size: 26px; font-weight: 800; }
 
-        /* Status Area (Middle) */
         .status-wrapper {
-            position: relative;
-            width: 130px;
-            height: 90px;
-            background: #2d3436;
-            border-radius: 12px;
-            overflow: hidden;
+            position: relative; width: 120px; height: 80px;
+            background: #2d3436; border-radius: 12px; overflow: hidden;
             border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-            /* Ortadaki içerik için flex */
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Arka plandaki sonuç yazısı */
-        .result-content {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column; 
-            justify-content: center; align-items: center;
-            line-height: 1.2;
-        }
-        
-        .res-top { font-size: 14px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.9; }
-        .res-score { font-size: 32px; font-weight: 800; margin: 2px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .res-bot { font-size: 11px; font-weight: 700; opacity: 0.8; letter-spacing: 1px; }
+        #scratch-canvas { position: absolute; top: 0; left: 0; z-index: 10; touch-action: none; }
 
-        /* BİZ Stili */
-        .res-biz .res-top { color: var(--biz-color); }
-        .res-biz .res-score { color: #fff; }
-        .res-biz .res-bot { color: var(--biz-color); }
-        
-        /* SİZ Stili */
-        .res-siz .res-top { color: var(--siz-color); }
-        .res-siz .res-score { color: #fff; }
-        .res-siz .res-bot { color: var(--siz-color); }
-
-        /* Canvas (Kazı Kazan Katmanı) */
-        #scratch-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 10;
-            cursor: crosshair;
-            touch-action: none; /* Mobilde sayfa kaydırmayı engelle */
-        }
-
-        /* --- MODALS (Liquid Style) --- */
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
-            display: none; justify-content: center; align-items: center;
-            z-index: 100;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
         }
         .modal-content {
-            background: rgba(45, 52, 54, 0.9);
-            width: 85%; max-width: 380px;
-            border-radius: 24px; padding: 25px;
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-            max-height: 85vh; overflow-y: auto;
+            background: #1e272e; width: 90%; max-width: 400px;
+            border-radius: 24px; padding: 20px; border: 1px solid var(--glass-border);
         }
 
-        /* Buttons & Inputs */
-        .glass-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white; border-radius: 12px;
-            cursor: pointer; transition: 0.2s;
+        .player-score-group {
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px;
         }
-        .glass-btn:active { background: rgba(255,255,255,0.2); }
-
-        input[type="number"], input[type="text"] {
-            width: 100%; background: rgba(0,0,0,0.4); 
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white; font-size: 32px; text-align: center; padding: 12px; border-radius: 16px;
-            margin-bottom: 12px; box-sizing: border-box;
-            font-weight: bold;
-        }
-        input::placeholder { color: rgba(255,255,255,0.2); }
-
-        .score-controls { display: flex; gap: 12px; margin: 15px 0; }
-        .control-btn { 
-            flex: 1; padding: 15px; border-radius: 16px; border: none;
-            font-weight: 700; font-size: 14px; cursor: pointer; color: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .btn-add-siler { background: linear-gradient(135deg, var(--siler-color), #2ed573); color: #000; }
-        .btn-rem-siler { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.1); }
         
-        /* Toggle Buttons */
-        .toggle-container { display: flex; gap: 10px; margin-bottom: 15px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 16px; }
-        .toggle-btn {
-            flex: 1; padding: 12px; border: none; border-radius: 12px;
-            background: transparent; color: #aaa; 
-            font-weight: bold; font-size: 15px;
-            transition: 0.3s;
-        }
-        .toggle-btn.active.tek { background: var(--blue-color); color: white; box-shadow: 0 2px 10px rgba(30, 144, 255, 0.4); }
-        .toggle-btn.active.cift { background: var(--danger-color); color: white; box-shadow: 0 2px 10px rgba(255, 107, 129, 0.4); }
-
-        /* Okey Tiles */
-        .num-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .score-input-wrapper { display: flex; flex-direction: column; gap: 8px; }
         
-        .okey-tile {
-            background: var(--tile-bg);
-            color: var(--tile-ink);
-            border-radius: 10px;
-            height: 60px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: space-between;
-            padding: 6px 0;
-            cursor: pointer;
-            box-shadow: 0 4px 0px #bdc3c7, 0 5px 10px rgba(0,0,0,0.2);
-            position: relative;
+        input[type="number"] {
+            width: 100%; background: #000; border: 1px solid #444; color: #fff;
+            font-size: 24px; text-align: center; padding: 10px; border-radius: 10px;
         }
-        .okey-tile:active { transform: translateY(3px); box-shadow: 0 1px 0px #bdc3c7; }
-        .tile-number { font-size: 24px; font-weight: 900; }
-        .tile-dot { width: 10px; height: 10px; background-color: var(--tile-ink); border-radius: 50%; }
 
-        .penalty-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; min-height: 40px; }
-        
+        .multiplier-group { display: flex; gap: 5px; }
+        .m-btn {
+            flex: 1; padding: 8px; border: none; border-radius: 8px; 
+            background: #333; color: #fff; font-weight: bold; font-size: 12px;
+        }
+        .m-btn.active { background: var(--accent-color); color: #000; }
+
         .action-btn {
-            width: 100%; padding: 16px; border: none; color: white; border-radius: 16px; 
-            margin-top: 10px; font-weight: 700; font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            margin-top: 10px; font-weight: 700; cursor: pointer;
         }
-        .save-btn { background: linear-gradient(135deg, #00b894, #00cec9); }
-        .close-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
+        .save-btn { background: var(--siler-color); color: #000; }
 
     </style>
 </head>
 <body>
 
     <header class="glass-panel">
-        <h1>101 MSEFAGOR</h1>
-        <button class="settings-btn" onclick="openPlayersModal()">Ayarlar</button>
+        <h1 id="main-title">101 MSEFAGOR (11)</h1>
+        <div class="header-actions">
+            <div class="timer-badge" id="game-timer">00:00</div>
+            <button class="settings-btn" onclick="openPlayersModal()">Ayarlar</button>
+        </div>
     </header>
 
     <div class="grid-header glass-panel">
@@ -327,421 +180,276 @@
         <div>Fark</div>
     </div>
 
-    <div class="game-container" id="game-rows">
-        </div>
-    
-    <div class="games-remaining" id="games-remaining-display">
-        Kalan Oyun: 11
-    </div>
+    <div class="game-container" id="game-rows"></div>
 
     <div class="footer-totals">
-        <div class="total-box" style="flex:1;">
-            <div class="total-label">BİZ TOPLAM</div>
+        <div class="total-box" style="text-align: center;">
+            <div style="font-size:10px; opacity:0.6">BİZ</div>
             <div class="total-score" id="total-biz" style="color:var(--biz-color)">0</div>
         </div>
         
         <div class="status-wrapper">
-            <div class="result-content" id="result-content">
-                <div class="res-top">EŞİT</div>
-                <div class="res-score">-</div>
-                <div class="res-bot">DURUM</div>
-            </div>
+            <div id="result-content" style="text-align:center; z-index:1"></div>
             <canvas id="scratch-canvas"></canvas>
         </div>
 
-        <div class="total-box" style="flex:1;">
-            <div class="total-label">SİZ TOPLAM</div>
+        <div class="total-box" style="text-align: center;">
+            <div style="font-size:10px; opacity:0.6">SİZ</div>
             <div class="total-score" id="total-siz" style="color:var(--siz-color)">0</div>
         </div>
     </div>
 
     <div id="score-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="text-align:center; margin-top:0;">Oyun Puanı</h3>
+            <h3 id="modal-title" style="text-align:center; margin-top:0;">Puan Girişi</h3>
             
-            <input type="number" id="score-input" placeholder="0">
-            
-            <div class="score-controls">
-                <button class="control-btn btn-rem-siler" onclick="addSiler(-1)">Sil</button>
-                <button class="control-btn btn-add-siler" onclick="addSiler(1)">Siler (-100)</button>
-            </div>
-            
-            <div style="text-align:center; margin-bottom:15px; height: 50px; display:flex; justify-content:center; align-items:center;">
-                <span id="current-siler-display" style="color:var(--siler-color); font-size:24px; line-height:16px; margin-left:10px; display:flex; flex-direction:column;"></span>
+            <div class="player-score-group">
+                <div style="font-size:12px; margin-bottom:5px; color:var(--accent-color)" id="p-label-1">Oyuncu 1</div>
+                <div class="score-input-wrapper">
+                    <input type="number" id="sc-1" placeholder="0">
+                    <div class="multiplier-group">
+                        <button class="m-btn active" id="m1-1" onclick="setMultiplier(1, 1)">DÜZ x1</button>
+                        <button class="m-btn" id="m1-2" onclick="setMultiplier(1, 2)">ÇİFT x2</button>
+                    </div>
+                </div>
             </div>
 
-            <button class="action-btn save-btn" onclick="saveScore()">Kaydet</button>
-            <button class="action-btn close-btn" onclick="closeModals()">İptal</button>
+            <div class="player-score-group">
+                <div style="font-size:12px; margin-bottom:5px; color:var(--accent-color)" id="p-label-2">Oyuncu 2</div>
+                <div class="score-input-wrapper">
+                    <input type="number" id="sc-2" placeholder="0">
+                    <div class="multiplier-group">
+                        <button class="m-btn active" id="m2-1" onclick="setMultiplier(2, 1)">DÜZ x1</button>
+                        <button class="m-btn" id="m2-2" onclick="setMultiplier(2, 2)">ÇİFT x2</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:10px; margin: 10px 0;">
+                <button class="m-btn" style="background:var(--danger-color)" onclick="addSilerModal(1)">Siler +</button>
+                <div id="modal-siler-count" style="color:var(--siler-color); font-weight:bold; font-size:20px;"></div>
+                <button class="m-btn" onclick="addSilerModal(-1)">Siler -</button>
+            </div>
+
+            <button class="action-btn save-btn" onclick="applyAdvancedScore()">KAYDET</button>
+            <button class="action-btn" style="background:transparent; color:#888" onclick="closeModals()">İptal</button>
         </div>
     </div>
 
     <div id="penalty-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="text-align:center; margin-top:0;">Ceza Ekle</h3>
-            
-            <div class="toggle-container">
-                <button class="toggle-btn tek active" id="btn-tek" onclick="setPenaltyMode('tek')">TEK (x10)</button>
-                <button class="toggle-btn cift" id="btn-cift" onclick="setPenaltyMode('cift')">ÇİFT (x20)</button>
+            <h3 style="text-align:center;">Ceza Ekle</h3>
+            <div class="toggle-container" style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="m-btn active" id="btn-tek" style="padding:15px" onclick="setPenaltyMode('tek')">TEK (x10)</button>
+                <button class="m-btn" id="btn-cift" style="padding:15px" onclick="setPenaltyMode('cift')">ÇİFT (x20)</button>
             </div>
-
-            <div class="num-grid">
-                </div>
-
-            <div style="font-size:12px; opacity:0.6; margin-top:10px;">Cezalar:</div>
-            <div class="penalty-list" id="penalty-list-container">
-            </div>
-
-            <button class="action-btn close-btn" onclick="closeModals()">Kapat</button>
+            <div class="num-grid" id="num-grid-container" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;"></div>
+            <div id="penalty-list-container" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:15px;"></div>
+            <button class="action-btn" style="background:#444; color:#fff" onclick="closeModals()">Kapat</button>
         </div>
     </div>
 
-    <div id="players-modal" class="modal-overlay" style="z-index:110;">
+    <div id="players-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="text-align:center;">Oyuncular</h3>
-            <input type="text" id="p1" placeholder="Oyuncu 1" style="font-size:18px;">
-            <input type="text" id="p2" placeholder="Oyuncu 2" style="font-size:18px;">
-            <input type="text" id="p3" placeholder="Oyuncu 3" style="font-size:18px;">
-            <input type="text" id="p4" placeholder="Oyuncu 4" style="font-size:18px;">
-            
+            <input type="text" id="p1" placeholder="Oyuncu 1"><br>
+            <input type="text" id="p2" placeholder="Oyuncu 2"><br>
+            <input type="text" id="p3" placeholder="Oyuncu 3"><br>
+            <input type="text" id="p4" placeholder="Oyuncu 4"><br>
             <button class="action-btn save-btn" onclick="savePlayers()">Kaydet</button>
-            <button class="action-btn close-btn" style="background:var(--danger-color);" onclick="resetGame()">Oyunu Sıfırla</button>
-            <button class="action-btn close-btn" onclick="document.getElementById('players-modal').style.display='none'">Kapat</button>
+            <button class="action-btn" style="background:var(--danger-color); color:#fff" onclick="resetGame()">Sıfırla</button>
+            <button class="action-btn" onclick="closeModals()">Kapat</button>
         </div>
     </div>
 
     <script>
-        // --- DATA ---
         let players = ["Sefa", "Fatih", "Halil", "İlker"];
         let gameData = [];
         let activeRow = 0;
         let activeColType = '';
-        let tempPenaltyMode = 'tek';
-        let tempScoreSiler = 0;
+        let mult1 = 1, mult2 = 1, tempSiler = 0;
+        let timerInterval = null;
+        let startTime = null;
 
-        // --- SCRATCH CANVAS SETUP ---
         const canvas = document.getElementById('scratch-canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        let isDrawing = false;
+        const ctx = canvas.getContext('2d');
 
-        // --- INIT ---
         window.onload = function() {
             initGameData();
             loadFromStorage();
             renderTable();
             createNumGrid();
-            initScratchCard();
+            initScratch();
         };
 
         function initGameData() {
-            gameData = [];
-            for(let i=0; i<11; i++) {
-                gameData.push({
-                    bizScore: { val: 0, siler: 0 },
-                    sizScore: { val: 0, siler: 0 },
-                    bizCeza: [], 
-                    sizCeza: []
-                });
-            }
+            gameData = Array.from({length: 11}, () => ({
+                bizScore: { val: 0, siler: 0 },
+                sizScore: { val: 0, siler: 0 },
+                bizCeza: [], sizCeza: []
+            }));
         }
 
-        // --- KAZI KAZAN FONKSİYONLARI ---
-        function initScratchCard() {
-            // Canvas boyutunu kapsayıcıya göre ayarla
-            const wrapper = document.querySelector('.status-wrapper');
-            canvas.width = wrapper.offsetWidth;
-            canvas.height = wrapper.offsetHeight;
-            
-            resetScratchCard();
-
-            // Event Listeners (Mouse & Touch)
-            canvas.addEventListener('mousedown', startScratch);
-            canvas.addEventListener('mousemove', scratch);
-            canvas.addEventListener('mouseup', stopScratch);
-            canvas.addEventListener('mouseleave', stopScratch);
-            
-            canvas.addEventListener('touchstart', startScratch);
-            canvas.addEventListener('touchmove', scratch);
-            canvas.addEventListener('touchend', stopScratch);
+        // --- TIMER LOGIC ---
+        function startTimer() {
+            if (timerInterval) return;
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
         }
 
-        function resetScratchCard() {
-            // Canvası gri renk ile doldur ve üzerine yazı yaz
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = '#b2bec3'; // Gümüş rengi
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // "KAZI" yazısı veya deseni
-            ctx.fillStyle = '#636e72';
-            ctx.font = 'bold 14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('KAZI', canvas.width/2, canvas.height/2);
-            
-            // Çizim modunu 'silme' olarak ayarla
-            ctx.globalCompositeOperation = 'destination-out';
+        function updateTimerDisplay() {
+            const now = Date.now();
+            const diff = Math.floor((now - startTime) / 1000);
+            const m = Math.floor(diff / 60).toString().padStart(2, '0');
+            const s = (diff % 60).toString().padStart(2, '0');
+            document.getElementById('game-timer').innerText = `${m}:${s}`;
         }
 
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            let x, y;
-            if (e.changedTouches) {
-                x = e.changedTouches[0].clientX - rect.left;
-                y = e.changedTouches[0].clientY - rect.top;
-            } else {
-                x = e.clientX - rect.left;
-                y = e.clientY - rect.top;
-            }
-            return { x, y };
-        }
-
-        function startScratch(e) {
-            e.preventDefault(); // Mobilde kaydırmayı engelle
-            isDrawing = true;
-            scratch(e);
-        }
-
-        function scratch(e) {
-            if (!isDrawing) return;
-            e.preventDefault();
-            const pos = getPos(e);
-            
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2); // 15px yarıçapında silgi
-            ctx.fill();
-        }
-
-        function stopScratch() {
-            isDrawing = false;
-        }
-
-        // --- RENDER ---
-        function renderTable() {
-            const container = document.getElementById('game-rows');
-            container.innerHTML = '';
-            
-            let bizTotal = 0;
-            let sizTotal = 0;
-            let gamesPlayed = 0;
-
-            gameData.forEach((row, i) => {
-                const dealer = players[i % 4];
-
-                const bizSilerVal = row.bizScore.siler * -100;
-                const sizSilerVal = row.sizScore.siler * -100;
-                
-                const bizPenaltySum = row.bizCeza.reduce((acc, item) => acc + (typeof item === 'object' ? item.val : item), 0);
-                const sizPenaltySum = row.sizCeza.reduce((acc, item) => acc + (typeof item === 'object' ? item.val : item), 0);
-
-                const rowBizTotal = Number(row.bizScore.val) + bizSilerVal + bizPenaltySum;
-                const rowSizTotal = Number(row.sizScore.val) + sizSilerVal + sizPenaltySum;
-                
-                bizTotal += rowBizTotal;
-                sizTotal += rowSizTotal;
-
-                if(row.bizScore.val !== 0 || row.sizScore.val !== 0 || 
-                   row.bizScore.siler !== 0 || row.sizScore.siler !== 0 ||
-                   row.bizCeza.length > 0 || row.sizCeza.length > 0) {
-                    gamesPlayed++;
-                }
-
-                const absDiff = Math.abs(rowBizTotal - rowSizTotal);
-                let diffHtml = '<span style="opacity:0.2">-</span>';
-                if(rowBizTotal !== 0 || rowSizTotal !== 0) {
-                    if (rowBizTotal < rowSizTotal) {
-                        diffHtml = `<span class="diff-biz">+${absDiff}</span>`;
-                    } else if (rowSizTotal < rowBizTotal) {
-                        diffHtml = `<span class="diff-siz">+${absDiff}</span>`;
-                    } else {
-                        diffHtml = "EŞİT";
-                    }
-                }
-
-                const bizSilerItems = Array(row.bizScore.siler).fill("∞").map(s => `<span>${s}</span>`).join('');
-                const sizSilerItems = Array(row.sizScore.siler).fill("∞").map(s => `<span>${s}</span>`).join('');
-
-                const bizCezaHtml = row.bizCeza.map(c => {
-                    let val = typeof c === 'object' ? c.val : c;
-                    let mode = typeof c === 'object' ? c.mode : 'tek'; 
-                    return `<span class="penalty-tag ${mode}">${val}</span>`;
-                }).join('');
-
-                const sizCezaHtml = row.sizCeza.map(c => {
-                    let val = typeof c === 'object' ? c.val : c;
-                    let mode = typeof c === 'object' ? c.mode : 'tek';
-                    return `<span class="penalty-tag ${mode}">${val}</span>`;
-                }).join('');
-
-                const html = `
-                    <div class="game-row">
-                        <div class="cell" onclick="openScoreModal(${i}, 'bizScore')">
-                            <div class="score-val">${row.bizScore.val || (row.bizScore.siler > 0 ? '' : '-')}</div>
-                            <div class="siler-icons">${bizSilerItems}</div>
-                        </div>
-                        <div class="cell" onclick="openScoreModal(${i}, 'sizScore')">
-                            <div class="score-val">${row.sizScore.val || (row.sizScore.siler > 0 ? '' : '-')}</div>
-                            <div class="siler-icons">${sizSilerItems}</div>
-                        </div>
-                        <div class="cell" onclick="openPenaltyModal(${i}, 'bizCeza')" style="background:rgba(255,255,255,0.02)">
-                            <div style="display:flex; flex-wrap:wrap; justify-content:center;">${bizCezaHtml || '<span style="opacity:0.2">-</span>'}</div>
-                        </div>
-                        <div class="cell" onclick="openPenaltyModal(${i}, 'sizCeza')" style="background:rgba(255,255,255,0.02)">
-                             <div style="display:flex; flex-wrap:wrap; justify-content:center;">${sizCezaHtml || '<span style="opacity:0.2">-</span>'}</div>
-                        </div>
-                        <div class="cell dealer-name">${dealer}</div>
-                        <div class="cell diff-cell">${diffHtml}</div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-
-            document.getElementById('total-biz').innerText = bizTotal;
-            document.getElementById('total-siz').innerText = sizTotal;
-
-            const remaining = 11 - gamesPlayed;
-            document.getElementById('games-remaining-display').innerText = `Kalan Oyun: ${remaining < 0 ? 0 : remaining}`;
-
-            // --- GÜNCELLEME: Durum Alanı (Arka Plandaki HTML) ---
-            const grandDiff = Math.abs(bizTotal - sizTotal);
-            const resultDiv = document.getElementById('result-content');
-            
-            resultDiv.className = 'result-content'; // Reset class
-            
-            if (bizTotal < sizTotal) {
-                // BİZ ÖNDEYİZ
-                resultDiv.classList.add('res-biz');
-                resultDiv.innerHTML = `
-                    <div class="res-top">BİZ</div>
-                    <div class="res-score">${grandDiff}</div>
-                    <div class="res-bot">ÖNDEYİZ</div>
-                `;
-            } else if (sizTotal < bizTotal) {
-                // SİZ ÖNDESİNİZ
-                resultDiv.classList.add('res-siz');
-                resultDiv.innerHTML = `
-                    <div class="res-top">SİZ</div>
-                    <div class="res-score">${grandDiff}</div>
-                    <div class="res-bot">ÖNDESİNİZ</div>
-                `;
-            } else {
-                resultDiv.innerHTML = `
-                    <div class="res-top" style="color:#fff">DURUM</div>
-                    <div class="res-score" style="color:#fff; font-size:20px;">EŞİT</div>
-                    <div class="res-bot">-</div>
-                `;
-            }
-
-            // Her tablo render edildiğinde kazı kazan katmanını sıfırla
-            resetScratchCard();
-            saveToStorage();
-        }
-
-        // --- MODAL FUNCTIONS ---
+        // --- SCORE LOGIC ---
         function openScoreModal(row, type) {
             activeRow = row;
             activeColType = type;
-            const data = gameData[row][type];
-            document.getElementById('score-input').value = data.val === 0 ? '' : data.val;
-            tempScoreSiler = data.siler;
-            updateSilerDisplay();
+            const isBiz = type === 'bizScore';
+            
+            document.getElementById('p-label-1').innerText = isBiz ? players[0] : players[1];
+            document.getElementById('p-label-2').innerText = isBiz ? players[2] : players[3];
+            
+            document.getElementById('sc-1').value = '';
+            document.getElementById('sc-2').value = '';
+            mult1 = 1; mult2 = 1;
+            tempSiler = gameData[row][type].siler;
+            
+            updateMultiplierUI();
+            updateSilerUI();
             document.getElementById('score-modal').style.display = 'flex';
         }
 
-        function addSiler(delta) {
-            tempScoreSiler += delta;
-            if(tempScoreSiler < 0) tempScoreSiler = 0;
-            updateSilerDisplay();
+        function setMultiplier(playerNum, m) {
+            if(playerNum === 1) mult1 = m; else mult2 = m;
+            updateMultiplierUI();
         }
 
-        function updateSilerDisplay() {
-            const items = Array(tempScoreSiler).fill("<span>∞</span>").join('');
-            document.getElementById('current-siler-display').innerHTML = items;
+        function updateMultiplierUI() {
+            document.getElementById('m1-1').className = mult1 === 1 ? 'm-btn active' : 'm-btn';
+            document.getElementById('m1-2').className = mult1 === 2 ? 'm-btn active' : 'm-btn';
+            document.getElementById('m2-1').className = mult2 === 1 ? 'm-btn active' : 'm-btn';
+            document.getElementById('m2-2').className = mult2 === 2 ? 'm-btn active' : 'm-btn';
         }
 
-        function saveScore() {
-            const val = document.getElementById('score-input').value;
-            gameData[activeRow][activeColType].val = val === '' ? 0 : parseInt(val);
-            gameData[activeRow][activeColType].siler = tempScoreSiler;
+        function addSilerModal(delta) {
+            tempSiler = Math.max(0, tempSiler + delta);
+            updateSilerUI();
+        }
+
+        function updateSilerUI() {
+            document.getElementById('modal-siler-count').innerText = "∞ ".repeat(tempSiler);
+        }
+
+        function applyAdvancedScore() {
+            const s1 = parseInt(document.getElementById('sc-1').value) || 0;
+            const s2 = parseInt(document.getElementById('sc-2').value) || 0;
+            
+            gameData[activeRow][activeColType].val = (s1 * mult1) + (s2 * mult2);
+            gameData[activeRow][activeColType].siler = tempSiler;
+            
+            startTimer(); // İlk veri girişinde süreyi başlat
             closeModals();
             renderTable();
         }
 
+        // --- RENDER & STORAGE ---
+        function renderTable() {
+            const container = document.getElementById('game-rows');
+            container.innerHTML = '';
+            let bizT = 0, sizT = 0, played = 0;
+
+            gameData.forEach((row, i) => {
+                const bS = row.bizScore.val + (row.bizScore.siler * -100) + row.bizCeza.reduce((a,b)=>a+(b.val||0),0);
+                const sS = row.sizScore.val + (row.sizScore.siler * -100) + row.sizCeza.reduce((a,b)=>a+(b.val||0),0);
+                
+                bizT += bS; sizT += sS;
+                if(row.bizScore.val !== 0 || row.sizScore.val !== 0 || row.bizCeza.length > 0 || row.sizCeza.length > 0) played++;
+
+                const html = `
+                    <div class="game-row">
+                        <div class="cell" onclick="openScoreModal(${i}, 'bizScore')">
+                            <span class="score-val">${row.bizScore.val || '-'}</span>
+                            <div class="siler-icons">${'∞'.repeat(row.bizScore.siler)}</div>
+                        </div>
+                        <div class="cell" onclick="openScoreModal(${i}, 'sizScore')">
+                            <span class="score-val">${row.sizScore.val || '-'}</span>
+                            <div class="siler-icons">${'∞'.repeat(row.sizScore.siler)}</div>
+                        </div>
+                        <div class="cell" onclick="openPenaltyModal(${i}, 'bizCeza')">
+                            ${row.bizCeza.map(c=>`<span class="penalty-tag ${c.mode}">${c.val}</span>`).join('')}
+                        </div>
+                        <div class="cell" onclick="openPenaltyModal(${i}, 'sizCeza')">
+                            ${row.sizCeza.map(c=>`<span class="penalty-tag ${c.mode}">${c.val}</span>`).join('')}
+                        </div>
+                        <div class="cell" style="font-size:10px; opacity:0.5">${players[i%4]}</div>
+                        <div class="cell" style="font-weight:bold">${Math.abs(bS-sS)}</div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+
+            document.getElementById('total-biz').innerText = bizT;
+            document.getElementById('total-siz').innerText = sizT;
+            document.getElementById('main-title').innerText = `101 MSEFAGOR (${11-played})`;
+            
+            updateStatus(bizT, sizT);
+            saveToStorage();
+        }
+
+        function updateStatus(b, s) {
+            const res = document.getElementById('result-content');
+            if(b < s) res.innerHTML = `<span style="color:var(--biz-color)">BİZ<br>${s-b} ÖNDE</span>`;
+            else if(s < b) res.innerHTML = `<span style="color:var(--siz-color)">SİZ<br>${b-s} ÖNDE</span>`;
+            else res.innerHTML = "EŞİT";
+            initScratch(); // Her güncellemede kazı kazanı yenile
+        }
+
+        // --- PENALTY LOGIC ---
+        let pMode = 'tek';
+        function setPenaltyMode(m) {
+            pMode = m;
+            document.getElementById('btn-tek').className = m === 'tek' ? 'm-btn active' : 'm-btn';
+            document.getElementById('btn-cift').className = m === 'cift' ? 'm-btn active' : 'm-btn';
+        }
+
         function createNumGrid() {
-            const grid = document.querySelector('.num-grid');
-            grid.innerHTML = '';
+            const g = document.getElementById('num-grid-container');
             for(let i=1; i<=13; i++) {
-                const btn = document.createElement('div');
-                btn.className = 'okey-tile';
-                btn.innerHTML = `
-                    <span class="tile-number">${i}</span>
-                    <span class="tile-dot"></span>
-                `;
-                btn.onclick = () => addPenaltyValue(i);
-                grid.appendChild(btn);
+                let b = document.createElement('button');
+                b.className = 'm-btn'; b.innerText = i;
+                b.onclick = () => {
+                    gameData[activeRow][activeColType].push({val: i*(pMode==='tek'?10:20), mode: pMode});
+                    renderTable(); renderPenaltyList();
+                };
+                g.appendChild(b);
             }
         }
 
         function openPenaltyModal(row, type) {
-            activeRow = row;
-            activeColType = type;
+            activeRow = row; activeColType = type;
             renderPenaltyList();
             document.getElementById('penalty-modal').style.display = 'flex';
-            setPenaltyMode('tek'); 
-        }
-
-        function setPenaltyMode(mode) {
-            tempPenaltyMode = mode;
-            const btnTek = document.getElementById('btn-tek');
-            const btnCift = document.getElementById('btn-cift');
-            
-            // Toggle sınıfları güncelleme
-            btnTek.classList.remove('active');
-            btnCift.classList.remove('active');
-            
-            if (mode === 'tek') {
-                btnTek.classList.add('active');
-            } else {
-                btnCift.classList.add('active');
-            }
-        }
-
-        function addPenaltyValue(num) {
-            let penaltyVal = (tempPenaltyMode === 'tek') ? num * 10 : num * 20;
-            gameData[activeRow][activeColType].push({
-                val: penaltyVal,
-                mode: tempPenaltyMode
-            });
-            renderPenaltyList();
-            renderTable();
-        }
-
-        function removePenalty(index) {
-            gameData[activeRow][activeColType].splice(index, 1);
-            renderPenaltyList();
-            renderTable();
         }
 
         function renderPenaltyList() {
-            const list = document.getElementById('penalty-list-container');
-            list.innerHTML = '';
-            const penalties = gameData[activeRow][activeColType];
-            
-            penalties.forEach((p, index) => {
-                const val = typeof p === 'object' ? p.val : p;
-                const mode = typeof p === 'object' ? p.mode : 'tek';
-                const chip = document.createElement('div');
-                chip.className = `penalty-tag ${mode}`;
-                chip.style.fontSize = "14px"; 
-                chip.style.padding = "5px 10px";
-                chip.style.cursor = "pointer";
-                chip.innerHTML = `${val} ✕`;
-                chip.onclick = () => removePenalty(index);
-                list.appendChild(chip);
+            const c = document.getElementById('penalty-list-container');
+            c.innerHTML = '';
+            gameData[activeRow][activeColType].forEach((p, idx) => {
+                let s = document.createElement('span');
+                s.className = `penalty-tag ${p.mode}`;
+                s.innerText = p.val + " x";
+                s.onclick = () => { gameData[activeRow][activeColType].splice(idx,1); renderTable(); renderPenaltyList(); };
+                c.appendChild(s);
             });
         }
 
-        function closeModals() {
-            document.getElementById('score-modal').style.display = 'none';
-            document.getElementById('penalty-modal').style.display = 'none';
+        // --- UTILS ---
+        function closeModals() { 
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
         }
 
         function openPlayersModal() {
@@ -754,33 +462,56 @@
 
         function savePlayers() {
             players = [
-                document.getElementById('p1').value || "1. Oyuncu",
-                document.getElementById('p2').value || "2. Oyuncu",
-                document.getElementById('p3').value || "3. Oyuncu",
-                document.getElementById('p4').value || "4. Oyuncu"
+                document.getElementById('p1').value || "P1",
+                document.getElementById('p2').value || "P2",
+                document.getElementById('p3').value || "P3",
+                document.getElementById('p4').value || "P4"
             ];
-            document.getElementById('players-modal').style.display = 'none';
-            renderTable();
+            closeModals(); renderTable();
         }
 
         function resetGame() {
-            if(confirm('Tüm skorlar silinecek!')) {
-                initGameData();
-                renderTable();
-                document.getElementById('players-modal').style.display = 'none';
+            if(confirm("Sıfırlansın mı?")) {
+                localStorage.clear();
+                location.reload();
             }
         }
 
         function saveToStorage() {
-            localStorage.setItem('101_msefagor_data_v2', JSON.stringify(gameData));
-            localStorage.setItem('101_msefagor_players', JSON.stringify(players));
+            localStorage.setItem('msefa_data', JSON.stringify(gameData));
+            localStorage.setItem('msefa_players', JSON.stringify(players));
         }
 
         function loadFromStorage() {
-            const d = localStorage.getItem('101_msefagor_data_v2'); 
-            const p = localStorage.getItem('101_msefagor_players');
+            const d = localStorage.getItem('msefa_data');
+            const p = localStorage.getItem('msefa_players');
             if(d) gameData = JSON.parse(d);
             if(p) players = JSON.parse(p);
+        }
+
+        // --- SCRATCH ENGINE ---
+        function initScratch() {
+            const w = canvas.parentNode.offsetWidth;
+            const h = canvas.parentNode.offsetHeight;
+            canvas.width = w; canvas.height = h;
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = '#999'; ctx.fillRect(0,0,w,h);
+            ctx.fillStyle = '#444'; ctx.font = "bold 12px sans-serif"; ctx.textAlign="center";
+            ctx.fillText("KAZI", w/2, h/2+5);
+            ctx.globalCompositeOperation = 'destination-out';
+        }
+
+        let drawing = false;
+        canvas.addEventListener('touchstart', (e) => { drawing = true; scratch(e); });
+        canvas.addEventListener('touchmove', (e) => { if(drawing) scratch(e); e.preventDefault(); });
+        canvas.addEventListener('touchend', () => drawing = false);
+
+        function scratch(e) {
+            const rect = canvas.getBoundingClientRect();
+            const t = e.touches ? e.touches[0] : e;
+            const x = t.clientX - rect.left;
+            const y = t.clientY - rect.top;
+            ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI*2); ctx.fill();
         }
     </script>
 </body>
